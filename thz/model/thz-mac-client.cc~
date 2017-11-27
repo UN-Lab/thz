@@ -1,0 +1,894 @@
+/* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
+
+
+#include "ns3/attribute.h"
+#include "ns3/uinteger.h"
+#include "ns3/boolean.h"
+#include "ns3/double.h"
+#include "ns3/nstime.h"
+#include "ns3/random-variable.h"
+#include "ns3/log.h"
+#include "ns3/trace-source-accessor.h"
+#include "ns3/node.h"
+#include "thz-mac-header.h"
+#include "thz-mac-client.h"
+#include "ns3/thz-udp-client.h"
+#include "ns3/thz-udp-server.h"
+
+#include <vector>
+#include <iostream>
+
+NS_LOG_COMPONENT_DEFINE ("THzMacClient");
+
+namespace ns3 {
+
+NS_OBJECT_ENSURE_REGISTERED (THzMacClient);
+
+THzMacClient::THzMacClient ()
+  : THzMac (),
+    m_phy (0),
+    
+    m_ctsGenEvent (),
+    //m_backoffTimeoutEvent (),
+    //m_ctsTimeoutEvent (),
+    m_ackTimeoutEvent (),
+    //m_sendCtsEvent (),
+    m_sendAckEvent (),
+    m_sendDataEvent (),
+    //m_retry (0),
+    //m_pktTx (0),
+    m_pktData (0)
+
+{
+  
+  m_sequence = 0;
+  m_pktSequence = 0;
+  m_seqRec = 0;
+  m_ite = 0;
+}
+THzMacClient::~THzMacClient ()
+{
+  Clear ();
+}
+void
+THzMacClient::Clear ()
+{
+  //m_pktTx = 0;
+  m_pktData = 0;
+  m_pktQueue.clear ();
+  m_seqList.clear ();
+
+  m_pktRec = 0;
+  m_throughput = 0;
+  m_throughputAll = 0;
+}
+
+TypeId
+THzMacClient::GetTypeId (void)
+{
+  static TypeId tid = TypeId ("ns3::THzMacClient")
+    .SetParent<Object> ()
+    .AddConstructor<THzMacClient> ()
+    .AddAttribute ("EnableRts",
+                   "If true, RTS is enabled",
+                   BooleanValue (false),
+                   MakeBooleanAccessor (&THzMacClient::m_rtsEnable),
+                   MakeBooleanChecker ())   
+    .AddAttribute ("CwMin",
+                   "Minimum value of CW",
+                   UintegerValue (15),
+                   MakeUintegerAccessor (&THzMacClient::m_cwMin),
+                   MakeUintegerChecker<uint32_t> ())
+    .AddAttribute ("CwMax",
+                   "Maximum value of CW",
+                   UintegerValue (1023),
+                   MakeUintegerAccessor (&THzMacClient::m_cwMax),
+                   MakeUintegerChecker<uint32_t> ())
+    .AddAttribute ("SlotTime",
+                   "Time slot duration for MAC backoff",
+                   TimeValue (NanoSeconds (1.25)),
+                   MakeTimeAccessor (&THzMacClient::m_slotTime),
+                   MakeTimeChecker ())
+    .AddAttribute ("SifsTime",
+                   "Short Inter-frame Space",
+                   TimeValue (NanoSeconds (0.0)),
+                   MakeTimeAccessor (&THzMacClient::m_sifs),
+                   MakeTimeChecker ())
+    .AddAttribute ("DifsTime",
+                   "DFS Inter-frame Space",
+                   TimeValue (NanoSeconds (0.0)),
+                   MakeTimeAccessor (&THzMacClient::m_difs),
+                   MakeTimeChecker ())
+    .AddAttribute ("BasicRate",
+                   "Transmission Rate (bps) for Control Packets",
+                   DoubleValue (66e9), 
+                   MakeDoubleAccessor (&THzMacClient::m_basicRate),
+                   MakeDoubleChecker<double> ())
+    .AddAttribute ("DataRate",
+                   "Transmission Rate (bps) for Data Packets",
+                   DoubleValue (66e9), 
+                   MakeDoubleAccessor (&THzMacClient::m_dataRate),
+                   MakeDoubleChecker<double> ())
+    .AddAttribute ("QueueLimit",
+                   "Maximum packets to queue at MAC",
+                   UintegerValue (20),
+                   MakeUintegerAccessor (&THzMacClient::m_queueLimit),
+                   MakeUintegerChecker<uint32_t> ())
+    .AddAttribute ("RtsRetryLimit",
+                   "Maximum Limit for RTS Retransmission",
+                   UintegerValue (7),
+                   MakeUintegerAccessor (&THzMacClient::m_rtsRetryLimit),
+                   MakeUintegerChecker<uint16_t> ())
+    .AddAttribute ("DataRetryLimit",
+                   "Maximum Limit for Data Retransmission",
+                   UintegerValue (2),
+                   MakeUintegerAccessor (&THzMacClient::m_dataRetryLimit),
+                   MakeUintegerChecker<uint16_t> ())
+    .AddTraceSource ("CtsTimeout",
+                     "Trace Hookup for CTS Timeout",
+                     MakeTraceSourceAccessor (&THzMacClient::m_traceCtsTimeout))
+    .AddTraceSource ("AckTimeout",
+                     "Trace Hookup for ACK Timeout",
+                     MakeTraceSourceAccessor (&THzMacClient::m_traceAckTimeout))
+    .AddTraceSource ("SendDataDone",
+                     "Trace Hookup for sending a data",
+                     MakeTraceSourceAccessor (&THzMacClient::m_traceSendDataDone))
+    .AddTraceSource ("Enqueue",
+                     "Trace Hookup for enqueue a data",
+                     MakeTraceSourceAccessor (&THzMacClient::m_traceEnqueue))
+    //add trace
+    .AddTraceSource ("Throughput",
+                     "Trace Hookup for Throughput",
+                     MakeTraceSourceAccessor (&THzMacClient::m_traceThroughput))
+  ;
+  return tid;
+}
+// ------------------------ Set Functions -----------------------------
+void
+THzMacClient::AttachPhy (Ptr<THzPhy> phy)
+{
+  m_phy = phy;
+}
+void
+THzMacClient::SetDevice (Ptr<THzNetDevice> dev)
+{
+  m_device = dev;
+  SetCw (m_cwMin);
+}
+void
+THzMacClient::SetAddress (Mac48Address addr)
+{
+  NS_LOG_FUNCTION (addr);
+  m_address = addr;
+  // to help each node have different random seed
+  uint8_t tmp[6];
+  m_address.CopyTo (tmp);
+  SeedManager::SetSeed (tmp[5]+9);
+}
+void
+THzMacClient::SetForwardUpCb (Callback<void, Ptr<Packet>, Mac48Address, Mac48Address> cb)
+{
+  m_forwardUpCb = cb;
+}
+void
+THzMacClient::SetCwMin (uint32_t cw)
+{
+  m_cwMin = cw;
+}
+void
+THzMacClient::SetCw (uint32_t cw)
+{
+  m_cw = cw;
+}
+void
+THzMacClient::SetSlotTime (Time duration)
+{
+  m_slotTime = duration;
+}
+// ------------------------ Get Functions -----------------------------
+uint32_t
+THzMacClient::GetCw (void)
+{
+  return m_cw;
+}
+Time
+THzMacClient::GetSlotTime (void)
+{
+  return m_slotTime;
+}
+Time
+THzMacClient::GetSifs (void) const
+{
+  return m_sifs;
+}
+Time
+THzMacClient::GetDifs (void) const
+{
+  return m_difs;
+}
+uint32_t
+THzMacClient::GetBasicRate ()
+{
+  return m_basicRate;
+}
+uint32_t
+THzMacClient::GetDataRate ()
+{
+  return m_dataRate;
+}
+Mac48Address
+THzMacClient::GetAddress () const
+{
+  return this->m_address;
+}
+
+Mac48Address
+THzMacClient::GetBroadcast (void) const
+{
+  return Mac48Address::GetBroadcast ();
+}
+Time
+THzMacClient::GetCtrlDuration (uint16_t type)
+{
+  THzMacHeader header = THzMacHeader (m_address, m_address, type);
+  return m_phy->CalTxDuration (header.GetSize (), 0, m_basicRate, m_dataRate);
+}
+Time
+THzMacClient::GetDataDuration (Ptr<Packet> p)
+{
+  NS_LOG_FUNCTION ("packet size"<<p->GetSize ());
+  return m_phy->CalTxDuration (0, p->GetSize (), m_basicRate, m_dataRate);
+}
+std::string
+THzMacClient::StateToString (State state)
+{
+  switch (state)
+    {
+    case IDLE:
+      return "IDLE";
+    case BACKOFF:
+      return "BACKOFF";
+    case WAIT_TX:
+      return "WAIT_TX";
+    case TX:
+      return "TX";
+    case WAIT_RX:
+      return "WAIT_RX";
+    case RX:
+      return "RX";
+    case COLL:
+      return "COLL";
+    default:
+      return "??";
+    }
+}
+// ----------------------- Queue Functions -----------------------------
+bool
+THzMacClient::Enqueue (Ptr<Packet> packet, Mac48Address dest)
+{
+  NS_LOG_FUNCTION ( "dest" << dest << "#queue" << m_pktQueue.size () << 
+                  "state" << m_state << "pktSize" << packet->GetSize ());
+  NS_LOG_DEBUG("time: " << Simulator::Now()<<"ps, node: " << m_device->GetNode ()->GetId ());
+  m_pktRec = packet->GetSize ();
+  THzMacHeader header = THzMacHeader (m_address, dest, THZ_PKT_TYPE_DATA);
+  packet->AddHeader (header);
+  
+  m_tstart = Simulator::Now();
+  std::list<CtsLife>::iterator it = m_ctsLifeTrack.begin ();
+      for (; it != m_ctsLifeTrack.end (); ++it)
+         {
+          if (it->m_ctsSource == dest && it->m_ctsLife > Simulator::Now())
+             {
+             NS_LOG_INFO ("cts has life");
+             m_pktData = packet;
+             SendData ();
+             return true;
+             }
+         }
+ 
+  if (m_pktQueue.size () >= m_queueLimit)
+    {
+      return false;
+    }
+  m_traceEnqueue (m_device->GetNode ()->GetId (), m_device->GetIfIndex ());
+  
+  
+  m_pktQueue.push_back (packet);
+  
+  return true;
+}
+void
+THzMacClient::Dequeue ()
+{
+  NS_LOG_FUNCTION (m_pktQueue.size ());
+  m_pktQueue.remove(m_pktData);
+}
+
+
+
+// ------------------ Channel Access Functions -------------------------
+void
+THzMacClient::CcaForDifs ()
+{
+  NS_LOG_FUNCTION ("q-size" << m_pktQueue.size ()  << "nav" << m_nav << m_localNav << StateToString(m_state) << m_phy->IsIdle ());
+  Time now = Simulator::Now ();
+  
+  if (m_pktQueue.size () == 0 || m_ccaTimeoutEvent.IsRunning ())
+    {
+      return;
+    }
+  Time nav = std::max (m_nav, m_localNav);
+  if (nav > now + GetSlotTime ())
+    {
+      m_ccaTimeoutEvent = Simulator::Schedule (nav - now, &THzMacClient::CcaForDifs, this);
+      return;
+    }
+// CHANGE: IF NOT IDLE -> CALL BACKOFFSTART
+/*
+  if (m_state != IDLE || !m_phy->IsIdle ())
+    {
+      m_ccaTimeoutEvent = Simulator::Schedule (GetDifs (), &THzMacClient::CcaForDifs, this);
+      return;
+    }
+*/
+      if (m_state != IDLE || !m_phy->IsIdle ())
+    {
+      m_ccaTimeoutEvent = Simulator::ScheduleNow (&THzMacClient::BackoffStart, this);
+      return;
+    }
+
+  m_ccaTimeoutEvent = Simulator::Schedule (GetDifs (), &THzMacClient::BackoffStart, this);
+}
+
+void
+THzMacClient::BackoffStart ()
+{
+  //frame time starts
+  m_tstart = Simulator::Now();
+  NS_LOG_DEBUG (" start at "<< m_tstart);
+  NS_LOG_FUNCTION ("BO remain" << m_backoffRemain << StateToString(m_state) << m_phy->IsIdle ());
+  if (m_backoffRemain == Seconds (0))
+    {
+      UniformVariable uv;
+      uint32_t cw = uv.GetInteger (0, m_cw - 1);
+      m_backoffRemain = Seconds ((double)(cw) * GetSlotTime().GetSeconds ());
+      NS_LOG_DEBUG ("Select a random number (0, " << m_cw - 1 << ") " << cw << 
+                    " backoffRemain " << m_backoffRemain << " will finish " << m_backoffRemain + Simulator::Now ());
+    }
+  if (m_state != IDLE || !m_phy->IsIdle ())
+    {
+      m_ccaTimeoutEvent2 = Simulator::Schedule (m_backoffRemain, &THzMacClient::CcaForDifs, this);
+      return;
+    }
+  
+  m_backoffStart = Simulator::Now ();
+  m_backoffTimeoutEvent = Simulator::Schedule (m_backoffRemain, &THzMacClient::ChannelAccessGranted, this);
+}
+
+void
+THzMacClient::ChannelBecomesBusy ()
+{
+  NS_LOG_FUNCTION ("");
+  if (m_backoffTimeoutEvent.IsRunning ())
+    {
+      m_backoffTimeoutEvent.Cancel ();
+      Time elapse;
+      if (Simulator::Now () > m_backoffStart)
+        {
+          elapse = Simulator::Now () - m_backoffStart;
+        }
+      if (elapse < m_backoffRemain)
+        {
+          m_backoffRemain = m_backoffRemain - elapse;
+          m_backoffRemain = RoundOffTime (m_backoffRemain);
+        }
+      NS_LOG_DEBUG("Freeze backoff! Remain " << m_backoffRemain);
+    }
+  CcaForDifs ();
+}
+
+void
+THzMacClient::ChannelAccessGranted ()
+{
+  NS_LOG_FUNCTION ("");
+  if (m_pktQueue.size () == 0) { return; }
+  
+  m_backoffStart = Seconds (0);
+  m_backoffRemain = Seconds (0);
+  m_state = WAIT_TX;
+  
+  m_pktData = m_pktQueue.front();
+  m_pktQueue.pop_front ();
+  
+  if (m_pktData == 0)
+    NS_ASSERT ("Queue has null packet");
+  
+  THzMacHeader header;
+  m_pktData->PeekHeader (header);
+  
+  if (header.GetDestination () != GetBroadcast ())
+    {
+      //SendRts (m_pktData);
+    }
+  else
+    {
+      SendData ();
+    }
+}
+// ---------- Network allocation vector (NAV) functions ----------------
+void
+THzMacClient::UpdateNav (Time nav)
+{
+  Time newNav;
+  newNav = RoundOffTime (Simulator::Now () + nav);
+  
+  if (newNav > m_nav) { m_nav = newNav; }
+  NS_LOG_INFO ("NAV: " << m_nav);
+}
+void
+THzMacClient::UpdateLocalNav (Time nav)
+{
+  m_localNav = RoundOffTime (Simulator::Now () + nav);
+}
+
+// ----------------------- Send Functions ------------------------------
+/*
+void
+THzMacClient::InitCts ()
+{
+  NS_LOG_FUNCTION ("time: " << Simulator::Now()<<"at node: "<<m_device->GetNode ()->GetId ());
+  Time now = Simulator::Now ();
+  
+  Ptr<Packet> packet = Create<Packet> (0);
+  THzMacHeader ctsHeader = THzMacHeader (m_address, GetBroadcast (), THZ_PKT_TYPE_CTS);
+
+  ctsHeader.SetRcvCap(1);
+  //ctsHeader.SetDuration (Seconds(0));
+  Time nav = GetSifs () + NanoSeconds(40)
+           + GetSifs () + GetCtrlDuration (THZ_PKT_TYPE_ACK) 
+           + GetSlotTime ();
+  ctsHeader.SetDuration (nav); 
+  packet->AddHeader (ctsHeader);
+
+  Time ctsTimeout = GetCtrlDuration (THZ_PKT_TYPE_CTS)
+                  + GetSlotTime ();
+  if (SendPacket (packet, 0))
+    {
+      UpdateLocalNav (ctsTimeout);
+      m_ctsTimeoutEvent = Simulator::Schedule (ctsTimeout, &THzMacClient::CtsTimeout, this);
+    }   
+   else
+    {
+      StartOver ();
+    }
+  m_ctsGenEvent = Simulator::Schedule (MicroSeconds (8.0), &THzMacClient::InitCts, this);
+  return;
+}
+*/
+void 
+THzMacClient::ReceiveCts (Ptr<Packet> packet)
+{ 
+  m_ctsTimeoutEvent.Cancel ();
+  NS_LOG_FUNCTION ("time: " << Simulator::Now()<<"at node: "<<m_device->GetNode ()->GetId ());
+  if (m_pktQueue.size () == 0)
+    {
+      return;
+    }
+  NS_LOG_INFO ("queue nonempty");
+  THzMacHeader ctsHeader;
+  packet->RemoveHeader (ctsHeader);
+
+  CtsLife cl;
+  cl.m_ctsLife = Simulator::Now() + MicroSeconds (8);
+  cl.m_ctsSource = ctsHeader.GetSource ();
+  m_ctsLifeTrack.push_back (cl);
+  int pktCount = ctsHeader.GetRcvCap();
+  //Here we need to browse through all packets in the queue to check if there is any packet for the CTS source****************
+  std::list<Ptr<Packet> >::reverse_iterator it = m_pktQueue.rbegin (); //use reverse iterator to ensure *******************************
+  for (; it != m_pktQueue.rend ();)
+      {
+       
+       m_pktData = *it;
+       //m_pktData = m_pktQueue.front();
+       THzMacHeader dataHeader;
+       m_pktData->PeekHeader (dataHeader);
+       //m_pktQueue.pop_front ();
+       NS_LOG_INFO ("data source"<<GetAddress()<<"data dest"<<dataHeader.GetDestination ()<<", cts source"<<ctsHeader.GetSource ());
+       //NS_LOG_INFO ("data dest"<<dataHeader.GetDestination ()<<", cts source"<<ctsHeader.GetSource ()<<", Rcv Cap:"<<ctsHeader.GetRcvCap());
+       if (dataHeader.GetDestination () == ctsHeader.GetSource ())
+         {
+          m_retry = 0;
+          UpdateLocalNav (ctsHeader.GetDuration ());
+          //m_ctsTimeoutEvent.Cancel ();
+          m_state = WAIT_TX;
+          m_sendDataEvent = Simulator::Schedule (GetSifs (), &THzMacClient::SendData, this);
+          m_pktQueue.erase(--it.base());
+          pktCount -=1;        
+         }
+       else
+	 {
+	  ++it;
+	 }
+       if(pktCount==0)
+          break;
+      }//for loop ends
+return;
+}
+
+void
+THzMacClient::SendData ()
+{
+  NS_LOG_FUNCTION ("at node: "<<m_device->GetNode ()->GetId ());
+  THzMacHeader header;
+  m_pktData->RemoveHeader (header);
+  if (header.GetDestination () == GetBroadcast ()) // Broadcast
+  {
+    NS_LOG_INFO ("broadcast");
+    m_addRecS = header.GetSource ();
+    header.SetDuration (Seconds (0));
+    header.SetSequence (m_sequence);
+    m_pktData->AddHeader (header);     
+    if (SendPacket (m_pktData, 1))
+      {
+        UpdateLocalNav (GetDataDuration (m_pktData) + GetSlotTime ());
+      }
+    else
+      {
+        StartOver ();
+      } 
+  }
+
+  if (header.GetDestination () != GetBroadcast ()) // Unicast
+    {
+      if (header. GetSource () != m_addRecS)
+        {
+          m_sequence = 0;
+        }
+     
+      Time nav = GetSifs () + GetCtrlDuration (THZ_PKT_TYPE_ACK);
+      header.SetDuration (nav);
+      header.SetSequence (m_sequence);
+      m_pktData->AddHeader (header);
+      if (SendPacket(m_pktData, 1))
+        {
+          Time ackTimeout = GetDataDuration (m_pktData) + GetCtrlDuration (THZ_PKT_TYPE_ACK)+ GetSlotTime ();
+          UpdateLocalNav (ackTimeout);
+          m_ackTimeoutEvent = Simulator::Schedule (ackTimeout, &THzMacClient::AckTimeout, this);
+          NS_LOG_INFO ("ack timeout :"<<ackTimeout<<"now"<<Simulator::Now ());
+          NS_LOG_INFO ("scheduling ack timeout at:"<<Simulator::Now ()+m_ackTimeout);
+        }
+      else
+        {
+          StartOver ();
+        }
+    }
+  NS_LOG_FUNCTION ("# dest" << header.GetDestination () << "seq" << m_sequence << "q-size" << m_pktQueue.size());
+  
+}
+
+
+
+void
+THzMacClient::SendAck (Mac48Address dest)
+{
+  NS_LOG_FUNCTION ("to" << dest);
+  
+  Ptr<Packet> packet = Create<Packet> (0);
+  THzMacHeader ackHeader = THzMacHeader (m_address, dest, THZ_PKT_TYPE_ACK);
+  packet->AddHeader (ackHeader);
+  
+  Time nav = GetCtrlDuration (THZ_PKT_TYPE_ACK);
+  ackHeader.SetDuration (Seconds (0));
+  UpdateLocalNav (nav + GetSlotTime ());
+  SendPacket (packet, 0);
+}
+bool 
+THzMacClient::SendPacket (Ptr<Packet> packet, bool rate)
+{
+  NS_LOG_FUNCTION ( "now" << Simulator::Now ()<<"at node: "<<m_device->GetNode ()->GetId ());
+  if (m_state == IDLE || m_state == WAIT_TX) {
+    if (m_phy->SendPacket (packet, rate)) {  
+      m_state = TX;   
+      m_pktTx = packet;
+      return true;
+    }
+    else
+      m_state = IDLE;
+  }
+  return false;
+}
+void 
+THzMacClient::SendPacketDone (Ptr<Packet> packet)
+{
+  NS_LOG_FUNCTION ("state" << m_state);
+   if ( m_state != TX ||m_pktTx != packet)
+    {
+      NS_LOG_DEBUG ("Something is wrong!");
+      return;
+    }
+   m_state = IDLE;
+   THzMacHeader header;
+   packet->PeekHeader (header);
+         
+  switch (header.GetType ())
+    {
+    //case THZ_PKT_TYPE_RTS:
+    case THZ_PKT_TYPE_CTS:
+      break;
+    case THZ_PKT_TYPE_DATA:
+      if (header.GetDestination () == GetBroadcast ())
+        {
+          SendDataDone (true);
+          CcaForDifs ();
+          return;
+        }
+	  break;
+    case THZ_PKT_TYPE_ACK:
+      CcaForDifs ();
+      break;
+    default:
+      CcaForDifs ();
+      break;
+    }
+}
+void
+THzMacClient::SendDataDone (bool success)
+{
+  
+  if (success)
+    {
+      NS_LOG_FUNCTION ("Success to transmit packet at node: "<<m_device->GetNode ()->GetId ());
+      m_traceSendDataDone (m_device->GetNode ()->GetId (), m_device->GetIfIndex (), true);
+    }
+  else
+    {
+      NS_LOG_FUNCTION ("Fail to transmit packet at node: "<<m_device->GetNode ()->GetId ());
+      m_traceSendDataDone (m_device->GetNode ()->GetId (), m_device->GetIfIndex (), false);
+      return;
+    }
+  m_pktData = 0;
+  m_retry = 0;
+  m_backoffStart = Seconds (0);
+  m_backoffRemain = Seconds (0);
+  // According to IEEE 802.11-2007 std (p261)., CW should be reset to minimum value 
+  // when retransmission reaches limit or when DATA is transmitted successfully
+  SetCw (m_cwMin);
+  CcaForDifs ();
+
+  //add
+  m_tend = Simulator::Now ();
+  NS_LOG_DEBUG (" end at " << m_tend);
+      
+         m_timeRec = (m_tend-m_tstart);//this is the packet delay we want to plot*************
+      
+         m_throughput = m_pktRec*8/m_timeRec.GetSeconds ();
+         m_throughputAll += m_throughput;
+         m_ite += 1;
+         m_throughputavg = m_throughputAll/(m_ite);
+         m_traceThroughput (m_throughputavg);
+         NS_LOG_DEBUG (m_pktRec<<" bytes successfully transmitted during " << m_timeRec.GetSeconds () << " Seconds");
+         NS_LOG_DEBUG ("  throughput : "<< m_throughput);
+         NS_LOG_DEBUG ("  overall throughput : "<< m_throughputAll);
+         NS_LOG_DEBUG ("  average throughput : "<< m_throughputavg);
+         m_sequence++;
+}
+
+
+
+
+void
+THzMacClient::StartOver ()
+{
+  NS_LOG_FUNCTION ("");
+  m_pktQueue.push_front (m_pktData);
+  m_backoffStart = Seconds (0);
+  m_backoffRemain = Seconds (0);
+  CcaForDifs ();
+}
+
+// ---------------------- Receive Functions ----------------------------
+void 
+THzMacClient::ReceiveData (Ptr<Packet> packet)
+{
+  NS_LOG_FUNCTION ("at node: "<<m_device->GetNode ()->GetId ());
+  THzMacHeader header;
+  packet->RemoveHeader (header);
+  header.GetDuration ();//why is this for?*********
+  
+  if (header.GetDestination () == GetBroadcast ())
+    {
+      m_state = IDLE;
+      
+      if (IsNewSequence (header.GetSource (), header.GetSequence ()))
+        {
+          m_forwardUpCb (packet, header.GetSource (), header.GetDestination ());
+	    }
+      CcaForDifs ();
+      return;
+    }	
+  if (header.GetDestination () !=  m_address) // destined not to me
+    {
+      NS_LOG_INFO ("This packet is not for me");
+      UpdateNav (header.GetDuration ());
+      m_state = IDLE;
+      CcaForDifs ();
+      return;
+    }
+  UpdateLocalNav (header.GetDuration ());
+  m_state = WAIT_TX;
+  m_sendAckEvent = Simulator::Schedule (GetSifs (), &THzMacClient::SendAck, this, header.GetSource ());
+
+  if (IsNewSequence (header.GetSource (), header.GetSequence ()))
+    {    
+        m_forwardUpCb (packet, header.GetSource (), header.GetDestination ());
+    }
+
+}
+void 
+THzMacClient::ReceiveAck (Ptr<Packet> packet)
+{
+  NS_LOG_FUNCTION ("at node: "<<m_device->GetNode ()->GetId ());
+  
+  THzMacHeader header;
+  packet->PeekHeader (header);
+  m_state = IDLE;
+  //NS_LOG_INFO ("sequence"<<header.GetSequence ());
+   if (header.GetDestination () == m_address)
+    {
+      m_ackTimeoutEvent.Cancel ();
+      SendDataDone (true);
+      return;
+    }  
+   CcaForDifs ();
+}
+
+
+void
+THzMacClient::ReceivePacket (Ptr<THzPhy> phy, Ptr<Packet> packet)
+{
+  NS_LOG_FUNCTION ("at node: "<<m_device->GetNode ()->GetId ());
+  ChannelBecomesBusy ();
+  switch (m_state)
+    {
+    case WAIT_TX:
+    case RX:
+    case WAIT_RX:
+    case BACKOFF:
+    case IDLE:
+      m_state = RX;
+      break;
+    case TX:
+    case COLL:
+      break;
+    }
+}
+void 
+THzMacClient::ReceivePacketDone (Ptr<THzPhy> phy, Ptr<Packet> packet, bool success)
+{
+  NS_LOG_FUNCTION ("success?" << success<<"at node: "<<m_device->GetNode ()->GetId ());
+  
+  m_seqRec = m_sequence;//why is this for?********************************************************************************************
+  m_state = IDLE;
+  THzMacHeader header;
+  packet->PeekHeader (header);
+  NS_LOG_INFO ("sequence"<<header.GetSequence ());
+  if (!success)
+    {
+      NS_LOG_DEBUG ("The packet is not encoded correctly. Drop it!");
+      CcaForDifs ();
+      return;
+    }
+  
+  switch (header.GetType ())
+    {
+    /*case THZ_PKT_TYPE_RTS:
+      ReceiveRts (packet);
+      break;*/
+    case THZ_PKT_TYPE_CTS:
+      ReceiveCts (packet);
+      break;
+    case THZ_PKT_TYPE_DATA:
+      ReceiveData (packet);
+      break;
+    case THZ_PKT_TYPE_ACK:
+      ReceiveAck (packet);
+      break;
+    default:
+      CcaForDifs ();
+      break;
+    }
+}
+// -------------------------- Timeout ----------------------------------
+void
+THzMacClient::CtsTimeout (void)
+{
+  NS_LOG_FUNCTION ("retry" << m_retry);
+  NS_LOG_DEBUG ("!!! CTS timeout !!!");
+  // Retransmission is over the limit. Drop it!
+  m_traceCtsTimeout (m_device->GetNode ()->GetId (), m_device->GetIfIndex ());
+  /*if (++m_retry > m_rtsRetryLimit)
+   {
+    SendDataDone (false);
+    return;
+   }
+  */
+  m_pktQueue.push_front (m_pktData);
+  //DoubleCw ();
+  //m_backoffStart = Seconds (0);
+  //m_backoffRemain = Seconds (0);
+  //CcaForDifs ();
+}
+void
+THzMacClient::AckTimeout (void)
+{
+  NS_LOG_FUNCTION ("try" << m_retry<<"ack timeout at:"<<Simulator::Now ());
+  NS_LOG_DEBUG ("!!! ACK timeout !!!");
+  m_state = IDLE;
+  m_traceAckTimeout (m_device->GetNode ()->GetId (), m_device->GetIfIndex ());
+  // Retransmission is over the limit. Drop it!
+  if (++m_retry > m_dataRetryLimit)
+    SendDataDone (false);
+  else
+    SendData ();
+}
+// --------------------------- ETC -------------------------------------
+bool
+THzMacClient::IsNewSequence (Mac48Address addr, uint16_t seq)
+{
+  std::list<std::pair<Mac48Address, uint16_t> >::iterator it = m_seqList.begin ();
+  for (; it != m_seqList.end (); ++it)
+    {
+      if (it->first == addr)
+        {
+          if (it->second == 65536 && seq < it->second)
+            {
+              it->second = seq;
+              return true;
+            }
+          else if (seq > it->second)
+            {
+              it->second = seq;
+              return true;
+            }
+          else
+            {
+              return false;
+            }
+         }
+    }
+  std::pair<Mac48Address, uint16_t> newEntry;
+  newEntry.first = addr;
+  newEntry.second = seq;
+  m_seqList.push_back (newEntry);
+  return true;
+}
+void
+THzMacClient::DoubleCw ()
+{
+  if (m_cw * 2 > m_cwMax)
+    {
+      m_cw = m_cwMax;
+    }
+  else
+    {
+      m_cw = m_cw * 2;
+    }
+}
+// Nodes can start backoff procedure at different time because of propagation 
+// delay and processing jitter (it's very small but matter in simulation), 
+Time
+THzMacClient::RoundOffTime (Time time)
+{
+  int64_t realTime = time.GetNanoSeconds ();
+  int64_t slotTime = GetSlotTime ().GetNanoSeconds ();
+  if (realTime % slotTime >= slotTime / 2)
+    {
+      return NanoSeconds (GetSlotTime().GetNanoSeconds () * (double)(realTime / slotTime + 1));
+    }
+  else
+    {
+      return NanoSeconds (GetSlotTime().GetNanoSeconds () * (double)(realTime / slotTime));
+    }
+}
+
+} // namespace ns3

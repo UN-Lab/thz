@@ -1,0 +1,50 @@
+
+#include "ns3/mobility-model.h"
+#include "ns3/log.h"
+#include "ns3/config.h"
+#include "ns3/simulator.h"
+#include "ns3/mac48-address.h"
+#include "thz-helper.h"
+#include "ns3/thz-mac.h"
+#include "ns3/thz-phy.h"
+#include "ns3/thz-channel.h"
+#include "thz-energy-model-helper.h"
+
+#include <sstream>
+#include <string>
+
+NS_LOG_COMPONENT_DEFINE("THzEnergyModelHelper");
+
+namespace ns3
+{
+
+THzEnergyModelHelper::THzEnergyModelHelper ()
+{
+  m_energyModel.SetTypeId ("ns3::THzEnergyModel");
+}
+
+THzEnergyModelHelper::~THzEnergyModelHelper ()
+{}
+
+void
+THzEnergyModelHelper::Install (NodeContainer c) const
+{
+  
+  for (NodeContainer::Iterator i = c.Begin (); i != c.End (); i++)
+    {
+      Ptr<Node> node = *i;
+      Ptr<THzEnergyModel> energyModel = m_energyModel.Create<THzEnergyModel> ();
+      //Ptr<THzEnergyModel> energyModel = CreateObject<THzEnergyModel> ();
+      //node->AggregateObject (energyModel);//need to create this method in class::Node**************************************
+      node->AggregateObject (energyModel);
+      NS_LOG_DEBUG ("node="<<node);
+  }
+  return;
+}
+void
+THzEnergyModelHelper::SetEnergyModelAttribute (std::string n1, const AttributeValue &v1)
+{
+  m_energyModel.Set (n1, v1);
+}
+
+} //end namespace ns3

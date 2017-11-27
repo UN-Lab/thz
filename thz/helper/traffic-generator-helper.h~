@@ -1,0 +1,33 @@
+#ifndef THZ_ENERGY_MODEL_HELPER_H
+#define THZ_ENERGY_MODEL_HELPER_H
+
+#include <string>
+#include "ns3/attribute.h"
+#include "ns3/object-factory.h"
+#include "ns3/node-container.h"
+#include "ns3/traffic-generator.h"
+#include "ns3/application-container.h"
+//#include "ns3/net-device-container.h"
+//#include "ns3/thz-net-device.h"
+
+namespace ns3
+{
+
+class TrafficGeneratorHelper
+{
+public:
+  TrafficGeneratorHelper();
+  virtual ~TrafficGeneratorHelper();
+  void SetAttribute (std::string name, const AttributeValue &value);
+  ApplicationContainer Install (NodeContainer c);
+  //void Install (NodeContainer c) const;
+  //void SetEnergyModelAttribute (std::string n1 = "", const AttributeValue &v1 = EmptyAttributeValue ());
+
+private:
+  ObjectFactory m_traffic;
+};
+
+
+} //end namespace ns3
+
+#endif /* THZ_HELPER_H_ */

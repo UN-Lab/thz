@@ -1,0 +1,45 @@
+
+#ifndef THZ_SPECTRUM_MODEL_H
+#define THZ_SPECTRUM_MODEL_H
+
+
+#include <ns3/spectrum-value.h>
+
+namespace ns3 {
+
+class THzSpectrumModel
+{
+public:
+  virtual ~THzSpectrumModel ();
+  virtual int BandNum () = 0;
+  virtual int FreqSeq_Start () = 0;
+  virtual double FreqStartValue () = 0;
+  virtual Ptr<SpectrumValue> FreqBands () = 0;
+  virtual int FreqSeq_End () = 0;
+  virtual Ptr<SpectrumValue> CreateConstant (double psd) = 0;
+  virtual Ptr<SpectrumValue> CreateTxPowerSpectralDensity (double txPower, double bandwidth) = 0;
+  virtual Ptr<SpectrumValue> CreateAllPowerSpectralDensity (double n, double r, double a0) const= 0;
+
+};
+
+
+class THzSpectrumValueFactory
+{
+public:
+  virtual ~THzSpectrumValueFactory ();
+  virtual int BandNum ();
+  virtual int FreqSeq_Start ();
+  virtual double FreqStartValue ();
+  virtual Ptr<SpectrumValue> FreqBands ();
+  virtual int FreqSeq_End ();
+  virtual Ptr<SpectrumValue> CreateConstant (double psd);
+  virtual Ptr<SpectrumValue> CreateTxPowerSpectralDensity (double txPower, double bandwidth);  
+  virtual Ptr<SpectrumValue> CreateAllPowerSpectralDensity (double n, double r, double txPowerWatts) const;
+  virtual double CalculateEnergyConstant(double n, double r, double txPowerWatts) const;
+};
+
+} // namespace ns3
+
+
+
+#endif /*  THZ_SPECTRUM_MODLE */

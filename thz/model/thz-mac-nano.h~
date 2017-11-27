@@ -1,0 +1,241 @@
+/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+/*
+ * Copyright (c) 2017 University at Buffalo
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation;
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * Author: Zahed Hossain <zahedhos@buffalo.edu>
+ *         Qing Xia <qingxia@buffalo.edu>
+ *         Josep Miquel Jornet <jmjornet@buffalo.edu>
+ */
+
+
+#ifndef THZ_MAC_NANO_H
+#define THZ_MAC_NANO_H
+
+#include "ns3/nstime.h"
+#include "ns3/simulator.h"
+#include "ns3/event-id.h"
+#include "ns3/traced-value.h"
+#include "thz-mac.h"
+#include "thz-phy.h"
+#include <list>
+
+namespace ns3 {
+
+/**
+ * \ingroup thz
+ * \class THzMacNano
+ * \brief THzMacNano models the MAC layer for nanoscale THz communication.
+ *
+ * When a packet is enqueued in the THzMacNano, it checks if it has
+ * enough energy. If it does have sufficient energy to complete a
+ * transmission, it passes the frame over to PHY layer for 0-way
+ * or sends an RTS packet for 2-way handshake protocol. Otherwise, it just
+ * puts the packet in the queue and waits for energy model to call back.
+ */
+class THzMacNano : public THzMac
+{
+typedef struct
+{
+  uint16_t sequence;
+  EventId m_ackTimeoutEvent;
+  Ptr<Packet> packet;
+} AckTimeouts;
+typedef struct
+{
+  uint16_t sequence;
+  EventId m_ctsTimeoutEvent;
+} CtsTimeouts;
+typedef struct
+{
+  uint16_t sequence;
+  EventId m_dataTimeoutEvent;
+} DataTimeouts;
+typedef struct
+{
+  uint16_t sequence;
+  uint16_t retry;
+  //uint16_t rtsRetry;
+  Ptr<Packet> packet;
+  Time tstart;
+  Mac48Address destination;
+  bool backoff;
+} PktTx;
+public:
+  /**
+   * \brief Create a THzPhyNano 
+   */
+  THzMacNano ();
+  /**
+   * \brief Destroy a THzPhyNano
+   */
+  virtual ~THzMacNano ();
+  static TypeId GetTypeId (void);
+  /**
+   * \brief Sets the antenna parameters 
+   *
+   * Sets the antenna parameters so it works as an Omnidirectional 
+   * antenna as for the nanoscale communication.
+   */
+  virtual void SetAntenna ();
+  virtual void InitEnergyCallback ();
+  virtual void SetSlotTime (Time duration);//not needed
+  virtual Time GetSlotTime (void);//not needed
+  virtual void AttachPhy (Ptr<THzPhy> phy);
+  virtual void SetDevice (Ptr<THzNetDevice> dev);
+  virtual void Clear (void);
+  virtual void SetAddress (Mac48Address addr);
+  virtual Mac48Address GetBroadcast (void) const;
+  virtual Mac48Address GetAddress () const;
+  virtual uint32_t GetBasicRate ();
+  virtual uint32_t GetDataRate ();
+  
+  /**
+   * \brief Create the pulse waveform that will used in transmissions
+   *
+   * Generates the power spectral density of the hundred-femtosecond long pulse
+   */
+  virtual bool Enqueue (Ptr<Packet> pkt, Mac48Address dest);
+  virtual void SendPacketDone (Ptr<Packet> packet);
+  virtual void SetForwardUpCb (Callback<void, Ptr<Packet>, Mac48Address, Mac48Address> cb);
+  virtual void ReceivePacket (Ptr<THzPhy> phy, Ptr<Packet> packet);
+  virtual void ReceivePacketDone (Ptr<THzPhy> phy, Ptr<Packet> packet, bool collision);
+  
+  /**
+   * \brief Create the pulse waveform that will used in transmissions
+   *
+   * This method is called from the PHY layer to let the MAC layer know
+   * about the extra delay caused by pulse interleaving. After that this  
+   * method set the appropriate timeout
+   * \param packet A reference to the packet that will be transmitted.
+   * \param ackTimeout The amount of delay caused by pulse interleaving.
+   */
+  void ScheduleAckTimeout (Ptr<Packet> packet, Time ackTimeout);//called from phy
+  
+private:
+  typedef enum {
+    IDLE, BACKOFF, WAIT_TX, TX, WAIT_RX, RX, COLL
+  } State;
+  
+  Time GetCtrlDuration (uint16_t type);
+  Time GetDataDuration (Ptr<Packet> p);
+  std::string StateToString (State state);
+  
+  /**
+   * \brief Checks to see if there is enough energy for transmission
+   *
+   */  
+  void CheckResources (Ptr<Packet> packet);
+  /**
+   * \brief Sets the backoff time based on number of retry
+   *
+   */ 
+  void Backoff(Ptr<Packet> packet, uint32_t retry);
+  
+  void Dequeue ();
+  
+  void SendRts (Ptr<Packet> packet);
+  void SendCts (Mac48Address dest, uint16_t sequence);
+  void TxFirstPacket ();//
+  void SendData (Ptr<Packet> packet);
+  void SendAck (Mac48Address dest, uint16_t sequence);
+  bool SendPacket (Ptr<Packet> packet, bool rate);
+  void StartOver ();
+  
+
+  void SendDataDone (bool success, Ptr<Packet> packet);
+  
+  void ReceiveRts (Ptr<Packet> packet);
+  void ReceiveCts (Ptr<Packet> packet);
+  void ReceiveData (Ptr<Packet> packet);
+  void ReceiveAck (Ptr<Packet> packet);
+  
+  void CtsTimeout (Ptr<Packet> packet);
+  void DataTimeout (uint16_t sequence);
+  void AckTimeout (uint16_t sequence);
+  Time RoundOffTime (Time time);
+  bool IsNewSequence (Mac48Address addr, uint16_t seq);
+  
+  Callback <void, Ptr<Packet>, Mac48Address, Mac48Address> m_forwardUpCb;
+  Mac48Address m_address;//source address
+  Ptr<THzPhy> m_phy;
+  Ptr<THzNetDevice> m_device;
+  
+  State m_state;//not needed
+  bool m_rtsEnable;
+  
+  EventId m_backoffTimeoutEvent;//not needed
+  //EventId m_ctsTimeoutEvent;
+  //EventId m_ackTimeoutEvent;
+  EventId m_sendCtsEvent;
+  EventId m_sendAckEvent;
+  EventId m_sendDataEvent;
+  
+  // Mac parameters
+  uint16_t m_rtsRetryLimit;//not needed
+  uint16_t m_dataRetryLimit;
+  uint16_t m_retry;
+  uint16_t m_sequence;
+  uint16_t m_pktSequence;
+  Time m_slotTime;//not needed
+  Time m_sifs;//not needed
+  Time m_difs;//not needed
+  double m_basicRate;
+  double m_dataRate;
+  //Ptr<Packet> m_pktTx;
+  Ptr<Packet> m_pktData;
+  
+  Time m_backoffRemain;//not needed
+  Time m_backoffStart;//not needed
+  Time m_ackTimeout;
+  double m_turnSpeed;
+  Ptr<THzDirectionalAntenna> m_thzAD;
+
+// record frame size/frame time of each frame
+// record throughput
+  Time m_tstart; 
+  Time m_tend;
+  uint16_t m_seqRec;
+  uint16_t m_pktRec;//
+  Time m_timeRec;
+  double m_throughput;
+  double m_throughputAll;
+  double m_throughputavg;
+  Mac48Address m_addRecS;
+  int m_ite;
+  int m_discarded;
+  uint32_t m_queueLimit;
+  std::list<Ptr<Packet> > m_pktQueue;
+  std::list<std::pair<Mac48Address, uint16_t> > m_seqList;
+  
+  // for trace and performance evaluation
+  TracedCallback<uint32_t, uint32_t> m_traceCtsTimeout;//not needed
+  TracedCallback<uint32_t, uint32_t> m_traceAckTimeout;
+  TracedCallback<uint32_t, uint32_t> m_traceEnqueue;
+  TracedCallback<uint32_t, uint32_t, bool> m_traceSendDataDone;
+  //add trace throughput
+  TracedCallback<double> m_traceThroughput;
+
+std::list<DataTimeouts> m_dataTimeouts;
+std::list<AckTimeouts> m_ackTimeouts; 
+std::list<CtsTimeouts> m_ctsTimeouts; 
+std::list<PktTx> m_pktTx;
+
+protected:
+};
+
+}
+
+#endif // THZ_MAC_CSMA_H

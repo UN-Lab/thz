@@ -1,0 +1,210 @@
+
+#include "ns3/packet.h"
+#include "ns3/simulator.h"
+#include "ns3/mobility-model.h"
+#include "ns3/net-device.h"
+#include "ns3/node.h"
+#include "ns3/log.h"
+#include "ns3/pointer.h"
+#include "ns3/object-factory.h"
+#include "ns3/double.h"
+#include "thz-channel.h"
+#include "ns3/thz-spectrum-propagation-loss-model.h"
+#include "ns3/t-spectrum-propagation-loss-model.h"
+
+NS_LOG_COMPONENT_DEFINE ("THzChannel");
+
+namespace ns3 {
+
+NS_OBJECT_ENSURE_REGISTERED (THzChannel);
+
+TypeId
+THzChannel::GetTypeId ()
+{
+  static TypeId tid = TypeId ("ns3::THzChannel")
+    .SetParent<Object> ()
+    .AddConstructor<THzChannel> ()
+    .AddAttribute ("TSpectrumPropagationLossModel", "A pointer to the propagation loss model attached to this channel.",
+                   PointerValue (CreateObject<THzSpectrumPropagationLossModel> ()),
+                   MakePointerAccessor (&THzChannel::m_loss),
+                   MakePointerChecker<TSpectrumPropagationLossModel> ())
+    .AddAttribute ("PropagationDelayModel", "A pointer to the propagation delay model attached to this channel.",
+                   PointerValue (CreateObject<ConstantSpeedPropagationDelayModel> ()),
+                   MakePointerAccessor (&THzChannel::m_delay),
+                   MakePointerChecker<ConstantSpeedPropagationDelayModel> ())
+    .AddAttribute ("DeleteTxFlowLater",
+                   "Delete tx-flow later a certain time",//after a certain time
+                   TimeValue (NanoSeconds (100)),
+                   MakeTimeAccessor (&THzChannel::m_delNoiseEntryLater),
+                   MakeTimeChecker ())
+    .AddAttribute ("NoiseFloor",
+                   "Noise Floor (dBm)",
+                   DoubleValue (-120.0),
+                   MakeDoubleAccessor (&THzChannel::m_noiseFloor),
+                   MakeDoubleChecker<double> ())
+    ;
+  return tid;
+}
+THzChannel::THzChannel ()
+  : Channel ()
+{
+}
+THzChannel::~THzChannel ()
+{}
+void
+THzChannel::Clear ()
+{
+  m_devList.clear ();
+  m_noiseEntry.clear ();
+}
+uint32_t
+THzChannel::GetNDevices () const
+{
+	return m_devList.size ();
+}
+Ptr<NetDevice>
+THzChannel::GetDevice (uint32_t i) const
+{
+	return m_devList[i].first;
+}
+void
+THzChannel::AddDevice (Ptr<THzNetDevice> dev, Ptr<THzPhy> phy)
+{
+  NS_LOG_INFO ("CH: Adding dev/phy pair number " << m_devList.size ()+1);
+  m_devList.push_back (std::make_pair (dev, phy));
+}
+
+bool 
+THzChannel::SendPacket (Ptr<THzPhy> phy, Ptr<Packet> packet, double txPower, Time txDuration)
+{
+  NS_LOG_FUNCTION ("");
+  Ptr<MobilityModel> senderMobility = 0;
+  Ptr<MobilityModel> recvMobility = 0;
+
+  // NoiseEntry stores information, how much signal a node will get and how long that signal will exist.
+  // This information will be used by PHY layer to obtain SINR value.
+  NoiseEntry ne;
+  ne.packet = packet;
+  ne.txDuration = txDuration;
+
+  THzDeviceList::const_iterator it = m_devList.begin ();
+  for (; it != m_devList.end (); it++)
+    {
+      if (phy == it->second)
+        {
+          senderMobility = it->first->GetNode ()->GetObject<MobilityModel> ();
+          break;
+        }
+    }
+  NS_ASSERT (senderMobility != 0);
+  
+  Simulator::Schedule (txDuration, &THzChannel::SendPacketDone, this, phy, packet);
+  
+  uint32_t j = 0;
+  it = m_devList.begin ();
+  for (; it != m_devList.end (); it++)
+    {
+      if (phy != it->second)
+        {
+          recvMobility = it->first->GetNode ()->GetObject<MobilityModel> ();
+          Time delay = m_delay->GetDelay (senderMobility, recvMobility); // propagation delay
+          double rxPower = m_loss->CalcRxPower (txPower, senderMobility, recvMobility); // receive power (dBm)
+
+          uint32_t dstNodeId = it->first->GetNode ()->GetId ();
+          Ptr<Packet> copy = packet->Copy ();
+
+          ne.packet = copy;
+          ne.phy = it->second;
+          ne.rxPower = rxPower;
+          ne.txStart = Simulator::Now ();// setting the transmission start time
+          ne.txEnd = Simulator::Now () + txDuration + delay;
+
+          Simulator::ScheduleWithContext (dstNodeId, delay, &THzChannel::ReceivePacket, this, j, ne);// should it not be scheduled at delay+txDuration
+        }
+      j++;
+    }
+
+  return true;
+}
+void 
+THzChannel::SendPacketDone (Ptr<THzPhy> phy, Ptr<Packet> packet)
+{
+  NS_LOG_FUNCTION ("");
+  phy->SendPacketDone (packet);
+}
+
+void 
+THzChannel::ReceivePacket (uint32_t i, NoiseEntry ne)
+{
+  NS_LOG_FUNCTION ("");
+  m_noiseEntry.push_back (ne);
+  m_devList[i].second->ReceivePacket (ne.packet, ne.txDuration, ne.rxPower);
+  Simulator::Schedule (ne.txDuration, &THzChannel::ReceivePacketDone, this, i, ne);
+}
+void 
+THzChannel::ReceivePacketDone (uint32_t i, NoiseEntry ne)
+{
+  NS_LOG_FUNCTION ("");
+  m_devList[i].second->ReceivePacketDone (ne.packet, ne.rxPower, ne.txStart);
+  // If concurrent transmissions end at the same time, some of them can be missed from SINR calculation
+  // So, delete a noise entry a few seconds later
+  Simulator::Schedule (m_delNoiseEntryLater, &THzChannel::DeleteNoiseEntry, this, ne);
+}
+
+void
+THzChannel::DeleteNoiseEntry (NoiseEntry ne)
+{
+  NS_LOG_FUNCTION (this);
+  std::list<NoiseEntry>::iterator it = m_noiseEntry.begin ();
+  for (; it != m_noiseEntry.end (); ++it)
+    {
+      if (it->packet == ne.packet && it->phy == ne.phy)
+        {
+          m_noiseEntry.erase (it);
+          break;
+        }
+    }
+}
+
+double
+THzChannel::GetNoiseW (Ptr<THzPhy> phy, Ptr<Packet> signal,Time txStart, Time txDuration)
+{
+  Time now = Simulator::Now ();
+  bool ifCollision;
+  Time Ts, tp; //Ts=symbol period, tp = pulse duration
+  double noiseW = DbmToW (m_noiseFloor);
+  std::list<NoiseEntry>::iterator it = m_noiseEntry.begin ();
+  // calculate the cumulative noise power
+  for (; it != m_noiseEntry.end (); ++it)
+    {
+      if (it->phy == phy && it->packet != signal && (it.txStart-(txStart-tp))%Ts<2*tp && it.txStart<(txStart+txDuration))
+        {
+          /*for(k=0;k*Ts<=signalTxDuration;k++)
+             {
+              if((now-signalTxDuration+k*Ts)<=it->txStart<(now-signalTxDuration+k*Ts+tp))           
+                 { 
+                   ifCollision=true; 
+                   break;
+                 }
+             }// end of inner for loop
+          if(ifCollision)*/
+          noiseW += DbmToW (it->rxPower);
+        }
+    }
+  return noiseW;
+}
+
+bool
+THzChannel::ifCollide(Time start, Time end,)
+{
+for
+}
+
+double
+THzChannel::DbmToW (double dbm)
+{
+  double mw = pow(10.0,dbm/10.0);
+  return mw / 1000.0;
+}
+
+} // namespace ns3

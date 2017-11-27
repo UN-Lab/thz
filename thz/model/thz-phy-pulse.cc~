@@ -1,0 +1,294 @@
+/* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
+
+
+#include "ns3/simulator.h"
+#include "ns3/log.h"
+#include "ns3/uinteger.h"
+#include "ns3/double.h"
+#include "ns3/mac48-address.h"
+#include "thz-mac.h"
+#include "thz-phy.h"
+#include "ns3/callback.h"
+#include "ns3/trace-source-accessor.h"
+#include "ns3/traced-value.h"
+#include "ns3/mobility-model.h"
+
+
+NS_LOG_COMPONENT_DEFINE ("THzPhy");
+
+namespace ns3 {
+
+NS_OBJECT_ENSURE_REGISTERED (THzPhy);
+
+THzPhy::THzPhy ()
+ : m_device (0), 
+   m_mac (0),
+   m_channel (0),
+   m_pktRx (0)
+{
+  m_csBusy = false;
+  m_csBusyEnd = Seconds (0);
+  m_txStart = Seconds (0);
+  m_txDuration= Seconds (0) ;
+}
+
+
+
+THzPhy::~THzPhy ()
+{
+  Clear ();
+}
+void
+THzPhy::Clear ()
+{
+  m_pktRx = 0;
+
+}
+TypeId
+THzPhy::GetTypeId (void)
+{
+  static TypeId tid = TypeId ("ns3::THzPhy")
+    .SetParent<Object> ()
+    .AddConstructor<THzPhy> ()
+    .AddAttribute ("PreambleDuration",
+                   "Duration (us) of Preamble of PHY Layer",
+                   TimeValue (MicroSeconds (16)),
+                   MakeTimeAccessor (&THzPhy::m_preambleDuration),
+                   MakeTimeChecker ())
+    .AddAttribute ("TrailerSize",
+                   "Size of Trailer (e.g. FCS) (bytes)",
+                   UintegerValue (2),
+                   MakeUintegerAccessor (&THzPhy::m_trailerSize),
+                   MakeUintegerChecker<uint32_t> ())
+    .AddAttribute ("HeaderSize",
+                   "Size of Header (bytes)",
+                   UintegerValue (3),
+                   MakeUintegerAccessor (&THzPhy::m_headerSize),
+                   MakeUintegerChecker<uint32_t> ())
+    .AddAttribute ("SinrTh",
+                   "SINR Threshold",
+                   DoubleValue (0),
+                   MakeDoubleAccessor (&THzPhy::m_sinrTh),
+                   MakeDoubleChecker<double> ())
+    .AddAttribute ("CsPowerTh",
+                   "Carrier Sense Threshold (dBm)",
+                   DoubleValue (-110),
+                   MakeDoubleAccessor (&THzPhy::m_csTh),
+                   MakeDoubleChecker<double> ())
+    .AddAttribute ("TxPower",
+                   "Transmission Power (dBm)",
+                   DoubleValue (80),
+                   MakeDoubleAccessor (&THzPhy::SetTxPower),
+                   MakeDoubleChecker<double> ())
+    ;
+  return tid;
+}
+
+void
+THzPhy::SetDevice (Ptr<THzNetDevice> device)
+{
+  m_device = device;
+}
+void
+THzPhy::SetMac (Ptr<THzMac> mac)
+{
+  m_mac = mac;
+}
+void
+THzPhy::SetChannel (Ptr<THzChannel> channel)
+{
+  m_channel = channel;
+}
+void
+THzPhy::SetTxPower (double dBm)
+{
+  m_txPower = dBm;
+}
+
+//-----------------------------------------------------------------
+Ptr<THzChannel>
+THzPhy::GetChannel ()
+{
+  return m_channel;
+}
+Mac48Address
+THzPhy::GetAddress ()
+{
+  return m_mac->GetAddress ();
+}
+double
+THzPhy::GetTxPower ()
+{
+  return m_txPower;
+}
+//----------------------------------------------------------------------
+bool
+THzPhy::SendPacket (Ptr<Packet> packet, bool rate)
+{
+  NS_LOG_FUNCTION ("");
+  // RX might be interrupted by TX, but not vice versa
+  /*if (m_state == TX) 
+    {
+      //Zahed, check the pulse collision here for interleaving
+      NS_LOG_DEBUG ("Already in transmission mode");
+      //return false;
+      
+    
+    }*/
+  
+  m_state = TX;
+  Time txDuration;
+  if (rate) // transmit packet with data rate
+    {
+      txDuration = CalTxDuration (0, packet->GetSize (), 
+                        m_mac->GetBasicRate (), m_mac->GetDataRate ());
+    }
+  else // transmit packets (e.g. RTS, CTS) with basic rate
+    {
+      txDuration = CalTxDuration (packet->GetSize (), 0, 
+                        m_mac->GetBasicRate (), m_mac->GetDataRate ());
+    }
+
+
+//Record the current transmitters, schedule to erase them after their duration
+  OngoingTx ot;
+  ot.m_txStart = Simulator::Now ();
+  ot.m_txDuration = txDuration;
+  m_ongoingTx.push_back (ot);
+  
+ if(m_ongoingTx.size()!=0)//the m_ongoingTx is not empty(somebody else is transmitting) and less than Ts/tp
+ { 
+ Time now = Simulator::Now ();
+ int txCount=0;//
+ Time nextPulse[Ts/tp]={0};//Ts/tp no of pulses can be transmitted simultaneously in Ts time
+ std::list<OngoingTx>::iterator it = m_ongoingTx.begin ();
+  
+  for (; it != m_ongoingTx.end (); ++it)
+    {
+     nextPulse[txCount]=now+Ts-((now-it->m_txStart)%Ts);
+     txCount++;
+      
+    }
+ 
+//sort the array in the ascending order of pulse times
+  for(int j=1;j<=Ts/tp;j++)
+     {
+      if(nextPulse[j-1]!=0 && nextPulse[j-1]+2*tp<nextPulse[j])
+        { 
+         Simulator::Schedule (nextPulse[j-1]+tp, &THzChannel::SendPacket, this,packet, m_txPower, txDuration ); //check syntax
+        }
+     }
+ }//if ends
+  NS_LOG_DEBUG ("Tx will finish at " << (Simulator::Now () + txDuration).GetNanoSeconds () << 
+                "(ns) txPower" << m_txPower);
+  
+  // forward to CHANNEL
+  m_channel->SendPacket (Ptr<THzPhy> (this), packet, m_txPower, txDuration);
+  Simulator::Schedule (txDuration, &THzPhy::DeleteOngoingTx, this, ot);
+  
+  return true;
+}
+
+void
+THzPhy::DeleteOngoingTx (OngoingTx ot)
+{
+  NS_LOG_FUNCTION (this);
+  std::list<OngoingTx>::iterator it = m_ongoingTx.begin ();
+  for (; it != m_ongoingTx.end (); ++it)
+    {
+      if (it->m_txStart == ot.m_txStart && it->m_txDuration == ot.m_txDuration)
+        {
+          m_ongoingTx.erase (it);
+          break;
+        }
+    }
+}
+
+
+void 
+THzPhy::SendPacketDone (Ptr<Packet> packet)
+{
+  NS_LOG_FUNCTION ("");
+  m_state = IDLE;
+  m_mac->SendPacketDone (packet);
+}
+
+void 
+THzPhy::ReceivePacket (Ptr<Packet> packet, Time txDuration, double_t rxPower)
+{
+  NS_LOG_FUNCTION ("rxPower" << rxPower << "busyEnd" << m_csBusyEnd);
+  
+  if (m_state == TX)
+    {
+      NS_LOG_INFO ("Drop packet due to half-duplex");
+      return;
+    }
+  
+  // Start RX when energy is bigger than carrier sense threshold 
+  // 
+  Time txEnd = Simulator::Now () + txDuration;
+  if (rxPower > m_csTh && txEnd > m_csBusyEnd)
+    {
+      if (m_csBusy == false)
+        {
+          m_csBusy = true;
+          m_pktRx = packet;
+          m_mac->ReceivePacket (this, packet);
+        }
+      m_state = RX;
+      m_csBusyEnd = txEnd;
+    }
+}
+
+void 
+THzPhy::ReceivePacketDone (Ptr<Packet> packet, double rxPower, Time txStart)
+{
+  NS_LOG_FUNCTION (m_csBusyEnd << Simulator::Now ());
+  
+  if (m_csBusyEnd <= Simulator::Now () + NanoSeconds (1))
+    {
+      m_csBusy = false;
+    }
+  
+  if (m_state != RX)
+    {
+      NS_LOG_INFO ("Drop packet due to state");
+      return;
+    }
+  
+  if (packet == m_pktRx)
+    {
+      // We do support SINR !!
+      double noiseW = m_channel->GetNoiseW (this, packet, txStart); // noise plus interference
+      double rxPowerW = m_channel->DbmToW (rxPower);
+      double sinr = rxPowerW / noiseW;
+      if (sinr > m_sinrTh) {
+        m_state = IDLE;
+        m_mac->ReceivePacketDone (this, packet, true);
+        return;
+      }
+    }
+  
+  if (! m_csBusy) // set MAC state IDLE
+    {
+      m_state = IDLE;
+      m_mac->ReceivePacketDone (this, packet, false);
+    }
+}
+
+bool 
+THzPhy::IsIdle ()
+{
+  if (m_state == IDLE && !m_csBusy) { return true; }
+  return false;
+}
+
+Time
+THzPhy::CalTxDuration (uint32_t basicSize, uint32_t dataSize, double basicRate, double dataRate)
+{
+  double_t txHdrTime = (double)(m_headerSize + basicSize + m_trailerSize) * 8.0 / basicRate;
+  double_t txMpduTime = (double)dataSize * 8.0 / dataRate;
+  return m_preambleDuration + Seconds (txHdrTime) + Seconds (txMpduTime);
+}
+
+} // namespace ns3

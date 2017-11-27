@@ -1,0 +1,71 @@
+/* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
+
+
+#ifndef THZ_PHY_H
+#define THZ_PHY_H
+
+#include "ns3/simulator.h"
+#include "ns3/event-id.h"
+#include "thz-mac.h"
+#include "thz-phy.h"
+#include "ns3/traced-value.h"
+#include "ns3/mobility-model.h"
+
+namespace ns3 {
+
+class THzPhy : public Object
+{
+public:
+  enum State
+    {
+      IDLE, TX, RX, COLL
+    };
+  
+  THzPhy ();
+  virtual ~THzPhy ();
+  void Clear ();
+  
+  static TypeId GetTypeId (void);
+
+
+  void SetDevice (Ptr<THzNetDevice> device);
+  void SetMac (Ptr<THzMac> mac);
+  void SetChannel (Ptr<THzChannel> channel);
+  void SetTxPower (double dBm);
+  
+  Ptr<THzChannel> GetChannel ();
+  Mac48Address GetAddress ();
+  double GetRxPowerTh ();
+  double GetTxPower ();
+  
+  bool SendPacket (Ptr<Packet> packet, bool rate);
+  void SendPacketDone (Ptr<Packet> packet);
+  void ReceivePacket (Ptr<Packet> packet, Time txDuration, double_t rxPower);
+  void ReceivePacketDone (Ptr<Packet> packet, double rxPower);
+  
+  bool IsIdle ();
+  Time CalTxDuration (uint32_t basicSize, uint32_t dataSize, double basicRate, double dataRate);
+ 
+private:
+  State m_state;
+  Ptr<THzNetDevice> m_device;
+  Ptr<THzMac> m_mac;
+  Ptr<THzChannel> m_channel;
+  
+  Ptr<Packet> m_pktRx;
+  Time m_preambleDuration;
+  uint32_t m_trailerSize;
+  uint32_t m_headerSize;
+  
+  double m_txPower;  // transmission power (dBm)
+  double m_sinrTh;   // SINR threshold
+  double m_csTh;     // carrier sense threshold (dBm)
+  bool m_csBusy;
+  Time m_csBusyEnd;
+
+protected:
+};
+
+} // namespace ns3
+
+#endif // THZ_PHY_H

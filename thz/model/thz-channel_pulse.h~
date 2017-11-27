@@ -1,0 +1,72 @@
+
+#ifndef THZ_CHANNEL_H
+#define THZ_CHANNEL_H
+
+#include "ns3/channel.h"
+#include "ns3/packet.h"
+#include "ns3/simulator.h"
+#include "ns3/thz-spectrum-propagation-loss-model.h"
+#include "ns3/t-spectrum-propagation-loss-model.h"
+#include "ns3/propagation-delay-model.h"
+#include "thz-net-device.h"
+#include "thz-phy.h"
+#include <list>
+#include <vector>
+
+namespace ns3 {
+
+class TSpectrumPropagationLossModel;
+class PropagationDelayModel;
+
+class THzChannel : public Channel
+{
+
+typedef struct
+{
+  Ptr<Packet> packet;
+  Ptr<THzPhy> phy;
+  Time txDuration;
+  Time txEnd;
+  double_t rxPower;
+  Time txStart;// transmission start time
+} NoiseEntry;
+
+public:
+  THzChannel ();//Constructor
+  virtual ~THzChannel ();//dummy destructor
+  static TypeId GetTypeId ();
+  
+  virtual uint32_t GetNDevices () const;
+  virtual Ptr<NetDevice> GetDevice (uint32_t i) const;
+  void AddDevice (Ptr<THzNetDevice> dev, Ptr<THzPhy> phy);
+  void Clear ();
+  
+  bool SendPacket (Ptr<THzPhy> phy, Ptr<Packet> packet, double txPower, Time delay);
+  
+  double GetNoiseW (Ptr<THzPhy> phy, Ptr<Packet> signal);
+  double DbmToW (double dbm);
+  
+private:
+  void SendPacketDone (Ptr<THzPhy> phy, Ptr<Packet> packet);
+  void ReceivePacket (uint32_t i, NoiseEntry ne);
+  void ReceivePacketDone (uint32_t i, NoiseEntry ne);
+  
+  void DeleteNoiseEntry (NoiseEntry ne);
+  
+  Time m_delNoiseEntryLater;
+  double m_noiseFloor;
+  
+  Ptr<THzSpectrumPropagationLossModel> m_loss;
+  Ptr<ConstantSpeedPropagationDelayModel> m_delay;
+  
+  typedef std::vector<std::pair<Ptr<THzNetDevice>, Ptr<THzPhy> > > THzDeviceList;
+  THzDeviceList m_devList;
+  std::list<NoiseEntry> m_noiseEntry;
+  
+protected:
+  
+};
+
+}
+
+#endif // THZ_CHANNEL_H

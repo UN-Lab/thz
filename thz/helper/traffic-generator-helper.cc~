@@ -1,0 +1,56 @@
+
+//#include "ns3/mobility-model.h"
+#include "ns3/log.h"
+#include "ns3/config.h"
+#include "ns3/simulator.h"
+#include "ns3/mac48-address.h"
+//#include "thz-helper.h"
+#include "ns3/thz-mac.h"
+#include "ns3/thz-phy.h"
+#include "ns3/thz-channel.h"
+#include "traffic-generator-helper.h"
+
+#include <sstream>
+#include <string>
+
+NS_LOG_COMPONENT_DEFINE("TrafficGeneratorHelper");
+
+namespace ns3
+{
+NS_OBJECT_ENSURE_REGISTERED (TrafficGeneratorHelper);
+
+TrafficGeneratorHelper::TrafficGeneratorHelper ()
+{
+  //m_energyModel.SetTypeId ("ns3::THzEnergyModel");
+  m_traffic.SetTypeId (TrafficGenerator::GetTypeId ());
+}
+
+TrafficGeneratorHelper::~TrafficGeneratorHelper ()
+{}
+
+ApplicationContainer
+TrafficGeneratorHelper::Install (NodeContainer c)
+{
+  ApplicationContainer apps;
+  for (NodeContainer::Iterator i = c.Begin (); i != c.End (); i++)
+    {
+      
+      Ptr<Node> node = *i;
+      //Ptr<THzEnergyModel> energyModel = CreateObject<THzEnergyModel> ();
+      Ptr<TrafficGenerator> tg = m_traffic.Create<TrafficGenerator> ();
+      tg->AddNodeContainer(c);
+
+      node->AddApplication (tg);
+      apps.Add (tg);
+      NS_LOG_DEBUG ("node="<<node);
+  }
+  return apps;
+}
+
+void
+TrafficGeneratorHelper::SetAttribute (std::string name, const AttributeValue &value)
+{
+ m_traffic.Set (name, value);
+}
+
+} //end namespace ns3

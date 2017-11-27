@@ -1,0 +1,358 @@
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <cmath>
+#include "thz-spectrum-model.h"
+#include <ns3/log.h>
+
+NS_LOG_COMPONENT_DEFINE ("THzSpectrumValueFactory");
+namespace ns3 
+{
+/********************************************************************
+ * Add Implements THzSpectrumValue from database,
+ * with 0.9894GHz spectrum resolution 
+ *******************************************************************/
+
+int bw = 24;                        // (24 groups)Customer designed value actrual bandwidth/9.894e8
+double f_start = 1.16652e+011;           // customer defined value --- where the bandwidth begins
+
+THzSpectrumModel::~THzSpectrumModel ()
+{
+}
+
+THzSpectrumValueFactory::~THzSpectrumValueFactory ()
+{
+}
+
+Ptr<SpectrumModel> g_THzSpectrumModel;
+Ptr<SpectrumModel> g_AllTHzSpectrumModel;
+
+
+class THzSpectrumModelInitializer
+{
+
+public:
+  THzSpectrumModelInitializer ()
+  {
+
+   std:: ifstream frequencyfile;
+   frequencyfile.open ("f.txt", std::ifstream::in);
+   if (!frequencyfile.is_open())
+    {
+      std::cout<< "open failed"<<std::endl;
+    }
+   
+   double f_starV;                     // Detected frequency from the frequency database 
+   double f; 
+   int i = 1;                          // record the sequency of selected frequency value in database. 
+                                       //(used for finding the correspond absorption coefficient in another file)
+   while (frequencyfile>>f)
+    {
+     if (f < f_start)
+      {
+        i++;
+      }
+     else break;                        // if customer defined value is not corresponding to any value stored in database, 
+                                        //just select the first value next to the customer defined frequency.              
+    }
+    f_starV = f;
+
+    Bands bands;
+    
+    for (int j = 1; j <= bw; j++)
+      {
+        BandInfo bi;
+        bi.fl = f_starV + (j - 1) * 9.894e8;
+        bi.fh = f_starV + j * 9.894e8;
+        bi.fc = (bi.fl +  bi.fh) / 2;
+        bands.push_back (bi);
+      }
+    g_THzSpectrumModel = Create<SpectrumModel> (bands);
+  }
+
+} g_THzSpectrumModelInitializerInstance;
+
+
+class AllTHzSpectrumModelInitializer
+{
+
+public:
+  AllTHzSpectrumModelInitializer ()
+  {
+
+   std:: ifstream frequencyfile;
+   frequencyfile.open ("f.txt", std::ifstream::in);
+   if (!frequencyfile.is_open())
+    {
+      std::cout<< "open failed"<<std::endl;
+    }
+
+   double f; 
+   int i = 0;                          
+                                       
+   while (frequencyfile>>f)
+    {
+      i++;           
+    }
+    Bands bands;
+    
+    for (int j = 1; j <= i; j++)
+      {
+        BandInfo bi;
+        bi.fl = 8.99378e+010 + (j - 1) * 9.894e8;
+        bi.fh = 8.99378e+010 + j * 9.894e8;
+        bi.fc = (bi.fl +  bi.fh) / 2;
+        bands.push_back (bi);
+      }
+    g_AllTHzSpectrumModel = Create<SpectrumModel> (bands);
+  }
+
+} g_AllTHzSpectrumModelInitializerInstance;
+
+
+
+int
+  THzSpectrumValueFactory::BandNum ()
+  {
+    return bw;
+  }
+
+//-------------------------------------------------------------------------------------//
+
+int
+  THzSpectrumValueFactory::FreqSeq_Start ()
+  {   
+   std:: ifstream frequencyfile;
+   frequencyfile.open ("f.txt", std::ifstream::in);                    
+   double f; 
+   int i = 1;                          
+   while (frequencyfile>>f)
+    {
+     if (f < f_start)
+      {
+        i++;
+      }
+     else break;                                    
+    }
+
+   return i; 
+  }
+
+double 
+  THzSpectrumValueFactory::FreqStartValue ()
+  {   
+   std:: ifstream frequencyfile;
+   frequencyfile.open ("f.txt", std::ifstream::in);                    
+   double f;                         
+   while (frequencyfile>>f)
+    {
+     if (f >= f_start)
+      {
+        break;
+      }                                
+    }
+   return f; 
+  }
+
+Ptr<SpectrumValue>
+  THzSpectrumValueFactory::FreqBands ()
+  {
+   Ptr<SpectrumValue> f_store = Create <SpectrumValue> (g_THzSpectrumModel) ;
+   std:: ifstream frequencyfile;
+   frequencyfile.open ("f.txt", std::ifstream::in);                  
+   double f; 
+   int i = 0;
+   while (frequencyfile>>f)
+    {  
+      (*f_store)[i] = f;
+      
+     if (f >= f_start)
+      {
+        i++;
+        if (i == bw)
+         { 
+           break;
+         }
+      }
+    }                             
+   return f_store;
+  }
+
+
+int
+  THzSpectrumValueFactory::FreqSeq_End ()
+  {
+   Ptr<SpectrumValue> f_store = Create <SpectrumValue> (g_THzSpectrumModel) ;
+   std:: ifstream frequencyfile;
+   frequencyfile.open ("f.txt", std::ifstream::in);                  
+   double f; 
+   int i = 0;
+   int j = 0;
+   while (frequencyfile>>f)
+    {
+     if (f < f_start)
+      {
+        j++;
+      }
+     else break;                                    
+    }
+   while (frequencyfile>>f)
+    {  
+      (*f_store)[i] = f;
+      
+     if (f >= f_start)
+      {
+        i++;
+        if (i == bw)
+         { 
+           break;
+         }
+      }
+    }                             
+   return i+j;
+  }
+
+
+Ptr<SpectrumValue>
+THzSpectrumValueFactory::CreateConstant (double v)
+{
+  Ptr<SpectrumValue> c = Create <SpectrumValue> (g_THzSpectrumModel);
+  (*c) = v;
+  return c;
+}
+
+
+Ptr<SpectrumValue>
+THzSpectrumValueFactory::CreateTxPowerSpectralDensity (double txPower, double bandwidth)
+{
+  Ptr<SpectrumValue> txPsd = Create <SpectrumValue> (g_THzSpectrumModel);
+  double bw = bandwidth;
+  double txPowerDensity = txPower * (5.9899076 / bw);
+  int g = 7;// start from group #7, totally 12 out of 24 groups have psd value
+  for (int g1 = (bw / 24) * g; g1 < (bw / 24) * (g + 1); g1++)
+    {
+      (*txPsd)[g1] = txPowerDensity * 1e-4;      // -40dB
+    }
+  g++;
+  for (int g2 = (bw / 24) * g; g2 < (bw / 24) * (g + 1); g2++)
+    {
+      (*txPsd)[g2]     = txPowerDensity * 1e-4;      // -40dB
+    }
+  g++;
+  for (int g3 = (bw / 24) * g; g3 < (bw / 24) * (g + 1); g3++)
+    {
+      (*txPsd)[g3] = txPowerDensity * 0.0015849; // -28dB
+    } 
+  g++;
+  for (int g4 = (bw / 24) * g; g4 < (bw / 24) * (g + 1); g4++)
+    {
+      (*txPsd)[g4] = txPowerDensity * 0.0015849; // -28dB
+    }
+  g++;
+  for (int g5 = (bw / 24) * g; g5 < (bw / 24) * (g + 1); g5++)
+    {
+      (*txPsd)[g5] = txPowerDensity;
+    }
+  g++;
+  for (int g6 = (bw / 24) * g; g6 < (bw / 24) * (g + 1); g6++)
+    {
+      (*txPsd)[g6] = txPowerDensity;
+    }
+  g++;
+  for (int g7 = (bw / 24) * g; g7 < (bw / 24) * (g + 1); g7++)
+    {
+      (*txPsd)[g7] = txPowerDensity;
+    }
+  g++;
+  for (int g8 = (bw / 24) * g; g8 < (bw / 24) * (g + 1); g8++)
+    {
+      (*txPsd)[g8] = txPowerDensity;
+    }
+  g++;
+  for (int g9 = (bw / 24) * g; g9 < (bw / 24) * (g + 1); g9++)
+    {
+      (*txPsd)[g9] = txPowerDensity * 0.0015849; // -28dB
+    }
+  g++;
+  for (int g10 = (bw / 24) * g; g10 < (bw / 24) * (g + 1); g10++)
+    {
+      (*txPsd)[g10] = txPowerDensity * 0.0015849; // -28dB
+    }  
+  g++; 
+  for (int g11 = (bw / 24) * g; g11 < (bw / 24) * (g + 1); g11++)
+    {
+      (*txPsd)[g11] = txPowerDensity * 1e-4;      // -40dB
+    }
+  g++;
+  for (int g12 = (bw / 24) * g; g12 < (bw / 24) * (g + 1); g12++)
+    {
+      (*txPsd)[g12] = txPowerDensity * 1e-4;      // -40dB
+    }
+  return txPsd;
+}
+
+double
+THzSpectrumValueFactory::CalculateEnergyConstant(double n, double r, double txPowerWatts) const
+{
+NS_LOG_FUNCTION ("");
+Ptr<SpectrumValue> allPsd = Create <SpectrumValue> (g_AllTHzSpectrumModel);
+
+  std:: ifstream frequencyfile;
+  std:: ofstream myfile;
+  frequencyfile.open ("f.txt", std::ifstream::in);  
+  //myfile.open ("scratch/psd.txt", std::ofstream::out);                
+  double f;
+  double integral=0.0; 
+  int i = 0, j = 0;
+  frequencyfile>>f;
+  while (f<4e12)
+    {
+      if((j%100)==0){
+      (*allPsd)[i] = std::pow ((2 * M_PI * f), (2 * n)) * std::exp (-std::pow ((2 * M_PI * f * r), 2));
+      myfile << (*allPsd)[i] << std::endl; 
+      integral += (*allPsd)[i];
+      i++;
+      }
+      j++;
+      frequencyfile>>f;
+    }
+  NS_LOG_INFO ("value of i:"<<i);
+  integral *= 0.09894e10 * 100;
+  double a02 = txPowerWatts/integral;
+  return a02;
+}
+
+Ptr<SpectrumValue> 
+THzSpectrumValueFactory::CreateAllPowerSpectralDensity (double n, double r, double txPowerWatts) const
+{
+  NS_LOG_FUNCTION ("tx power"<<txPowerWatts);
+  Ptr<SpectrumValue> allPsd = Create <SpectrumValue> (g_AllTHzSpectrumModel);
+
+  std:: ifstream frequencyfile;
+  std:: ofstream myfile;
+  frequencyfile.open ("f.txt", std::ifstream::in);  
+  //myfile.open ("scratch/psd.txt", std::ofstream::out);                
+  double f, txPsd_inte = 0.0;
+  int i = 0, j = 0;
+
+  frequencyfile>>f;
+  double a02 = CalculateEnergyConstant(n, r, txPowerWatts);
+  while (f<4e12)
+    {
+      if((j%100)==0){
+      (*allPsd)[i] = std::pow ((2 * M_PI * f), (2 * n)) * a02 * std::exp (-std::pow ((2 * M_PI * f * r), 2)); 
+      
+      myfile << (*allPsd)[i] << std::endl; 
+      txPsd_inte += (*allPsd)[i];
+      i++;
+      }
+      j++;
+      frequencyfile>>f;
+    }
+  double txPower = txPsd_inte * 0.09894e10 * 100;
+  NS_LOG_INFO ("txpower"<<txPower);
+  return allPsd;
+}
+
+
+} // namespace ns3

@@ -1,0 +1,40 @@
+
+#ifndef THZ_SPECTRUM_PROPAGATION_LOSS_MODEL_H
+#define THZ_SPECTRUM_PROPAGATION_LOSS_MODEL_H
+#include <ns3/t-spectrum-propagation-loss-model.h>
+#include <ns3/object.h>
+
+namespace ns3
+{
+class THzSpectrumPropagationLossModel : public TSpectrumPropagationLossModel
+  {
+  public:
+    static TypeId GetTypeId (void);
+    THzSpectrumPropagationLossModel ();
+    virtual ~THzSpectrumPropagationLossModel ();
+
+    virtual Ptr<SpectrumValue> DoCalcRxPowerSpectralDensity (Ptr<const SpectrumValue> txPsd,
+                                                          Ptr<const MobilityModel> a,
+                                                          Ptr<const MobilityModel> b) const;
+
+
+    virtual double DoCalcRxPower (double txPowerDbm,
+                                 Ptr<MobilityModel> a,
+                                 Ptr<MobilityModel> b) const;
+    virtual double DoCalcRxPowerPulse (double txPowerDbm,
+                                 Ptr<MobilityModel> a,
+                                 Ptr<MobilityModel> b) const;
+    virtual double CalculateSpreadLoss (double f, double d) const;
+
+    virtual double CalculateAbsLoss (double f, double d) const;
+
+    virtual Ptr<SpectrumValue> LoadedAbsCoe (int s, int j, double f, double d,Ptr<const SpectrumValue> txPsd) const;
+
+  protected:
+    double m_propagationSpeed;
+  };
+
+
+
+}// namespace ns3
+# endif /* THZ_SPECTRUM_PROPAGATION_LOSS_MODEL_H */

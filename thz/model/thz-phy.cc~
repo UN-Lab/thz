@@ -1,0 +1,424 @@
+/* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
+
+
+#include "ns3/simulator.h"
+#include "ns3/log.h"
+#include "ns3/uinteger.h"
+#include "ns3/double.h"
+#include "ns3/mac48-address.h"
+#include "thz-mac.h"
+#include "thz-phy.h"
+#include "ns3/callback.h"
+#include "ns3/trace-source-accessor.h"
+#include "ns3/traced-value.h"
+#include "ns3/mobility-model.h"
+#include <ns3/thz-spectrum-model.h>
+
+#include "ns3/nstime.h"
+#include "ns3/object-factory.h"
+#include "ns3/pointer.h"
+#include "ns3/boolean.h"
+#include <math.h>//to use fmod()
+
+
+NS_LOG_COMPONENT_DEFINE ("THzPhy");
+
+namespace ns3 {
+
+NS_OBJECT_ENSURE_REGISTERED (THzPhy);
+
+THzPhy::THzPhy ()
+ : m_device (0), 
+   m_mac (0),
+   m_channel (0),
+   m_pktRx (0)
+{
+  m_csBusy = false;
+  m_csBusyEnd = Seconds (0);
+  Simulator::ScheduleNow (&THzPhy::CalTxPsd, this);
+}
+
+
+
+THzPhy::~THzPhy ()
+{
+  Clear ();
+}
+void
+THzPhy::Clear ()
+{
+  m_pktRx = 0;
+
+}
+TypeId
+THzPhy::GetTypeId (void)
+{
+  static TypeId tid = TypeId ("ns3::THzPhy")
+    .SetParent<Object> ()
+    .AddConstructor<THzPhy> ()
+    .AddAttribute ("PreambleDuration",
+                   "Duration (us) of Preamble of PHY Layer",
+                   TimeValue (NanoSeconds (1)),
+                   MakeTimeAccessor (&THzPhy::m_preambleDuration),
+                   MakeTimeChecker ())
+    .AddAttribute ("TrailerSize",
+                   "Size of Trailer (e.g. FCS) (bytes)",
+                   UintegerValue (2),
+                   MakeUintegerAccessor (&THzPhy::m_trailerSize),
+                   MakeUintegerChecker<uint32_t> ())
+    .AddAttribute ("HeaderSize",
+                   "Size of Header (bytes)",
+                   UintegerValue (3),
+                   MakeUintegerAccessor (&THzPhy::m_headerSize),
+                   MakeUintegerChecker<uint32_t> ())
+    .AddAttribute ("SinrTh",
+                   "SINR Threshold (dB)",
+                   DoubleValue (10),
+                   MakeDoubleAccessor (&THzPhy::m_sinrTh),
+                   MakeDoubleChecker<double> ())
+    .AddAttribute ("CsPowerTh",
+                   "Carrier Sense Threshold (dBm)",
+                   DoubleValue (-110),
+                   MakeDoubleAccessor (&THzPhy::m_csTh),
+                   MakeDoubleChecker<double> ())
+    .AddAttribute ("TxPower",
+                   "Transmission Power (dBm)",
+                   DoubleValue (-20),
+                   MakeDoubleAccessor (&THzPhy::SetTxPower),
+                   MakeDoubleChecker<double> ())
+    ;
+  return tid;
+}
+
+void 
+THzPhy::CalTxPsd()
+{
+  NS_LOG_FUNCTION ("");
+  double txPowerW = std::pow(10.0, m_txPower/10.0);
+  txPowerW = txPowerW/1000.0;
+  THzSpectrumValueFactory sf;
+  m_txPsd = sf.CreateAllPowerSpectralDensity (1, 100e-15, txPowerW);
+}
+void
+THzPhy::SetDevice (Ptr<THzNetDevice> device)
+{
+  m_device = device;
+}
+void
+THzPhy::SetMac (Ptr<THzMac> mac)
+{
+  m_mac = mac;
+}
+void
+THzPhy::SetChannel (Ptr<THzChannel> channel)
+{
+  m_channel = channel;
+}
+void
+THzPhy::SetTxPower (double dBm)
+{
+  m_txPower = dBm;
+}
+
+//-----------------------------------------------------------------
+Ptr<THzChannel>
+THzPhy::GetChannel ()
+{
+  return m_channel;
+}
+Mac48Address
+THzPhy::GetAddress ()
+{
+  return m_mac->GetAddress ();
+}
+double
+THzPhy::GetTxPower ()
+{
+  return m_txPower;
+}
+//----------------------------------------------------------------------
+bool
+THzPhy::SendPacket (Ptr<Packet> packet, bool rate)
+{
+  NS_LOG_FUNCTION ("packet"<<packet<<"now"<<Simulator::Now ());
+  
+  Time txDuration;
+  if (rate) // transmit packet with data rate
+    {
+      //NS_LOG_INFO ("first txDurationCal is called");
+      //NS_LOG_DEBUG ("packet size: " << packet->GetSize () << "dataRate:" << m_mac->GetDataRate ()); 
+      /*txDuration = CalTxDuration (0, packet->GetSize (), 
+                        m_mac->GetBasicRate (), m_mac->GetDataRate ());*/
+     txDuration = CalTxDuration (0, packet->GetSize (), 
+                        2e10, 1e11);
+    }
+  else // transmit packets (e.g. RTS, CTS) with basic rate
+    {
+      //NS_LOG_INFO ("second txDurationCal is called");
+      //NS_LOG_DEBUG ("packet size: " << packet->GetSize () << "basicRate:" << m_mac->GetBasicRate ());
+      /*txDuration = CalTxDuration (packet->GetSize (), 0, 
+                        m_mac->GetBasicRate (), m_mac->GetDataRate ());*/
+      txDuration = CalTxDuration (packet->GetSize (), 0, 
+                        2e10,1e11);
+    }
+
+  NS_LOG_INFO ("Before Ts/tp definition");
+  //Record the current transmissions, schedule to erase them after their duration
+  OngoingTx ot;
+  Ts = PicoSeconds (10);
+  tp = FemtoSeconds (100);
+  NS_LOG_INFO ("Ts:"<<Ts<<", tp:"<<tp);
+  //NS_LOG_INFO ("After Ts/tp definition");
+
+ if(m_ongoingTx.size()!=0 || m_ongoingRx.size()!=0)//the m_ongoingTx is not empty and less than Ts/tp
+ { 
+ NS_LOG_INFO ("Size of the transmission list:"<<m_ongoingTx.size()<<"Size of the receive list:"<<m_ongoingRx.size());  
+
+ Time now = Simulator::Now ();
+ int txCount=1;//Keeps track of the no of simultaneous transmissions
+ double nowD=now.ToDouble(Time::FS);
+ double TsD=Ts.ToDouble(Time::FS);
+ NS_LOG_INFO ("nowD:"<<nowD<<"TsD"<<TsD);
+ //double tpD=tp.ToDouble(Time::NS);
+ //NS_LOG_INFO ("After time to double conversion");
+ 
+ Time nextPulse[10]={now,now+Ts,now+Ts,now+Ts,now+Ts,now+Ts,now+Ts,now+Ts,now+Ts,now+Ts};//Ts/tp no of pulses can be transmitted   simultaneously in Ts time
+ //NS_LOG_INFO ("initial nextPulse time:"<<nextPulse[1]);
+ std::list<OngoingTx>::iterator it = m_ongoingTx.begin ();
+  
+  for (; it != m_ongoingTx.end (); ++it)
+    {
+     Time mod=FemtoSeconds(fmod((now-it->m_txStart).ToDouble(Time::FS),TsD));// Multiplication or division of time objects by other time objects
+// is meaningless in ns3, and should not compile.
+     NS_LOG_INFO ("mod:"<<mod<<"tp:"<<tp);
+     if(mod<tp)
+       {
+        NS_LOG_INFO ("Start time of the exixting transmission is:"<<it->m_txStart);
+        nextPulse[txCount]=now-mod;
+        NS_LOG_INFO ("now:"<<now<<"The next pulse inside if:"<< nextPulse[txCount]);
+        txCount++;
+       }
+     else
+       {
+        NS_LOG_INFO ("Start time of the existing transmission is:"<<it->m_txStart);
+        nextPulse[txCount]=now+Ts-mod;
+        NS_LOG_INFO ("now:"<<now<<"The next pulse inside else:"<< nextPulse[txCount]);
+        txCount++;
+       }
+    }
+  
+  std::list<OngoingRx>::iterator itr = m_ongoingRx.begin ();
+  
+  for (; itr != m_ongoingRx.end (); ++itr)
+    {
+     NS_LOG_INFO ("Start time of the existing reception is:"<<itr->m_rxStart);
+     NS_LOG_INFO ("nowD:"<<nowD<<"TsD"<<TsD<<"fmod"<<fmod((now-itr->m_rxStart).ToDouble(Time::FS),TsD));
+     nextPulse[txCount]=FemtoSeconds(nowD+TsD-fmod((now-itr->m_rxStart).ToDouble(Time::FS),TsD));//(if it->m_collided==false)
+     NS_LOG_INFO ("now:"<<now<<"The next pulse of reception will appear at:"<< nextPulse[txCount]);
+     txCount++;
+    }
+ //NS_LOG_INFO ("txCount"<<txCount<<"The pulse will appear at:"<< nextPulse[txCount]);
+//sort the array in the ascending order of pulse times****************************
+  for(int j=1;j<=10;j++)
+     {
+      if(nextPulse[j-1]!=(now+Ts) && nextPulse[j-1]+2*tp<=nextPulse[j])
+        { 
+         NS_LOG_INFO ("inside the 3rd for loop");
+         ot.m_txStart = nextPulse[j-1]+tp;//let the mac layer know to set the right timeout
+         Simulator::Schedule (ot.m_txStart-Simulator::Now (), &THzPhy::ScheduleSendPacket, this,packet, m_txPsd, txDuration );////(ot.m_txStart-now)*****
+         NS_LOG_INFO ("after scheduling send packet at:"<<nextPulse[j-1]+tp);
+         
+         Time ackTimeout = ot.m_txStart-Simulator::Now ();
+         
+         ot.m_txDuration = txDuration;
+         m_ongoingTx.push_back (ot);
+
+         NS_LOG_DEBUG ("Tx will finish at " << (ot.m_txStart + txDuration).GetFemtoSeconds () << 
+                "ps txPower" << m_txPower);
+         Simulator::Schedule ((ot.m_txStart-Simulator::Now ())+txDuration, &THzPhy::DeleteOngoingTx, this, ot);//(ot.m_txStart-now)+txDuration************
+         
+         m_mac->ScheduleAckTimeout (packet, ackTimeout);
+         return true;
+        }
+     }
+  NS_LOG_DEBUG ("Transmission abort:no interleaving possible ");
+  return false;
+ }//if ends
+  
+  NS_LOG_INFO ("Tx and Rx lists are empty");
+  // forward to CHANNEL
+   NS_LOG_DEBUG ("Tx will finish at " << (Simulator::Now () + txDuration).GetFemtoSeconds () << 
+                "ps txPower" << m_txPower);
+   m_channel->SendPacket (Ptr<THzPhy> (this), packet, m_txPsd, txDuration);
+   ot.m_txStart = Simulator::Now ();
+   ot.m_txDuration = txDuration;
+   m_ongoingTx.push_back (ot);
+   Time ackTimeout = Seconds(0);
+   m_mac->ScheduleAckTimeout (packet, ackTimeout);
+   Simulator::Schedule (txDuration, &THzPhy::DeleteOngoingTx, this, ot);
+ 
+  return true;
+}
+
+void
+THzPhy::ScheduleSendPacket (Ptr<Packet> packet,Ptr<SpectrumValue> txPsd, Time txDuration)// added to the header file
+{
+  NS_LOG_FUNCTION ("now"<<Simulator::Now ());
+  m_channel->SendPacket (Ptr<THzPhy> (this), packet, txPsd, txDuration);
+}
+
+
+void
+THzPhy::DeleteOngoingTx (OngoingTx ot)// added to the header file
+{
+  NS_LOG_FUNCTION (this);
+  NS_LOG_INFO ("now"<<Simulator::Now ());
+  std::list<OngoingTx>::iterator it = m_ongoingTx.begin ();
+  for (; it != m_ongoingTx.end (); ++it)
+    {
+      if (it->m_txStart == ot.m_txStart && it->m_txDuration == ot.m_txDuration)
+        {
+          m_ongoingTx.erase (it);
+          break;
+        }
+    }
+}
+
+
+void 
+THzPhy::SendPacketDone (Ptr<Packet> packet)
+{
+  NS_LOG_FUNCTION ("");
+  //m_state = IDLE;
+  m_mac->SendPacketDone (packet);
+}
+
+void 
+THzPhy::ReceivePacket (Ptr<Packet> packet, Time txDuration, double_t rxPower)
+{
+  //NS_LOG_FUNCTION ("rxPower" << rxPower << "busyEnd" << m_csBusyEnd);
+  NS_LOG_FUNCTION ("rxPower" << rxPower<<"packet"<<packet<<"now"<<Simulator::Now ());
+  Time now = Simulator::Now ();
+  OngoingRx ot;
+  Ts = PicoSeconds (10);
+  tp = FemtoSeconds (100);
+  ot.m_rxStart = Simulator::Now ();
+  ot.m_rxDuration = txDuration;
+  //Ptr<Packet> copy = packet->Copy ();
+  ot.packet = packet;
+  ot.rxPower = rxPower;
+   
+  double nowD=now.ToDouble(Time::FS);
+  double TsD=Ts.ToDouble(Time::FS);
+  
+if(m_ongoingTx.size()!=0)//the m_ongoingTx is not empty
+  { 
+   std::list<OngoingTx>::iterator it = m_ongoingTx.begin ();
+   for (; it != m_ongoingTx.end (); ++it)
+     {
+      if (FemtoSeconds(fmod((nowD-(it->m_txStart-tp).ToDouble(Time::FS)),TsD))<2*tp)
+        {
+         ot.m_collided=true;
+         m_ongoingRx.push_back (ot);//schedule to remove ot from RX list in ReceivePacketDone()
+         NS_LOG_INFO ("Drop packet due to half-duplex");
+         return;// should I return here?********************
+        }
+      } 
+   }
+
+if(m_ongoingRx.size()!=0)//the m_ongoingTx is not empty 
+  { 
+   std::list<OngoingRx>::iterator it = m_ongoingRx.begin ();
+   for (; it != m_ongoingRx.end (); ++it)
+     {
+      if (FemtoSeconds(fmod((nowD-(it->m_rxStart-tp).ToDouble(Time::FS)),TsD))<2*tp)
+        {
+         ot.m_collided=true;
+         m_ongoingRx.push_back (ot);
+         ot.interference += DbmToW (it->rxPower);
+         NS_LOG_INFO ("Packet has collided");
+         return;//remove return to add up all interference***********************************
+        }
+      } 
+   }
+  
+  
+//No collision with existing transmissions and receptions
+   NS_LOG_INFO ("No collision with existing transmissions and receptions");
+   ot.m_collided=false;
+   m_ongoingRx.push_back (ot);
+   //m_pktRx = ot.packet;
+   //m_mac->ReceivePacket (this, packet);
+ 
+}
+
+void 
+THzPhy::ReceivePacketDone (Ptr<Packet> packet, double rxPower)
+{
+  NS_LOG_FUNCTION ("now"<<Simulator::Now ());
+  
+  NS_LOG_INFO ("Size of the receive list:"<<m_ongoingRx.size());
+  std::list<OngoingRx>::iterator it = m_ongoingRx.begin ();
+  for (; it != m_ongoingRx.end (); ++it)
+      {
+       if (it->packet == packet)
+          {
+      
+           if ( it->m_collided == false)
+             {
+              NS_LOG_INFO ("Packet hasn't collided!");
+              m_ongoingRx.erase (it);
+              m_mac->ReceivePacketDone (this, packet, true);//remove the ot from RX list
+              return;
+             }
+           if ( it->m_collided == true)
+             {
+              NS_LOG_INFO ("Packet collided!");
+              double noisePlusInterference = m_channel->GetNoiseW (it->interference); // noise plus interference
+              double rxPowerW = DbmToW (it->rxPower);
+              double sinr = rxPowerW / noisePlusInterference;
+              NS_LOG_INFO ("SINR"<<sinr);
+              if (sinr > m_sinrTh) 
+                { 
+                 m_mac->ReceivePacketDone (this, packet, true);
+                 m_ongoingRx.erase (it);
+                 return;
+                }
+              else
+                {
+                 m_mac->ReceivePacketDone (this, packet, false);
+                 m_ongoingRx.erase (it);
+                 return;
+                }
+             }
+          }//outer if ends 
+        
+      }//for loop ends 
+  
+}//ReceivePacketDone ends
+
+
+bool 
+THzPhy::IsIdle ()
+{
+  if (m_state == IDLE && !m_csBusy) { return true; }
+  return false;
+}
+
+Time
+THzPhy::CalTxDuration (uint32_t basicSize, uint32_t dataSize, double basicRate, double dataRate)
+{
+  NS_LOG_FUNCTION ("");
+  double_t txHdrTime = (double)(m_headerSize + basicSize + m_trailerSize) * 8.0 / basicRate;
+  double_t txMpduTime = (double)dataSize * 8.0 / dataRate;
+  return NanoSeconds(1) + Seconds (txHdrTime) + Seconds (txMpduTime);
+}
+
+double
+THzPhy::DbmToW (double dbm)
+{
+  double mw = pow(10.0,dbm/10.0);
+  return mw / 1000.0;
+}
+
+} // namespace ns3
