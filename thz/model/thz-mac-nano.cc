@@ -319,7 +319,6 @@ THzMacNano::TxFirstPacket ()
       return;
     }
   m_pktData = m_pktQueue.front ();
-  //m_pktQueue.pop_front ();
   CheckResources (m_pktData);
 }
 
@@ -341,7 +340,7 @@ THzMacNano::SendRts (Ptr<Packet> packet)
 
   Time ctsTimeout = GetCtrlDuration (THZ_PKT_TYPE_RTS)
     + GetCtrlDuration (THZ_PKT_TYPE_CTS)
-    + 2 * PicoSeconds (66) + NanoSeconds (10);
+    + PicoSeconds (666) + PicoSeconds (10);
 
   NS_LOG_DEBUG ("CTS timeout " << ctsTimeout << "s");
   CtsTimeouts ct;
@@ -384,58 +383,21 @@ THzMacNano::SendData (Ptr<Packet> packet)
     {
       header.SetDuration (Seconds (0));
       packet->AddHeader (header);
-      m_ackTimeout = GetDataDuration (packet) + GetCtrlDuration (THZ_PKT_TYPE_ACK) + 2 * PicoSeconds (66) + NanoSeconds (10);
+      m_ackTimeout = GetDataDuration (packet) + GetCtrlDuration (THZ_PKT_TYPE_ACK) + PicoSeconds (666) + PicoSeconds (10);
 
       SendPacket (packet, 1); //
-
-      return; //call the ack timeout function from phy
+      AckTimeouts at;
+      at.sequence = header.GetSequence ();
+      NS_LOG_INFO ("scheduling ack timeout at:" << Simulator::Now () + m_ackTimeout << "seq" << at.sequence);
+      at.m_ackTimeoutEvent = Simulator::Schedule (m_ackTimeout, &THzMacNano::AckTimeout, this, at.sequence);
+      at.packet = packet;
+      m_ackTimeouts.push_back (at);
+      return;
 
     }
   NS_LOG_FUNCTION ("# dest" << header.GetDestination () << "seq" << m_sequence << "q-size" << m_pktQueue.size ());
 
 }
-
-void
-THzMacNano::ScheduleAckTimeout (Ptr<Packet> packet, Time ackTimeout)
-{
-  NS_LOG_DEBUG ("---------------------------------------------------------------------------------------------------");
-  NS_LOG_FUNCTION ("at node: " << m_device->GetNode ()->GetId ());
-
-  THzMacHeader header;
-  packet->PeekHeader (header);
-
-  if (header.GetDestination () == GetBroadcast ()) // Broadcast
-    {
-      NS_LOG_INFO ("Broadcast packet");
-      return;
-    }
-  else if (header.GetType () == THZ_PKT_TYPE_ACK)
-    {
-      NS_LOG_INFO ("Ack packet");
-      return;
-    }
-  else if (header.GetType () == THZ_PKT_TYPE_RTS)
-    {
-      NS_LOG_INFO ("RTS packet");
-      return;
-    }
-  else if (header.GetType () == THZ_PKT_TYPE_CTS)
-    {
-      NS_LOG_INFO ("CTS packet");
-      return;
-    }
-  else if (header.GetDestination () != GetBroadcast () ) // Unicast
-    {
-      AckTimeouts at;
-      at.sequence = header.GetSequence ();
-      NS_LOG_INFO ("scheduling ack timeout at:" << Simulator::Now () + ackTimeout + m_ackTimeout << "seq" << at.sequence);
-      at.m_ackTimeoutEvent = Simulator::Schedule (ackTimeout + m_ackTimeout, &THzMacNano::AckTimeout, this, at.sequence);
-      at.packet = packet;
-      m_ackTimeouts.push_back (at);
-    }
-  return;
-}
-
 
 void
 THzMacNano::SendAck (Mac48Address dest,uint16_t sequence)
@@ -580,8 +542,7 @@ THzMacNano::ReceiveRts (Ptr<Packet> packet)
       DataTimeouts dt;
       dt.sequence = header.GetSequence ();
       Time dataTimeout = GetCtrlDuration (THZ_PKT_TYPE_CTS)
-        + NanoSeconds (20)
-        + 2 * PicoSeconds (66);
+        + PicoSeconds (666) + PicoSeconds (10);
 
       dt.m_dataTimeoutEvent = Simulator::Schedule (dataTimeout, &THzMacNano::DataTimeout, this, header.GetSequence ());
       m_dataTimeouts.push_back (dt);

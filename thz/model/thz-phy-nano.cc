@@ -126,7 +126,7 @@ THzPhyNano::SetTxPower (double dBm)
   m_txPower = dBm;
 }
 
-//-------------------------------Get methods----------------------------------
+//-----------------------------------------------------------------
 Ptr<THzNetDevice>
 THzPhyNano::GetDevice ()
 {
@@ -184,9 +184,9 @@ THzPhyNano::SendPacket (Ptr<Packet> packet, bool rate)
       txDuration = CalTxDuration (packet->GetSize (), 0);
     }
 
-  OngoingTx ot; //Record the current transmissions, schedule to erase them after their duration
+  OngoingTx ot;  //Record the current transmissions, schedule to erase them after their duration
 
-  if (m_ongoingTx.size () != 0 || m_ongoingRx.size () != 0) //the m_ongoingTx is not empty
+  if (m_ongoingTx.size () != 0 || m_ongoingRx.size () != 0) //the m_ongoingTx is not empty and less than Ts/m_pulse
     {
       NS_LOG_INFO ("Size of the transmission list:" << m_ongoingTx.size () << "Size of the receive list:" << m_ongoingRx.size ());
 
@@ -263,10 +263,6 @@ THzPhyNano::SendPacket (Ptr<Packet> packet, bool rate)
 
               Simulator::Schedule (ot.m_txStart - Simulator::Now (), &THzPhyNano::ScheduleSendPacket, this,packet, txDuration );
 
-              Time ackTimeout = ot.m_txStart - Simulator::Now ();
-
-              m_mac->GetObject<THzMacNano> ()->ScheduleAckTimeout (packet, ackTimeout); //let the mac layer know to set the right timeout
-
               ot.m_txDuration = txDuration;
               m_ongoingTx.push_back (ot);
 
@@ -287,8 +283,7 @@ THzPhyNano::SendPacket (Ptr<Packet> packet, bool rate)
   ot.m_txStart = Simulator::Now ();
   ot.m_txDuration = txDuration;
   m_ongoingTx.push_back (ot);
-  Time ackTimeout = Seconds (0);
-  m_mac->GetObject<THzMacNano> ()->ScheduleAckTimeout (packet, ackTimeout);
+
   Simulator::Schedule (txDuration, &THzPhyNano::DeleteOngoingTx, this, ot);
 
   return true;
@@ -364,7 +359,7 @@ THzPhyNano::ReceivePacket (Ptr<Packet> packet, Time txDuration, double_t rxPower
         }
     }
 
-  if (m_ongoingRx.size () != 0) //the m_ongoingRx is not empty, calculate SINR********************
+  if (m_ongoingRx.size () != 0) //the m_ongoingRx is not empty, calculate SINR, Should we add noise?********************
     {
       std::list<OngoingRx>::iterator it = m_ongoingRx.begin ();
       for (; it != m_ongoingRx.end (); ++it)
@@ -403,7 +398,7 @@ THzPhyNano::ReceivePacket (Ptr<Packet> packet, Time txDuration, double_t rxPower
         }
     }
 
-  double noisePlusInterference = m_channel->GetNoiseW (ot.interference);
+  double noisePlusInterference = m_channel->GetNoiseW (ot.interference); // noise plus interference
   double rxPowerW = DbmToW (ot.rxPower);
   double sinr = rxPowerW / noisePlusInterference;
   NS_LOG_INFO ("SINR" << sinr);

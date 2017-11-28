@@ -127,16 +127,6 @@ public:
   virtual void ReceivePacketDone (Ptr<THzPhy> phy, Ptr<Packet> packet, bool collision);
   virtual void SetForwardUpCb (Callback<void, Ptr<Packet>, Mac48Address, Mac48Address> cb);
   virtual void Clear (void);
-  /**
-   * \brief Schedule acknowledgement timeout
-   *
-   * This method is called from the PHY layer to let the MAC layer know
-   * about the extra delay caused by pulse interleaving. After that this
-   * method set the appropriate timeout
-   * \param packet A reference to the packet that will be transmitted.
-   * \param ackTimeout The amount of delay caused by pulse interleaving.
-   */
-  void ScheduleAckTimeout (Ptr<Packet> packet, Time ackTimeout); //called from phy
 
 private:
   /**

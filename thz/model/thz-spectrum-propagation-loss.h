@@ -39,11 +39,6 @@ namespace ns3 {
 class THzSpectrumPropagationLoss : public Object
 {
 public:
-  /**
-    * \brief Get the type ID.
-    * \return the object TypeID
-    */
-  static TypeId GetTypeId (void);
   THzSpectrumPropagationLoss ();
   virtual ~THzSpectrumPropagationLoss ();
 

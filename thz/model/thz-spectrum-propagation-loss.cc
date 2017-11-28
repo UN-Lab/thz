@@ -43,35 +43,6 @@ NS_LOG_COMPONENT_DEFINE ("THzSpectrumPropagationLoss");
 namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (THzSpectrumPropagationLoss);
-TypeId
-THzSpectrumPropagationLoss::GetTypeId ()
-{
-  static TypeId tid = TypeId ("ns3::THzSpectrumPropagationLoss")
-    .SetParent<Object> ()
-    .AddAttribute ("NumSubBand", "The number of sub-bands containing in the selected 3dB frequency window",
-                   DoubleValue (5242),
-                   MakeDoubleAccessor (&THzSpectrumPropagationLoss::m_numsb),
-                   MakeDoubleChecker<double> ())
-    .AddAttribute ("SubBandWidth", "The bandwidth of each sub-band",
-                   DoubleValue (7.6294e8),
-                   MakeDoubleAccessor (&THzSpectrumPropagationLoss::m_sbw),
-                   MakeDoubleChecker<double> ())
-    .AddAttribute ("TotalBandWidth", "The total bandwidth of the selected 3dB frequency window",
-                   DoubleValue (7.4005e10),
-                   MakeDoubleAccessor (&THzSpectrumPropagationLoss::m_tbw),
-                   MakeDoubleChecker<double> ())
-    .AddAttribute ("CentralFrequency", "The central frequency of the selected 3dB frequency window",
-                   DoubleValue (1.0345e+012),
-                   MakeDoubleAccessor (&THzSpectrumPropagationLoss::m_fc),
-                   MakeDoubleChecker<double> ())
-    .AddAttribute ("NumSample", "The number of sample bands of the selected 3dB frequency window",
-                   DoubleValue (10),
-                   MakeDoubleAccessor (&THzSpectrumPropagationLoss::m_numsample),
-                   MakeDoubleChecker<double> ())
-
-  ;
-  return tid;
-}
 
 THzSpectrumPropagationLoss::THzSpectrumPropagationLoss ()
 {
