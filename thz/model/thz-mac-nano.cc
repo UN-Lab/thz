@@ -26,7 +26,7 @@
 #include "ns3/boolean.h"
 #include "ns3/double.h"
 #include "ns3/nstime.h"
-#include "ns3/random-variable.h"
+#include "ns3/random-variable-stream.h"
 #include "ns3/log.h"
 #include "ns3/trace-source-accessor.h"
 #include "ns3/node.h"
@@ -294,8 +294,8 @@ THzMacNano::Backoff (Ptr<Packet> packet, uint32_t retry)
   NS_LOG_FUNCTION ( "Time: " << Simulator::Now () << " at node: " << m_device->GetNode ()->GetId () << " Energy: " << m_device->GetNode ()->GetObject<THzEnergyModel> ()->GetRemainingEnergy ());
   RngSeedManager seed;
   seed.SetSeed (static_cast<unsigned int> (time (0)));
-  UniformVariable uv;
-  uint32_t bo = uv.GetInteger (1, pow (double(2.0), double(retry)));
+  Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
+  uint32_t bo = uv->GetInteger (1, pow (double(2.0), double(retry)));
   m_backoffRemain = Seconds ((double)(bo) * GetSlotTime ().GetSeconds ());
   NS_LOG_DEBUG ("backoff time : " << m_backoffRemain);
   Simulator::Schedule (m_backoffRemain, &THzMacNano::CheckResources, this, packet);
