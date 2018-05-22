@@ -37,7 +37,7 @@ class THzMacMacroHelper : public THzMacHelper
 {
 public:
   /**
-   * Create a THzMacMacroHelper that is used to enalbe the terahertz MAC layer
+   * Create a THzMacMacroHelper that is used to enable the terahertz MAC layer
    * protocol of the macro-scale scenario.
    */
   THzMacMacroHelper ();
