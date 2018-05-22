@@ -122,14 +122,14 @@ public:
   /**
     * \brief check the orientation of the receiver's directional antenna based on user setting
     * 
-    * returns a orientation of sector-by-sector turing directional antenna
+    * returns a orientation of sector-by-sector turning directional antenna
     */
   double CheckRxOrientation ();
 
   /**
     * \brief check the orientation of the receiver's directional antenna based on time duration
     *
-    * returns a orientation of smoothly turing directional antenna
+    * returns a orientation of smoothly turning directional antenna
     */
   double GetRxOrientation ();
 
