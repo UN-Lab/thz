@@ -55,11 +55,6 @@ THzChannel::GetTypeId ()
                    PointerValue (CreateObject<ConstantSpeedPropagationDelayModel> ()),
                    MakePointerAccessor (&THzChannel::m_delay),
                    MakePointerChecker<ConstantSpeedPropagationDelayModel> ())
-    .AddAttribute ("DeleteTxFlowLater",
-                   "Delete tx-flow later a certain time",
-                   TimeValue (NanoSeconds (10)),
-                   MakeTimeAccessor (&THzChannel::m_delNoiseEntryLater),
-                   MakeTimeChecker ())
     .AddAttribute ("NoiseFloor",
                    "Noise Floor (dBm)",
                    DoubleValue (-110.0),
@@ -180,9 +175,7 @@ THzChannel::ReceivePacketDone (uint32_t i, NoiseEntry ne)
 {
   NS_LOG_FUNCTION ("");
   m_devList[i].second->ReceivePacketDone (ne.packet, ne.rxPower);
-  // If concurrent transmissions end at the same time, some of them can be missed from SINR calculation
-  // So, delete a noise entry a few seconds later
-  Simulator::Schedule (m_delNoiseEntryLater, &THzChannel::DeleteNoiseEntry, this, ne);
+  Simulator::ScheduleNow(&THzChannel::DeleteNoiseEntry, this, ne);
 }
 
 void

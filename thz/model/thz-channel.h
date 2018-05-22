@@ -150,7 +150,6 @@ private:
    * \param ne the noise entry.
    */
   void DeleteNoiseEntry (NoiseEntry ne);
-  Time m_delNoiseEntryLater;
   double m_noiseFloor;
   double m_Rxorientation;
   double m_totalGain;
