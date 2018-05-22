@@ -37,7 +37,6 @@
 #include "ns3/thz-mac-macro.h"
 #include "ns3/thz-channel.h"
 #include "ns3/thz-spectrum-waveform.h"
-#include "ns3/thz-spectrum-waveform-helper.h"
 #include "ns3/thz-mac-macro-helper.h"
 #include "ns3/thz-phy-macro-helper.h"
 #include "ns3/thz-directional-antenna-helper.h"
@@ -141,10 +140,10 @@ int main (int argc, char* argv[])
   Ipv4InterfaceContainer iface = ipv4.Assign (devices);
 
 
-  /////////////////////////////////////////////////////PopulateArpCache()////////////////////////////////////////////////////////////////////////////
+  //-----------------------------------PopulateArpCache---------------------------------------------//
 
   Ptr<ArpCache> arp = CreateObject<ArpCache> ();
-  arp->SetAliveTimeout (Seconds (3600));
+  arp->SetAliveTimeout (Seconds (3600)); 
   for (uint16_t i = 0; i < nodes.GetN (); i++)
     {
       Ptr<Ipv4L3Protocol> ip = nodes.Get (i)->GetObject<Ipv4L3Protocol> ();
@@ -165,8 +164,14 @@ int main (int argc, char* argv[])
                   continue;
                 }
               ArpCache::Entry * entry = arp->Add (ipAddr);
-              entry->MarkWaitReply (0);
+              
+              Ipv4Header ipHeader;
+              Ptr<Packet> packet = Create<Packet> ();
+              packet->AddHeader (ipHeader);
+              
+              entry->MarkWaitReply (ArpCache::Ipv4PayloadHeaderPair (packet, ipHeader));
               entry->MarkAlive (addr);
+
             }
         }
     }
@@ -182,7 +187,7 @@ int main (int argc, char* argv[])
         }
     }
 
-  //////////////////////////////////////////////////End of ARP table population////////////////////////////////////////////////////////////////////////
+  //-----------------------------------End of ARP table-----------------------------------------------//
 
   THzUdpServerHelper Server (9);
   ApplicationContainer Apps = Server.Install (Servernodes);
