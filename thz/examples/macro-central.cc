@@ -57,6 +57,18 @@
 
 using namespace ns3;
 
+/* This example file is for the macroscale scenario of the THz-band communication networks, i.e., with transmission distance
+ * larger than several meters. It outputs the link layer performance mainly in terms of the throughput and the discarding
+ * probability of the DATA packets. In this example, a centralized network architecture is implemented. User can set network
+ * topology in this file. High speed turning directional antenna is applied at the receiver (Servernodes), while all senders
+ * (Clientnodes) pointing the beam of directional antennas toward the receiver. The basic parameters of the directional antennas
+ * can be set in this file. User can also set the number of sub-bands and the number of sample bands of the selected 3dB frequency
+ * window in this file. There are two MAC protocols can be selected by user in this file, that include a 0-way and a 2-way handshake
+ * protocols, which starts the link layer transmission with a DATA frame or a RTS frame respectively. The selection can be achieved
+ * by setting the attribute value of EnableRts in THzMacMacro. In the end, the user can also set the generated packet size and the
+ * mean value of the packet generation interval in this file.
+ */
+
 NS_LOG_COMPONENT_DEFINE ("MacroCentral");
 
 int main (int argc, char* argv[])
@@ -68,6 +80,8 @@ int main (int argc, char* argv[])
   seed.SetSeed (seed_num);
   std::printf ("seed_num = %d\n", seed.GetSeed ());
 
+  //LogComponentEnable("THzSpectrumValueFactory", LOG_LEVEL_ALL);
+  //LogComponentEnable("THzSpectrumPropagationLoss", LOG_LEVEL_ALL);
   //LogComponentEnable("THzDirectionalAntenna", LOG_LEVEL_ALL);
   //LogComponentEnable("THzNetDevice", LOG_LEVEL_ALL);
   //LogComponentEnable("THzMacMacro", LOG_LEVEL_ALL);
@@ -106,10 +120,9 @@ int main (int argc, char* argv[])
   //------------------------------------CONNECT ALL-------------------------------------------//
 
   Ptr<THzChannel> thzChan = CreateObject<THzChannel> ();
-
   THzMacMacroHelper thzMac = THzMacMacroHelper::Default ();
 
-  bool rtsOn = 1;
+  bool rtsOn = 0;
   std::printf ("rts on? %d\n", rtsOn);
   if (rtsOn == true)
     {
@@ -122,10 +135,13 @@ int main (int argc, char* argv[])
 
   THzPhyMacroHelper thzPhy = THzPhyMacroHelper::Default ();
   THzDirectionalAntennaHelper thzDirAntenna = THzDirectionalAntennaHelper::Default ();
+  Config::SetDefault ("ns3::THzDirectionalAntenna::TurningSpeed", DoubleValue (91032.04));
+  Config::SetDefault ("ns3::THzDirectionalAntenna::MaxGain", DoubleValue (17.27));
+  Config::SetDefault ("ns3::THzDirectionalAntenna::BeamWidth", DoubleValue (27.69));
+
 
   THzHelper thz;
   NetDeviceContainer devices = thz.Install (nodes, thzChan, thzPhy, thzMac, thzDirAntenna);
-
   Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSubBand", DoubleValue (98));
   Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSample", DoubleValue (1));
 
