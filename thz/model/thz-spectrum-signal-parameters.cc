@@ -25,6 +25,7 @@
 #include "thz-phy.h"
 #include <ns3/spectrum-value.h>
 #include <ns3/log.h>
+#include "ns3/packet.h"
 
 
 NS_LOG_COMPONENT_DEFINE ("THzSpectrumSignalParameters");
@@ -54,13 +55,13 @@ THzSpectrumSignalParameters::THzSpectrumSignalParameters (const THzSpectrumSigna
   subBandBandwidth = p.subBandBandwidth;
 }
 
-Ptr<THzSpectrumSignalParameters>
+Ptr<SpectrumSignalParameters>
 THzSpectrumSignalParameters::Copy ()
 {
   NS_LOG_FUNCTION (this);
-  return Create<THzSpectrumSignalParameters> (*this);
+ 
+  Ptr<THzSpectrumSignalParameters> tssp (new THzSpectrumSignalParameters (*this), false);
+  return tssp;
 }
-
-
 
 } // namespace ns3
