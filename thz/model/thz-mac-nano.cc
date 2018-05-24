@@ -125,11 +125,12 @@ void
 THzMacNano::SetAntenna ()
 {
   NS_LOG_FUNCTION ("");
+  // set as omnidirectional
   double turnSpeed = 0;
   double MaxGain = 40; //dB
   double beamwidthDegrees = 360;
   m_thzAD = m_device->GetDirAntenna ();
-  m_thzAD->SetAttribute ("TuneRxTxMode", DoubleValue (2.0)); // set as omnidirectional
+  m_thzAD->SetAttribute ("TuneRxTxMode", DoubleValue (2.0)); 
   NS_LOG_DEBUG ( "Tune as OmnidirectionalMode At node: " << m_device->GetNode ()->GetId () << " Antenna Mode: " << m_thzAD->CheckAntennaMode () );
   m_thzAD->SetAttribute ("InitialAngle", DoubleValue (0.0));
   m_thzAD->SetMaxGain (MaxGain);
