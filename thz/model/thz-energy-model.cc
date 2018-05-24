@@ -74,8 +74,8 @@ THzEnergyModel::THzEnergyModel ()
 {
   NS_LOG_FUNCTION (this);
   Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
-  uint32_t energyInittTime = uv->GetInteger (0, 24);
-  Simulator::Schedule (MicroSeconds (8.0 * energyInittTime), &THzEnergyModel::DoInitialize, this);
+  uint32_t energyInitTime = uv->GetInteger (0, m_dataCallbacklEnergy); //used to randomize the transmission start times
+  Simulator::Schedule (MicroSeconds (8.0 * energyInitTime), &THzEnergyModel::DoInitialize, this);
 }
 
 THzEnergyModel::~THzEnergyModel ()
