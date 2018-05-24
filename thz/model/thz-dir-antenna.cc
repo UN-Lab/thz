@@ -58,7 +58,7 @@ THzDirectionalAntenna::GetTypeId (void)
                    DoubleValue (1.0),
                    MakeDoubleAccessor (&THzDirectionalAntenna::m_RxTxMode),
                    MakeDoubleChecker<double> ())
-    .AddAttribute ("Beamwidth",
+    .AddAttribute ("BeamWidth",
                    "The 3dB beamwidth (degrees)",
                    DoubleValue (40),
                    MakeDoubleAccessor (&THzDirectionalAntenna::m_beamwidthDegrees),
@@ -146,8 +146,8 @@ THzDirectionalAntenna::SetBeamwidth (double beamwidthDegrees)
 double
 THzDirectionalAntenna::GetBeamwidth () const
 {
-  NS_LOG_FUNCTION ( RadiansToDegrees (m_beamwidthRadians) << " Degrees " << " at node: " << m_device->GetNode ()->GetId ());
-  return RadiansToDegrees (m_beamwidthRadians);
+  NS_LOG_FUNCTION ( m_beamwidthDegrees << " Degrees " << " at node: " << m_device->GetNode ()->GetId ());
+  return m_beamwidthDegrees;
 }
 
 //------------------------------------------RX DA ---------------------------------------//
@@ -167,12 +167,14 @@ THzDirectionalAntenna::TuneRxOrientation (double phi_zero)
   double phi_rx_rad = phi_rx * M_PI / 180.0;
   m_RxorientationDegrees = phi_rx;
   m_RxorientationRadians = phi_rx_rad;
+  NS_LOG_DEBUG("THzDirectionalAntenna::TuneRxOrientation: " << m_RxorientationDegrees);
 }
 
 double
 THzDirectionalAntenna::CheckRxOrientation ()
 {
   return m_RxorientationRadians;
+  NS_LOG_DEBUG("THzDirectionalAntenna::CheckRxOrientation: " << RadiansToDegrees(m_RxorientationRadians));
 }
 
 

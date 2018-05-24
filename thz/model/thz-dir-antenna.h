@@ -72,6 +72,7 @@ public:
    * the setting of mode 2 is for the terahertz nano-scale scenario. The detail MAC protocol is described in:
    * Q.Xia, Z.Hossain, M.Medley and J.M Jornet, "A Link-layer Synchronization and Medium Access Control Protocol for Terahertz-band Communication Networks,"
    */
+
   double CheckAntennaMode (void);
 
   /**
@@ -122,14 +123,14 @@ public:
   /**
     * \brief check the orientation of the receiver's directional antenna based on user setting
     * 
-    * returns a orientation of sector-by-sector turning directional antenna
+    * returns a orientation of sector-by-sector turing directional antenna
     */
   double CheckRxOrientation ();
 
   /**
     * \brief check the orientation of the receiver's directional antenna based on time duration
     *
-    * returns a orientation of smoothly turning directional antenna
+    * returns a orientation of smoothly turing directional antenna
     */
   double GetRxOrientation ();
 
