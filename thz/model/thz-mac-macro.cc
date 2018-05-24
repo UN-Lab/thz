@@ -79,18 +79,12 @@ THzMacMacro::THzMacMacro ()
   m_discard = 0;
   m_send = 0;
   m_thzAD = 0;
-  m_turnSpeed = 91032.04;
-  m_Circle = Seconds (1 / m_turnSpeed);
-  m_nSector = 13;
-  m_MaxGain = 17.27;
-  m_theta = 360 / m_nSector;
   m_rxIniAngle = 0;
-  m_packetsize = 15000;
+  m_MinEnquePacketSize = 15000;
   m_tData = NanoSeconds (810.76);
-  m_tSector = NanoSeconds (m_Circle.GetNanoSeconds () / m_nSector);
   m_result.clear ();
   Simulator::Schedule (NanoSeconds (0.0001),&THzMacMacro::SetRxAntennaParameters, this); // initialization: turn antenna mode as receiver mode at all devices
-  NS_LOG_UNCOND ("m_tSector = " << m_tSector << " m_Circle = " << m_Circle << " m_tSector = " << m_tSector);
+
 }
 THzMacMacro::~THzMacMacro ()
 {
@@ -388,17 +382,15 @@ void
 THzMacMacro::SetRxAntennaParameters ()
 {
   NS_LOG_DEBUG ("NODE: " << m_device->GetNode ()->GetId () << "   Now TX->RX  " << Simulator::Now ());
-  double MaxGain = m_MaxGain;
-  double beamwidthDegrees = m_theta;
   m_thzAD = m_device->GetDirAntenna ();
   m_thzAD->SetAttribute ("TuneRxTxMode", DoubleValue (1));     // set as receiver
-  NS_LOG_DEBUG ( "Tune as RxMode At node: " << m_device->GetNode ()->GetId () << " Antenna Mode: " << m_thzAD->CheckAntennaMode ());
   m_thzAD->SetAttribute ("InitialAngle", DoubleValue (0));
-  m_thzAD->SetMaxGain (MaxGain);
-  m_thzAD->SetBeamwidth (beamwidthDegrees);
-  m_thzAD->SetRxTurningSpeed (m_turnSpeed);
+  double beamwidthDegrees = m_thzAD->GetBeamwidth();  //get default beamwidth
+  m_thzAD->SetBeamwidth (beamwidthDegrees);           //set beamwidth to calculate antenna exponent for thz-dir-antenna module
+  NS_LOG_DEBUG ("Tune as RxMode At node: "<<m_device->GetNode()->GetId() <<" Antenna Mode: "<<m_thzAD->CheckAntennaMode()<<" Antenna Beamwidth: "<<beamwidthDegrees<<" deg, TurningSpeed: "<<m_thzAD->GetRxTurningSpeed()<<" MaxGain: "<<m_thzAD->GetMaxGain()<<"dB");
+
   m_thzAD->TuneRxOrientation (m_rxIniAngle);
-  m_rxIniAngle = m_rxIniAngle + m_theta;
+  m_rxIniAngle = m_rxIniAngle + beamwidthDegrees;
   while (m_rxIniAngle <= -360)
     {
       m_rxIniAngle += 360;
@@ -407,7 +399,12 @@ THzMacMacro::SetRxAntennaParameters ()
     {
       m_rxIniAngle -= 360;
     }
-  m_SetRxAntennaEvent = Simulator::Schedule (m_tSector, &THzMacMacro::SetRxAntennaParameters, this);
+
+  Time tCircle = Seconds (1 / m_thzAD->GetRxTurningSpeed());
+  int nSector = 360/beamwidthDegrees;
+  Time tSector = NanoSeconds (tCircle.GetNanoSeconds () / nSector);
+  NS_LOG_DEBUG ("tSector = " << tSector << ", nSector = " << nSector << ", tCircle = " << tCircle );
+  m_SetRxAntennaEvent = Simulator::Schedule (tSector, &THzMacMacro::SetRxAntennaParameters, this);
 }
 
 // ----------------------- Queue Functions -----------------------------
@@ -415,7 +412,7 @@ bool
 THzMacMacro::Enqueue (Ptr<Packet> packet, Mac48Address dest)
 {
   m_pktRec = packet->GetSize ();
-  if (m_pktRec < m_packetsize)
+  if (m_pktRec < m_MinEnquePacketSize)
     {
       m_pktQueue.push_front (packet);
       m_pktQueue.pop_front ();
@@ -428,14 +425,12 @@ THzMacMacro::Enqueue (Ptr<Packet> packet, Mac48Address dest)
       packet->AddHeader (header);
       m_pktQueue.push_back (packet);
       m_SetRxAntennaEvent.Cancel ();
-      double MaxGain = m_MaxGain;
-      double beamwidthDegrees = m_theta;
       m_thzAD = m_device->GetDirAntenna ();
       m_thzAD->SetAttribute ("TuneRxTxMode", DoubleValue (0)); // set as transmitter
-      NS_LOG_DEBUG ( "Tune as TxMode At node: " << m_device->GetNode ()->GetId () << " Antenna Mode: " << m_thzAD->CheckAntennaMode () );
       m_thzAD->SetAttribute ("InitialAngle", DoubleValue (0.0));
-      m_thzAD->SetMaxGain (MaxGain);
-      m_thzAD->SetBeamwidth (beamwidthDegrees);
+      double beamwidthDegrees = m_thzAD->GetBeamwidth();  //get default beamwidth
+      m_thzAD->SetBeamwidth (beamwidthDegrees);           //set beamwidth to calculate antenna exponent for thz-dir-antenna module
+      NS_LOG_DEBUG ("Tune as TxMode At node: "<<m_device->GetNode()->GetId()<<" Antenna Mode: "<<m_thzAD->CheckAntennaMode()<<" Antenna Beamwidth: "<<beamwidthDegrees<<" deg, MaxGain: "<<m_thzAD->GetMaxGain()<<"dB");
 
       Rec rec;
       rec.RecSize = packet->GetSize ();

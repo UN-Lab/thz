@@ -451,16 +451,10 @@ private:
   uint16_t m_send;
   uint16_t m_discard;
 
-  Time m_Circle;            //!< time duration for directional antenna turning in one circle [sec]
-  Time m_tSector;           //!< time duration for directional antenna turning in one sector [sec]
   Time m_tData;             //!< transmission duration of the DATA packet
-  uint16_t m_nSector;       //!< number of sectors in 2pi of the directional antenna
-  double m_MaxGain;         //!< maximum antenna gain
-  double m_theta;           //!< beamwidth of the directional antenna
   double m_rxIniAngle;      //!< initial angle of the receiver antenna
-  uint32_t m_packetsize;    //!< DATA packet size
+  uint32_t m_MinEnquePacketSize;    //!< the minimum DATA packet size needed to enqueue the packet
   uint16_t m_probDiscard;   //!< the DATA packet discarding probability
-  double m_turnSpeed;       //!< turning speed of directional antenna in [circles/sec]
 
   Time m_nav;
   Time m_localNav;
