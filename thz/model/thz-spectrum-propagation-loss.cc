@@ -134,9 +134,18 @@ double
 THzSpectrumPropagationLoss::CalculateAbsLoss (double f, double d) const
 {
   std:: ifstream AbsCoefile;
-  AbsCoefile.open ("new_tau.txt", std::ifstream::in);
+  AbsCoefile.open ("src/thz/data_AbsCoe.txt", std::ifstream::in);
+  if (!AbsCoefile.is_open ())
+	{
+	  NS_LOG_UNCOND ( "THzSpectrumPropagationLoss::CalculateAbsLoss: open data_AbsCoe.txt failed 1" );
+    }
+
   std:: ifstream frequencyfile;
-  frequencyfile.open ("new_f.txt", std::ifstream::in);
+  frequencyfile.open ("src/thz/data_frequency.txt", std::ifstream::in);
+  if (!frequencyfile.is_open ())
+	{
+	  NS_LOG_UNCOND ( "THzSpectrumPropagationLoss::CalculateAbsLoss: open data_frequency.txt failed" );
+    }
   double f_ite;
   double k_ite;
   double kf = 0.0;
@@ -185,7 +194,11 @@ Ptr<SpectrumValue>
 THzSpectrumPropagationLoss::LoadedAbsCoe (int s, int j, double f, double d,Ptr<const SpectrumValue> txPsd) const
 {
   std:: ifstream AbsCoefile;
-  AbsCoefile.open ("new_tau.txt", std::ifstream::in);
+  AbsCoefile.open ("src/thz/data_AbsCoe.txt", std::ifstream::in);
+  if (!AbsCoefile.is_open ())
+	{
+	  NS_LOG_UNCOND ( "THzSpectrumPropagationLoss::LoadedAbsCoe: open data_AbsCoe.txt failed" );
+    }
   double k;
   Ptr<SpectrumValue> kf_store = Copy <SpectrumValue> (txPsd);
   int i = 1;
