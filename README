@@ -4,10 +4,10 @@ The Setup of the TeraSim
 
 Table of Contents:
 ------------------
-1) Frequency Data Base: new_f.txt
-2) Absorption Coefficient Data Base: new_tau.txt
+1) Frequency Data Base: data_frequency.txt
+2) Absorption Coefficient Data Base: data_AbsCoe.txt
 
-(Please put new_f.txt and new-tau.txt outside src folder)
+(We put data_frequency.txt and data_AbsCoe.txt inside src/thz folder)
 
 3) thz folder includes:
 												3.1) model folder
