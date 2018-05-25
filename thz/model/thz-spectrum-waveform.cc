@@ -42,23 +42,28 @@ THzSpectrumValueFactory::GetTypeId ()
 {
   static TypeId tid = TypeId ("ns3::THzSpectrumValueFactory")
     .SetParent<Object> ()
-    .AddAttribute ("NumSubBand", "The number of sub-bands containing in the selected 3dB frequency window",
+    .AddAttribute ("NumSubBand", 
+                   "The number of sub-bands containing in the selected 3dB frequency window",
                    DoubleValue (5242), // for macro-central we select 98, for nano-adhoc we select 5242
                    MakeDoubleAccessor (&THzSpectrumValueFactory::m_numsb),
                    MakeDoubleChecker<double> ())
-    .AddAttribute ("SubBandWidth", "The bandwidth of each sub-band",
+    .AddAttribute ("SubBandWidth", 
+                   "The bandwidth of each sub-band",
                    DoubleValue (7.6294e8),
                    MakeDoubleAccessor (&THzSpectrumValueFactory::m_sbw),
                    MakeDoubleChecker<double> ())
-    .AddAttribute ("TotalBandWidth", "The total bandwidth of the selected 3dB frequency window",
+    .AddAttribute ("TotalBandWidth", 
+                   "The total bandwidth of the selected 3dB frequency window",
                    DoubleValue (7.4768e10),
                    MakeDoubleAccessor (&THzSpectrumValueFactory::m_tbw),
                    MakeDoubleChecker<double> ())
-    .AddAttribute ("CentralFrequency", "The central frequency of the selected 3dB frequency window",
+    .AddAttribute ("CentralFrequency", 
+                   "The central frequency of the selected 3dB frequency window",
                    DoubleValue (1.0345e+012),
                    MakeDoubleAccessor (&THzSpectrumValueFactory::m_fc),
                    MakeDoubleChecker<double> ())
-    .AddAttribute ("NumSample", "The number of sample bands of the selected 3dB frequency window",
+    .AddAttribute ("NumSample", 
+                   "The number of sample bands of the selected 3dB frequency window",
                    DoubleValue (100),
                    MakeDoubleAccessor (&THzSpectrumValueFactory::m_numsample),
                    MakeDoubleChecker<double> ())
