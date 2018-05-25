@@ -42,14 +42,27 @@
 
 using namespace ns3;
 
+
+/* This example file is for the nanoscale scenario of the THz-band communication networks, i.e., with transmission distance
+ * below one meter. It outputs the link layer performance mainly in terms of the throughput and the discarding probability 
+ * of the DATA packets. In this example, an adhoc network architecture is implemented. User can set network topology in this
+ * file. The nodes in the nanonetwork are equipped with the energy module we developed. The basic parameters of the energy
+ * model can be set in this file. User can also set the number of samples of the TSOOK pulse within frequency range 0.9-4 THz
+ * window in this file. IUser can select one of the teo MAC protocols that include a 0-way and a 2-way handshake protocols. 
+ * 0-way starts the link layer transmission with a DATA frame and 2-way with an RTS frame. The selection can be done by setting
+ * the attribute value of EnableRts in THzMacNano. In the end, the user can also set the generated packet size and the
+ * mean value of the packet generation interval in this file.
+ */
+
 NS_LOG_COMPONENT_DEFINE ("NanoAdhoc");
 
 
 int main (int argc, char* argv[])
 {
-  Time::SetResolution (Time::FS ); //picoseconds);
+  Time::SetResolution (Time::FS ); //femtoseconds
+  int seed_run = 1;
   RngSeedManager seed;
-  seed.SetRun (5);
+  seed.SetRun (seed_run);
   //LogComponentEnable("THzMacNano", LOG_LEVEL_ALL);
   //LogComponentEnable("THzNetDevice", LOG_LEVEL_ALL);
   //LogComponentEnable("THzPhyNano", LOG_LEVEL_ALL);
@@ -60,7 +73,7 @@ int main (int argc, char* argv[])
   //LogComponentEnable("THzSpectrumValueFactory", LOG_LEVEL_ALL);
   //LogComponentEnable("THzSpectrumPropagationLossModel", LOG_LEVEL_ALL);
 
-  uint8_t numNodes = 13;
+  uint8_t numNodes = 7;
   NodeContainer nodes;
   nodes.Create (numNodes);
 
@@ -84,7 +97,7 @@ int main (int argc, char* argv[])
       thzMac.Set ("EnableRts",StringValue ("0"));
     }
 
-  Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSubBand", DoubleValue (5242));
+  Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSubBand", DoubleValue (4096));
   Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSample", DoubleValue (10));
   THzPhyNanoHelper thzPhy = THzPhyNanoHelper::Default ();
   thzPhy.SetPhyAttribute ("PulseDuration", TimeValue (FemtoSeconds (100)));
@@ -92,7 +105,13 @@ int main (int argc, char* argv[])
 
   THzDirectionalAntennaHelper thzDirAntenna = THzDirectionalAntennaHelper::Default ();
   THzHelper thz;
+
+
   NetDeviceContainer devices = thz.Install (nodes, thzChan, thzPhy, thzMac,thzDirAntenna);
+
+
+
+
   //***********************************Mobility**********************************//
   MobilityHelper ue1mobility;
   ue1mobility.SetPositionAllocator ("ns3::UniformDiscPositionAllocator",
@@ -132,7 +151,11 @@ int main (int argc, char* argv[])
                   continue;
                 }
               ArpCache::Entry * entry = arp->Add (ipAddr);
-              entry->MarkWaitReply (0);
+              Ipv4Header ipHeader;
+              Ptr<Packet> packet = Create<Packet> ();
+              packet->AddHeader (ipHeader);
+              
+              entry->MarkWaitReply (ArpCache::Ipv4PayloadHeaderPair (packet, ipHeader));
               entry->MarkAlive (addr);
             }
         }
