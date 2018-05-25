@@ -29,7 +29,7 @@
 #include "ns3/thz-spectrum-waveform.h"
 #include <ns3/spectrum-value.h>
 #include "ns3/gnuplot.h"
-
+#include "ns3/core-module.h"
 
 
 using namespace ns3;
@@ -52,12 +52,10 @@ DoRun (Ptr<THzSpectrumPropagationLoss> lossModel, std::string dataTitle)
   dataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
 
   double txPowerDbm = -20;  //dBm
-
   double pulseDuration = 100e-15;  //100 femtoseconds
-  double distance = 1;  //m
+  double distance = 0.1;  //m
   Ptr<SpectrumValue> txPsd;
   Ptr<SpectrumValue> rxPsd;
-
   double txPowerW = DbmToW (txPowerDbm);
   Ptr<THzSpectrumValueFactory> sf = CreateObject<THzSpectrumValueFactory> ();
 
@@ -72,13 +70,13 @@ DoRun (Ptr<THzSpectrumPropagationLoss> lossModel, std::string dataTitle)
   b->SetPosition (Vector (distance, 0, 0));
   rxPsd = lossModel->CalcRxPowerSpectralDensity (txPsd, a, b);
 
-  Values::iterator vit = rxPsd->ValuesBegin ();
-  Bands::const_iterator fit = rxPsd->ConstBandsBegin ();
-  //std::printf("f is %f \n",fit->fc);
-  while (vit != rxPsd->ValuesEnd ())
+  Values::iterator vit = txPsd->ValuesBegin ();
+  Bands::const_iterator fit = txPsd->ConstBandsBegin ();
+  
+  while (vit != txPsd->ValuesEnd ())
     {
-      NS_ASSERT (fit != rxPsd->ConstBandsEnd ());
-      dataset.Add (fit->fc, *vit);
+      NS_ASSERT (fit != txPsd->ConstBandsEnd ());
+      dataset.Add (fit->fc/1e12, *vit);
 
       ++vit;
       ++fit;
@@ -99,11 +97,12 @@ int main (int argc, char *argv[])
 
   Gnuplot plot (graphicsFileName);
   plot.SetTitle (plotTitle);
-  plot.SetLegend ("Frequency [Hz]", "PSD [Watts/Hz]");
+  plot.SetLegend ("Frequency [THz]", "p.s.d [Watts/Hz]");
 
   Ptr<THzSpectrumPropagationLoss> lossModel = CreateObject<THzSpectrumPropagationLoss> ();
-
-  Gnuplot2dDataset dataset1 = DoRun (lossModel, "THz received signal PSD");
+  Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSubBand", DoubleValue (4063));
+  Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSample", DoubleValue (1000));
+  Gnuplot2dDataset dataset1 = DoRun (lossModel, "Transmitted pulse p.s.d for nanoscale");
 
   plot.AddDataset (dataset1);
 
