@@ -215,9 +215,7 @@ private:
   double m_numberOfSubBands;
   double m_subBandBandwidth;
   double m_sinrTh;   // SINR threshold
-  double m_csTh;     // carrier sense threshold (dBm)
-  bool m_csBusy;
-  Time m_csBusyEnd;
+ 
   std::list<OngoingTx> m_ongoingTx;
   std::list<OngoingRx> m_ongoingRx;
 

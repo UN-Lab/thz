@@ -64,21 +64,18 @@ THzPhyNano::GetTypeId (void)
                    DoubleValue (10),
                    MakeDoubleAccessor (&THzPhyNano::m_sinrTh),
                    MakeDoubleChecker<double> ())
-    .AddAttribute ("CsPowerTh",
-                   "Carrier Sense Threshold (dBm)",
-                   DoubleValue (-110),
-                   MakeDoubleAccessor (&THzPhyNano::m_csTh),
-                   MakeDoubleChecker<double> ())
     .AddAttribute ("TxPower",
                    "Transmission Power (dBm)",
                    DoubleValue (-20),
                    MakeDoubleAccessor (&THzPhyNano::SetTxPower),
                    MakeDoubleChecker<double> ())
-    .AddAttribute ("PulseDuration", "Duration of a short pulse",
+    .AddAttribute ("PulseDuration", 
+                   "Duration of a short pulse",
                    TimeValue (FemtoSeconds (100)),
                    MakeTimeAccessor (&THzPhyNano::m_pulseDuration),
                    MakeTimeChecker ())
-    .AddAttribute ("Beta", "Ratio of symbol duratio to pulse duration",
+    .AddAttribute ("Beta", 
+                   "Ratio of symbol duratio to pulse duration",
                    DoubleValue (100),
                    MakeDoubleAccessor (&THzPhyNano::m_beta),
                    MakeDoubleChecker<double> ())
@@ -91,8 +88,6 @@ THzPhyNano::THzPhyNano ()
     m_mac (0),
     m_channel (0)
 {
-  m_csBusy = false;
-  m_csBusyEnd = Seconds (0);
   Simulator::ScheduleNow (&THzPhyNano::CalTxPsd, this);
 }
 
