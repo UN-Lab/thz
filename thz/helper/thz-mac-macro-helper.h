@@ -29,7 +29,7 @@
 namespace ns3 {
 
 /**
- * \brief create the terahertz MAC layer for macro-scale scenario
+ * \brief create the THz MAC layer for macro-scale scenario
  *
  * This class can create MACs of type ns3::THzMacMacro.
  */
@@ -37,7 +37,7 @@ class THzMacMacroHelper : public THzMacHelper
 {
 public:
   /**
-   * Create a THzMacMacroHelper that is used to enalbe the terahertz MAC layer
+   * Create a THzMacMacroHelper that is used to enable the THz MAC layer
    * protocol of the macro-scale scenario.
    */
   THzMacMacroHelper ();
@@ -49,12 +49,12 @@ public:
   virtual ~THzMacMacroHelper ();
 
   /**
-   * Create a terahertz MAC helper for macro-scale scenario in a default working state.
+   * Create a THz MAC helper for macro-scale scenario in a default working state.
    */
   static THzMacMacroHelper Default (void);
 
   /**
-   * Set the underlying type of the terahertz MAC layer protocol for macro-scale scenario
+   * Set the underlying type of the THz MAC layer protocol for macro-scale scenario
    * and its attributes.
    *
    * \param type the type of ns3::THzMacMacro to create.
@@ -88,7 +88,7 @@ public:
                 std::string n7 = "", const AttributeValue &v7 = EmptyAttributeValue ());
 
   /**
-   * Set the attribute of the of the terahertz MAC layer protocol for macro-scale scenario.
+   * Set the attribute of the of the THz MAC layer protocol for macro-scale scenario.
    *
    * \param n the name of the attribute to set
    * \param v the value of the attribute to set

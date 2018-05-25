@@ -44,7 +44,7 @@ public:
    */
   virtual ~THzPhyNanoHelper ();
   /**
-   * Create a phy helper in a default working state.
+   * Create a PHY helper in a default working state.
    */
   static THzPhyNanoHelper Default (void);
   /**
@@ -69,7 +69,7 @@ public:
    * \param v7 the value of the attribute to set
    *
    * All the attributes specified in this method should exist
-   * in the requested mac.
+   * in the requested MAC.
    */
   void SetType (std::string type,
                 std::string n0 = "", const AttributeValue &v0 = EmptyAttributeValue (),
@@ -91,10 +91,10 @@ public:
 
 private:
   /**
-   * Create a THzPhy using phy factory.
+   * Create a THzPhy using PHY factory.
    */
   virtual Ptr<THzPhy> Create (void) const;
-  /** THz phy factory. */
+  /** THz PHY factory. */
   ObjectFactory m_phy;
 };
 

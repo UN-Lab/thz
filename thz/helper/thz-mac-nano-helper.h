@@ -45,7 +45,7 @@ public:
    */
   virtual ~THzMacNanoHelper ();
   /**
-   * Create a mac helper in a default working state.
+   * Create a MAC helper in a default working state.
    */
   static THzMacNanoHelper Default (void);
   /**
@@ -70,7 +70,7 @@ public:
    * \param v7 the value of the attribute to set
    *
    * All the attributes specified in this method should exist
-   * in the requested mac.
+   * in the requested MAC.
    */
   void SetType (std::string type,
                 std::string n0 = "", const AttributeValue &v0 = EmptyAttributeValue (),

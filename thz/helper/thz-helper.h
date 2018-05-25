@@ -109,7 +109,7 @@ public:
   THzHelper ();
   virtual ~THzHelper ();
   /**
-   * \param c the set of nodes on which a thz device must be created
+   * \param c the set of nodes on which a THz device must be created
    * \param channel the channel helper to create channel objects
    * \param phyHelper the PHY helper to create PHY objects
    * \param macHelper the MAC helper to create MAC objects

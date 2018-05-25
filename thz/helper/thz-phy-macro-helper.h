@@ -29,7 +29,7 @@
 namespace ns3 {
 
 /**
- * \brief create the terahertz physical layer class
+ * \brief create the THz physical layer class
  */
 class THzPhyMacroHelper : public THzPhyHelper
 {
@@ -47,13 +47,13 @@ public:
   virtual ~THzPhyMacroHelper ();
 
   /**
-   * Create a terahertz physical layer helper for the macro-scale scenario
+   * Create a THz physical layer helper for the macro-scale scenario
    * in a default working state.
    */
   static THzPhyMacroHelper Default (void);
 
   /**
-   * Set the underlying type of the terahertz physical layer for macro-scale senario
+   * Set the underlying type of the THz physical layer for macro-scale scenario
    * and its attributes.
    *
    * \param type the type of ns3::THzDirectionalAntenna to create.
@@ -86,7 +86,7 @@ public:
                 std::string n6 = "", const AttributeValue &v6 = EmptyAttributeValue (),
                 std::string n7 = "", const AttributeValue &v7 = EmptyAttributeValue ());
   /**
-   * Set the attribute of the of the terahertz physical layer for macro-scale scenario.
+   * Set the attribute of the of the THz physical layer for macro-scale scenario.
    *
    * \param n the name of the attribute to set
    * \param v the value of the attribute to set

@@ -30,7 +30,7 @@
 namespace ns3 {
 
 /**
- * \brief create the terahertz directional antenna module
+ * \brief create the THz directional antenna module
  */
 class THzDirectionalAntennaHelper : public THzDirAntennaHelper
 {
@@ -48,12 +48,12 @@ public:
   virtual ~THzDirectionalAntennaHelper ();
 
   /**
-   * Create a terahertz directional antenna helper in a default working state.
+   * Create a THz directional antenna helper in a default working state.
    */
   static THzDirectionalAntennaHelper Default (void);
 
   /**
-   * Set the underlying type of the terahertz directional antenna and its attributes.
+   * Set the underlying type of the THz directional antenna and its attributes.
    *
    * \param type the type of ns3::THzDirectionalAntenna to create.
    * \param n0 the name of the attribute to set
@@ -85,7 +85,7 @@ public:
                 std::string n6 = "", const AttributeValue &v6 = EmptyAttributeValue (),
                 std::string n7 = "", const AttributeValue &v7 = EmptyAttributeValue ());
   /**
-   * Set the attribute of the of the terahertz directional antenna.
+   * Set the attribute of the of the THz directional antenna.
    *
    * \param n the name of the attribute to set
    * \param v the value of the attribute to set
