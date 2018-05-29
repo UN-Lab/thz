@@ -1053,10 +1053,16 @@ THzMacMacro::RoundOffTime (Time time)
 
 }
 
+
 void
 THzMacMacro::ResultsRecord ()
 {
-  int seed_num;
+  /*----------------------------------------------------------------------------------------
+   * enable the result printing in a .txt file by uncommenting the content in this function
+   *----------------------------------------------------------------------------------------*/
+
+ /* 
+ int seed_num;
   RngSeedManager seed;
   seed_num = seed.GetSeed ();
 
@@ -1068,7 +1074,9 @@ THzMacMacro::ResultsRecord ()
   resultfile.open (filename.c_str (), std::ios::app);
   std::list<Result>::iterator it = m_result.begin ();
   resultfile << it->nodeid << "   ;\t" << it->Psize << "   ;\t" << it->delay << "   ;\t" << it->success << "   ;\t" << it->discard << std::endl;
-  resultfile.close ();
+  resultfile.close ();  
   return;
+*/
+
 }
 } // namespace ns3
