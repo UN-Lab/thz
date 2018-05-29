@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) YEAR COPYRIGHTHOLDER
+ * Copyright (c) 2017 UBNANO (http://ubnano.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -16,6 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Author: Qing Xia <qingxia@buffalo.edu>
+ *         Zahed Hossain <zahedhos@buffalo.edu>
+ *         Josep Miquel Jornet <jmjornet@buffalo.edu>
  */
 #include <ns3/object.h>
 #include <ns3/simulator.h>
