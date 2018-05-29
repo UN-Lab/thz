@@ -97,7 +97,6 @@ int main (int argc, char* argv[])
       thzMac.Set ("EnableRts",StringValue ("0"));
     }
 
-  Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSubBand", DoubleValue (4096));
   Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSample", DoubleValue (10));
   THzPhyNanoHelper thzPhy = THzPhyNanoHelper::Default ();
   thzPhy.SetPhyAttribute ("PulseDuration", TimeValue (FemtoSeconds (100)));
