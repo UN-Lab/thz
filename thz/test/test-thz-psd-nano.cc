@@ -93,16 +93,17 @@ int main (int argc, char *argv[])
   std::string fileNameWithNoExtension = "thz-received-power-spectral-density-nano";
   std::string graphicsFileName        = fileNameWithNoExtension + ".png";
   std::string plotFileName            = fileNameWithNoExtension + ".plt";
-  std::string plotTitle               = "THz received signal power spectral density for nanoscale communication";
+  //std::string plotTitle               = "THz received signal power spectral density for nanoscale communication";
 
   Gnuplot plot (graphicsFileName);
-  plot.SetTitle (plotTitle);
-  plot.SetLegend ("Frequency [THz]", "p.s.d [Watts/Hz]");
+  //plot.SetTitle (plotTitle);
+  plot.SetLegend ("Frequency [THz]", "p.s.d. [Watts/Hz]");
+  plot.AppendExtra("set grid xtics ytics");
 
   Ptr<THzSpectrumPropagationLoss> lossModel = CreateObject<THzSpectrumPropagationLoss> ();
-  Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSubBand", DoubleValue (4063));
+  
   Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSample", DoubleValue (1000));
-  Gnuplot2dDataset dataset1 = DoRun (lossModel, "Transmitted pulse p.s.d for nanoscale");
+  Gnuplot2dDataset dataset1 = DoRun (lossModel, "Transmitted pulse p.s.d. for nanoscale");
 
   plot.AddDataset (dataset1);
 

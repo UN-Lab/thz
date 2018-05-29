@@ -69,15 +69,16 @@ int main (int argc, char *argv[])
   std::string fileNameWithNoExtension = "test-thz-directional-antenna";
   std::string graphicsFileName        = fileNameWithNoExtension + ".png";
   std::string plotFileName            = fileNameWithNoExtension + ".plt";
-  std::string plotTitle               = "THz Directional Antenna Gain Test";
+  //std::string plotTitle               = "THz Directional Antenna Gain Test";
 
   // Instantiate the plot and set its title.
   Gnuplot plot (graphicsFileName);
-  plot.SetTitle (plotTitle);
+  //plot.SetTitle (plotTitle);
 
   // Make the graphics file, which the plot file will create when it
   // is used with Gnuplot, be a PNG file.
   plot.SetTerminal ("png");
+  plot.AppendExtra("set grid xtics ytics");
 
   // Set the labels for each axis.
   plot.SetLegend ("Orientation of RXDA [Degree]", "Total Gain [dB]");

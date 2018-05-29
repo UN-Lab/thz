@@ -97,11 +97,12 @@ int main (int argc, char *argv[])
   std::string fileNameWithNoExtension = "thz-path-loss-vs-distance-nano";
   std::string graphicsFileName        = fileNameWithNoExtension + ".png";
   std::string plotFileName            = fileNameWithNoExtension + ".plt";
-  std::string plotTitle               = "THz propagation loss vs distance for nanoscale communication";
+  //std::string plotTitle               = "THz propagation loss vs distance for nanoscale communication";
 
   Gnuplot plot (graphicsFileName);
-  plot.SetTitle (plotTitle);
+  //plot.SetTitle (plotTitle);
   plot.SetLegend ("Distance (m)", "Recieved Power (dBm)");
+  plot.AppendExtra("set grid xtics ytics");
 
   Ptr<THzSpectrumPropagationLoss> lossModel = CreateObject<THzSpectrumPropagationLoss> ();
 
