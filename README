@@ -1,20 +1,12 @@
+TeraSim is the first simulation platform for THz communication networks which captures the capabilities of THz devices and the peculiarities of the THz channel, it implements recently proposed MAC and PHY layer solutions tailored to both nanoscale and macroscale THz scenarios. More specifically, in terms of channel, we have developed a common channel module that implements the fre-
+quency selective channel model. At the PHY and MAC layers, two parallel set of modules for nanoscale and macroscale scenarios have been developed. In relation to the capabilities of THz devices, we have implemented an energy harvesting model and a THz directional antenna model. We have thoroughly validated the functionalities of the models by comparing the simulation outputs to the analytical and numerical results available in the literature.
 
-The Setup of the TeraSim
+
+Model Description, Usage and Validation of the TeraSim
 ------------------------------------------------
+Please refer to the thz.rst in the thz/doc folder
 
-Table of Contents:
-------------------
-1) Frequency Data Base: data_frequency.txt
-2) Absorption Coefficient Data Base: data_AbsCoe.txt
 
-(We put data_frequency.txt and data_AbsCoe.txt inside src/thz folder)
-
-3) thz folder includes:
-												3.1) model folder
-												3.2) helper folder
-												3.3) examples folder: includes macro-central.cc and nano-adhoc.cc
-												3.4) test folder: includes test-thz-directional-antenna.cc, test-thz-path-loss.cc and test-thz-rx-psd.cc
-								        3.5) doc folder
-
-(Please put thz folder inside the src folder)
-
+Copy Right
+------------------------------------------------
+http://ubnano.tech/

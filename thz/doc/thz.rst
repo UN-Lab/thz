@@ -44,9 +44,7 @@ Scope and Limitations
 References
 ==========
 
-* Z.Hossain, Q.Xia, and J.M.Jornet, "TeraSim: An ns-3 Extension to Simulate Terahertz-band Communication Networks"
-
-* Q.Xia, Z.Hossain, M.Medley and J.M.Jornet, "A Link-layer Synchronization and Medium Access Control Protocol for Terahertz-band Communication Networks" in Proc. of IEEE GLOBECOM, San Diego, CA December 2015.
+* Z.Hossain, Q.Xia, and J.M.Jornet, "TeraSim: An ns-3 Extension to Simulate Terahertz-band Communication Networks", submitted for journal publication.
 
 
 Usage
@@ -162,5 +160,9 @@ This model has been tested validated by the results generated from the following
 * The test files ``test-thz-psd-macro.cc`` and ``test-thz-psd-nano.cc`` are used to plot the power spectral densities of the generated waveform by the physical layer and the received signal at certain distance for macroscale scenario and nanoscale scenario respectively.
 * The test file ``test-directional-antenna.cc`` plots the antenna radiation pattern of the directional antenna.
 * The test file ``test-thz-path-loss.cc`` plots the path loss as a function of distance.
+
+Copy Right
+**********
+http://ubnano.tech/
 
 
