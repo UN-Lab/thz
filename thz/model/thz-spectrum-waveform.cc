@@ -34,6 +34,8 @@
 NS_LOG_COMPONENT_DEFINE ("THzSpectrumValueFactory");
 
 namespace ns3 {
+const double PULSE_START_FREQUENCY = 0.1e12; //Hz
+const double PULSE_END_FREQUENCY = 4e12;
 
 NS_OBJECT_ENSURE_REGISTERED (THzSpectrumValueFactory);
 
@@ -44,7 +46,7 @@ THzSpectrumValueFactory::GetTypeId ()
     .SetParent<Object> ()
     .AddAttribute ("NumSubBand", 
                    "The number of sub-bands containing in the selected 3dB frequency window",
-                   DoubleValue (5242), // for macro-central we select 98, for nano-adhoc we select 5242
+                   DoubleValue (98), // for macro-central we select 98, for nano-adhoc we select 5242
                    MakeDoubleAccessor (&THzSpectrumValueFactory::m_numsb),
                    MakeDoubleChecker<double> ())
     .AddAttribute ("SubBandWidth", 
@@ -163,12 +165,14 @@ THzSpectrumValueFactory::THzPulseSpectrumWaveformInitializer ()
 
 
   Bands bands;
+  double pulseStartingSample = PULSE_START_FREQUENCY/m_sbw;
+  m_numsb = (PULSE_END_FREQUENCY - PULSE_START_FREQUENCY)/m_sbw;
 
   for (int j = 0; j < m_numsample; j++)
     {
       BandInfo bi;
-      bi.fl =  j * m_sbw * (m_numsb / m_numsample);
-      bi.fh =  (j + 1) * m_sbw * (m_numsb / m_numsample);
+      bi.fl =  (pulseStartingSample + (j - 0.5) * m_numsb / m_numsample) * m_sbw;
+      bi.fh =  (pulseStartingSample + (j + 0.5) * m_numsb / m_numsample) * m_sbw;
       bi.fc = (bi.fl +  bi.fh) / 2;
       bands.push_back (bi);
     }
