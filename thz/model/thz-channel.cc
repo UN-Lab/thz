@@ -47,11 +47,13 @@ THzChannel::GetTypeId ()
   static TypeId tid = TypeId ("ns3::THzChannel")
     .SetParent<Object> ()
     .AddConstructor<THzChannel> ()
-    .AddAttribute ("THzSpectrumPropagationLoss", "A pointer to the propagation loss model attached to this channel.",
+    .AddAttribute ("THzSpectrumPropagationLoss", 
+                   "A pointer to the propagation loss model attached to this channel.",
                    PointerValue (CreateObject<THzSpectrumPropagationLoss> ()),
                    MakePointerAccessor (&THzChannel::m_loss),
                    MakePointerChecker<THzSpectrumPropagationLoss> ())
-    .AddAttribute ("PropagationDelayModel", "A pointer to the propagation delay model attached to this channel.",
+    .AddAttribute ("PropagationDelayModel", 
+                   "A pointer to the propagation delay model attached to this channel.",
                    PointerValue (CreateObject<ConstantSpeedPropagationDelayModel> ()),
                    MakePointerAccessor (&THzChannel::m_delay),
                    MakePointerChecker<ConstantSpeedPropagationDelayModel> ())

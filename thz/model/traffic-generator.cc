@@ -49,11 +49,13 @@ TrafficGenerator::GetTypeId (void)
   static TypeId tid = TypeId ("TrafficGenerator")
     .SetParent<Application> ()
     .AddConstructor<TrafficGenerator> ()
-    .AddAttribute ("Mean", "The mean delay between two packets (s)",
+    .AddAttribute ("Mean", 
+                   "The mean delay between two packets (s)",
                    DoubleValue (500.0),
                    MakeDoubleAccessor (&TrafficGenerator::m_mean),
                    MakeDoubleChecker<double> ())
-    .AddAttribute ("PacketSize", "The size of each packet (bytes)",
+    .AddAttribute ("PacketSize", 
+                   "The size of each packet (bytes)",
                    UintegerValue (128),
                    MakeUintegerAccessor (&TrafficGenerator::m_size),
                    MakeUintegerChecker<uint32_t> ())

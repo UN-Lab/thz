@@ -87,25 +87,31 @@ THzNetDevice::GetTypeId ()
 {
   static TypeId tid = TypeId ("ns3::THzNetDevice")
     .SetParent<NetDevice> ()
-    .AddAttribute ("Channel", "The channel attached to this device",
+    .AddAttribute ("Channel", 
+                   "The channel attached to this device",
                    PointerValue (),
                    MakePointerAccessor (&THzNetDevice::DoGetChannel, &THzNetDevice::SetChannel),
                    MakePointerChecker<THzChannel> ())
-    .AddAttribute ("DirAntenna", "The Directional Antenna attached to this device.",
+    .AddAttribute ("DirAntenna", 
+                   "The Directional Antenna attached to this device.",
                    PointerValue (),
                    MakePointerAccessor (&THzNetDevice::GetDirAntenna, &THzNetDevice::SetDirAntenna),
                    MakePointerChecker<THzDirectionalAntenna> ())
-    .AddAttribute ("Phy", "The PHY layer attached to this device.",
+    .AddAttribute ("Phy", 
+                   "The PHY layer attached to this device.",
                    PointerValue (),
                    MakePointerAccessor (&THzNetDevice::GetPhy, &THzNetDevice::SetPhy),
                    MakePointerChecker<THzPhy> ())
-    .AddAttribute ("Mac", "The MAC layer attached to this device.",
+    .AddAttribute ("Mac", 
+                   "The MAC layer attached to this device.",
                    PointerValue (),
                    MakePointerAccessor (&THzNetDevice::GetMac, &THzNetDevice::SetMac),
                    MakePointerChecker<THzMac> ())
-    .AddTraceSource ("Rx", "Received payload from the MAC layer.",
+    .AddTraceSource ("Rx", 
+                     "Received payload from the MAC layer.",
                      MakeTraceSourceAccessor (&THzNetDevice::m_rxLogger))
-    .AddTraceSource ("Tx", "Send payload to the MAC layer.",
+    .AddTraceSource ("Tx", 
+                     "Send payload to the MAC layer.",
                      MakeTraceSourceAccessor (&THzNetDevice::m_txLogger))
   ;
   return tid;
