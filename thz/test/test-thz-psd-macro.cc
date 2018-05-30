@@ -105,7 +105,7 @@ int main (int argc, char *argv[])
     plot.AppendExtra("set grid xtics ytics");
     
     Ptr<THzSpectrumPropagationLoss> lossModel = CreateObject<THzSpectrumPropagationLoss> ();
-    Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSubBand", DoubleValue (98));
+    Config::SetDefault ("ns3::THzSpectrumValueFactory::TotalBandWidth", DoubleValue (7.476812e10));
     Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSample", DoubleValue (1));
     Gnuplot2dDataset dataset1 = DoRun(lossModel, "Transmitted signal p.s.d. for macroscale");
 
