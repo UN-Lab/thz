@@ -151,12 +151,15 @@ void
 THzMacNano::InitEnergyCallback ()
 {
   m_device->GetNode ()->GetObject<THzEnergyModel> ()->SetEnergyCallback (MakeCallback (&THzMacNano::TxFirstPacket, this));
-  std::ofstream myfile;
+  /*----------------------------------------------------------------------------------------
+   * enable the result printing in a .txt file by uncommenting the content below
+   *----------------------------------------------------------------------------------------*/
+  /*std::ofstream myfile;
   myfile.open ("nano_2way_sucessful.txt", std::ofstream::out | std::ios::app);
   myfile.close ();
   std::ofstream myfile1;
   myfile1.open ("nano_2way_discarded.txt", std::ofstream::out | std::ios::app);
-  myfile1.close ();
+  myfile1.close ();*/
 }
 void
 THzMacNano::SetDevice (Ptr<THzNetDevice> dev)
@@ -498,19 +501,22 @@ THzMacNano::SendDataDone (bool success, Ptr<Packet> packet)
               NS_LOG_DEBUG ("  overall throughput : " << m_throughputAll);
               NS_LOG_DEBUG ("  average throughput : " << m_throughputavg);
               NS_LOG_UNCOND (" discarded packets: " << m_discarded << " successful packets: " << m_ite << " throughput: " << m_throughput << " average throughput: " << m_throughputavg << " at node: " << m_address);
-              std::ofstream myfile;
+  /*----------------------------------------------------------------------------------------
+   * enable the result printing in a .txt file by uncommenting the content below
+   *----------------------------------------------------------------------------------------*/
+              /*std::ofstream myfile;
               myfile.open ("nano_2way_sucessful.txt", std::ofstream::out | std::ios::app);
               myfile << m_device->GetNode ()->GetId () << "  " << m_timeRec.GetSeconds () << "   " << it->sequence << std::endl;
-              myfile.close ();
+              myfile.close ();*/
               Dequeue (it->packet);
               it = m_pktTx.erase (it);
             }
           else
             {
-              std::ofstream myfile;
+              /*std::ofstream myfile;
               myfile.open ("nano_2way_discarded.txt", std::ofstream::out | std::ios::app);
               myfile << m_device->GetNode ()->GetId () << "  " << 1 << std::endl;
-              myfile.close ();
+              myfile.close ();*/
               m_discarded += 1;
               NS_LOG_UNCOND (" discarded packets : " << m_discarded << "! at node: " << m_address);
               NS_LOG_FUNCTION ("Fail to transmit packet: " << it->sequence << "! at node: " << m_device->GetNode ()->GetId ());
