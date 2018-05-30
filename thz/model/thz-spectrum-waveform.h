@@ -111,11 +111,11 @@ public:
    */
   virtual double CalculateEnergyConstant (double n, double r, double txPowerWatts) const;
   //private:
-  double m_numsb; //NumSubBand
+  int m_numsb; //NumSubBand
   double m_sbw;   //SubBandWidth
   double m_tbw;   //TotalBandWidth
   double m_fc;    //CentralFrequency
-  double m_numsample; //NumSample
+  int m_numsample; //NumSample
 
   double m_fstart; //StartingFrequency
   Ptr<SpectrumModel> m_THzSpectrumWaveform;

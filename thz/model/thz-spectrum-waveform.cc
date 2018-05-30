@@ -48,7 +48,7 @@ THzSpectrumValueFactory::GetTypeId ()
                    "The number of sub-bands containing in the selected 3dB frequency window",
                    DoubleValue (98), // for macro-central we select 98, for nano-adhoc we select 5242
                    MakeDoubleAccessor (&THzSpectrumValueFactory::m_numsb),
-                   MakeDoubleChecker<double> ())
+                   MakeDoubleChecker<int> ())
     .AddAttribute ("SubBandWidth", 
                    "The bandwidth of each sub-band",
                    DoubleValue (7.6294e8),
@@ -68,7 +68,7 @@ THzSpectrumValueFactory::GetTypeId ()
                    "The number of sample bands of the selected 3dB frequency window",
                    DoubleValue (100),
                    MakeDoubleAccessor (&THzSpectrumValueFactory::m_numsample),
-                   MakeDoubleChecker<double> ())
+                   MakeDoubleChecker<int> ())
 
   ;
   return tid;
@@ -83,7 +83,10 @@ THzSpectrumValueFactory::~THzSpectrumValueFactory ()
 Ptr<SpectrumModel>
 THzSpectrumValueFactory::THzSpectrumWaveformInitializer ()
 {
+  m_numsb = m_tbw/m_sbw;
   m_fstart = m_fc - (m_numsb / 2) * m_sbw;
+  NS_LOG_DEBUG("CHECK: THzSpectrumWaveformInitializer: m_numsb = "<< m_numsb);
+
   std:: ifstream frequencyfile;
   frequencyfile.open ("src/thz/data_frequency.txt", std::ifstream::in);
   if (!frequencyfile.is_open ())
@@ -343,6 +346,8 @@ THzSpectrumValueFactory::CreateTxPowerSpectralDensity (double txPower)
 
   Bands bands;
 
+  m_numsb = m_tbw/m_sbw;
+
   for (int j = 0; j < m_numsample; j++)
     {
       BandInfo bi;
@@ -351,6 +356,9 @@ THzSpectrumValueFactory::CreateTxPowerSpectralDensity (double txPower)
       bi.fc = (bi.fl +  bi.fh) / 2;
       bands.push_back (bi);
     }
+
+  NS_LOG_DEBUG("CHECK:CreateTxPowerSpectralDensity: m_numsb = "<< m_numsb);
+
   Ptr<SpectrumModel> txBand = Create <SpectrumModel> (bands);
   Ptr<SpectrumValue> txPsd = Create <SpectrumValue> (txBand);
   double txPowerDensity = txPower / m_tbw;
