@@ -253,6 +253,7 @@ private:
 
   // Mac parameters
   uint16_t m_dataRetryLimit;    //!< Maximum number of retry before dropping the packet.
+  uint16_t m_FrameLength;       //!< Packet length at the MAC layer
   uint16_t m_sequence;          //!< Enqueued packet sequence number.
   Time m_slotTime;              //!< Slot time duration.
   Ptr<Packet> m_pktData;

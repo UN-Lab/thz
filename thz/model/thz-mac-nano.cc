@@ -102,6 +102,11 @@ THzMacNano::GetTypeId (void)
                    UintegerValue (5),
                    MakeUintegerAccessor (&THzMacNano::m_dataRetryLimit),
                    MakeUintegerChecker<uint16_t> ())
+    .AddAttribute ("FrameLength",
+                   "Actual packet length at the MAC layer",
+                   UintegerValue (5),
+                   MakeUintegerAccessor (&THzMacNano::m_FrameLength),
+                   MakeUintegerChecker<uint16_t> ())
     .AddTraceSource ("CtsTimeout",
                      "Trace Hookup for CTS Timeout",
                      MakeTraceSourceAccessor (&THzMacNano::m_traceCtsTimeout))
@@ -270,7 +275,9 @@ THzMacNano::CheckResources (Ptr<Packet> packet)
   NS_LOG_DEBUG ("dest : " << header.GetDestination ());
   if (header.GetDestination () != GetBroadcast () && m_rtsEnable == true)
     {
-      if (m_device->GetNode ()->GetObject<THzEnergyModel> ()->BookEnergy (70))
+      THzMacHeader rtsHeader = THzMacHeader (m_address, m_address, THZ_PKT_TYPE_RTS);
+      uint32_t controlPacketLength = rtsHeader.GetSize();
+      if (m_device->GetNode ()->GetObject<THzEnergyModel> ()->BookEnergy (packet->GetSize () + controlPacketLength, 2*controlPacketLength))
         {
           NS_LOG_DEBUG ("Rem Energy after SendRTS: " << m_device->GetNode ()->GetObject<THzEnergyModel> ()->GetRemainingEnergy ());
           SendRts (packet);
@@ -279,7 +286,8 @@ THzMacNano::CheckResources (Ptr<Packet> packet)
     }
   else
     {
-      if (m_device->GetNode ()->GetObject<THzEnergyModel> ()->BookEnergy (65))
+      THzMacHeader ackHeader = THzMacHeader (m_address, m_address, THZ_PKT_TYPE_ACK);
+      if (m_device->GetNode ()->GetObject<THzEnergyModel> ()->BookEnergy (packet->GetSize () , ackHeader.GetSize()))
         {
           NS_LOG_DEBUG ("Rem Energy after SendData: " << m_device->GetNode ()->GetObject<THzEnergyModel> ()->GetRemainingEnergy ());
           SendData (packet);
@@ -526,7 +534,7 @@ THzMacNano::ReceiveRts (Ptr<Packet> packet)
   NS_LOG_DEBUG ("---------------------------------------------------------------------------------------------------");
 
 
-  m_device->GetNode ()->GetObject<THzEnergyModel> ()->BookEnergy (1);
+  m_device->GetNode ()->GetObject<THzEnergyModel> ()->BookEnergy (0 , packet->GetSize ());
   THzMacHeader header;
   packet->PeekHeader (header);
   NS_LOG_FUNCTION ("      Time: " << Simulator::Now () << " at node: " << m_address << " Energy: " << m_device->GetNode ()->GetObject<THzEnergyModel> ()->GetRemainingEnergy () << " from: " << header.GetSource ());
@@ -538,7 +546,7 @@ THzMacNano::ReceiveRts (Ptr<Packet> packet)
     }
 
   //check if you have resources
-  if (m_device->GetNode ()->GetObject<THzEnergyModel> ()->BookEnergy (24))
+  if (m_device->GetNode ()->GetObject<THzEnergyModel> ()->BookEnergy (2 * packet->GetSize (), m_FrameLength))
     {
       DataTimeouts dt;
       dt.sequence = header.GetSequence ();
@@ -620,10 +628,10 @@ THzMacNano::ReceiveData (Ptr<Packet> packet)
       NS_LOG_INFO ("This packet is not for me");
       return;
     }
-
+  THzMacHeader ackHeader = THzMacHeader (m_address, m_address, THZ_PKT_TYPE_RTS);
   if  (m_rtsEnable == false) // for aloha
     {
-      if (m_device->GetNode ()->GetObject<THzEnergyModel> ()->BookEnergy (20) != true )
+      if (m_device->GetNode ()->GetObject<THzEnergyModel> ()->BookEnergy (ackHeader.GetSize(),packet->GetSize ()) != true )
         {
           NS_LOG_INFO ("Insufficient energy");
           return;
@@ -726,7 +734,10 @@ THzMacNano::CtsTimeout (Ptr<Packet> packet)
   packet->PeekHeader (header);
   NS_LOG_FUNCTION ("!!! CTS timeout !!! at node: " << m_device->GetNode ()->GetId () << " for packet: " << header.GetSequence ());
   m_traceCtsTimeout (m_device->GetNode ()->GetId (), m_device->GetIfIndex ());
-  m_device->GetNode ()->GetObject<THzEnergyModel> ()->ReturnEnergy (66);
+
+  THzMacHeader rtsHeader = THzMacHeader (m_address, m_address, THZ_PKT_TYPE_RTS);
+  uint32_t controlPacketLength = rtsHeader.GetSize();
+  m_device->GetNode ()->GetObject<THzEnergyModel> ()->ReturnEnergy (m_FrameLength, 2*controlPacketLength);
 
   std::list<CtsTimeouts>::iterator cit = m_ctsTimeouts.begin ();
   for (; cit != m_ctsTimeouts.end (); )
@@ -774,7 +785,10 @@ THzMacNano::AckTimeout (uint16_t sequence)
   NS_LOG_DEBUG ("!!! ACK timeout !!! for packet: " << sequence << " at node: " << m_device->GetNode ()->GetId ());
   NS_LOG_INFO ("Remaining energy: " << m_device->GetNode ()->GetObject<THzEnergyModel> ()->GetRemainingEnergy ());
   m_traceAckTimeout (m_device->GetNode ()->GetId (), m_device->GetIfIndex ());
-  m_device->GetNode ()->GetObject<THzEnergyModel> ()->ReturnEnergy (1);
+
+  THzMacHeader rtsHeader = THzMacHeader (m_address, m_address, THZ_PKT_TYPE_RTS);
+  uint32_t controlPacketLength = rtsHeader.GetSize();
+  m_device->GetNode ()->GetObject<THzEnergyModel> ()->ReturnEnergy (0,controlPacketLength);
 
   std::list<AckTimeouts>::iterator ait = m_ackTimeouts.begin ();
   for (; ait != m_ackTimeouts.end (); )
@@ -818,7 +832,9 @@ THzMacNano::DataTimeout (uint16_t sequence)
   NS_LOG_FUNCTION ("now" << Simulator::Now ());
   NS_LOG_DEBUG ("!!! Data timeout !!! for packet: " << sequence << " at node: " << m_device->GetNode ()->GetId ());
 
-  m_device->GetNode ()->GetObject<THzEnergyModel> ()->ReturnEnergy (20);
+  THzMacHeader rtsHeader = THzMacHeader (m_address, m_address, THZ_PKT_TYPE_RTS);
+  uint32_t controlPacketLength = rtsHeader.GetSize();
+  m_device->GetNode ()->GetObject<THzEnergyModel> ()->ReturnEnergy (controlPacketLength, m_FrameLength);
 
   std::list<DataTimeouts>::iterator dit = m_dataTimeouts.begin ();
   for (; dit != m_dataTimeouts.end (); ++dit)

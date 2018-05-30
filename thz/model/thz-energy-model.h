@@ -80,18 +80,22 @@ public:
   /**
    * \brief Books energy for complete transmission process
    *
-   * \param amount The amount of energy to be booked.
+   * \param packetLengthTx The length of the packet being transmitted in bytes.
+   *
+   * \param packetLengthRx The length of the packet being received in bytes.
    *
    * \return true if the amount of requested energy is available.
    */
-  bool BookEnergy (double amount);
+  bool BookEnergy (double packetLengthTx, double packetLengthRx);
   /**
    * \brief Returns unused energy of the booked energy
    *
-   * \param amount the amount of energy returned in energy frames.
+   * \param packetLengthTx The length of the packet energy was booked for in bytes.
+   *
+   * \param packetLengthRx The length of the packet energy was booked for in bytes.
    *
    */
-  void ReturnEnergy (double amount);
+  void ReturnEnergy (double packetLengthTx, double packetLengthRx);
 
   /**
    * \param interval Energy update interval.
@@ -116,12 +120,15 @@ private:
 
 private:
   Ptr<Node> m_node;                       //!< Node attached to this energy model.
-  double m_initialEnergy;                 //!< initial energy, in Joules
-  double m_energyTxJ;                     //!< energy consumption for transmitting one packet, in Joules
-  double m_energyRxJ;                     //!< energy consumption while receiving one packet, in Joules
+  double m_initialEnergy;                 //!< initial energy, in frames
+  
   double m_energyHarvestingAmount;        //!< amount of energy harvested each time
-  double m_dataCallbacklEnergy;
-  TracedValue<double> m_remainingEnergy;  //!< remaining energy, in Joules
+  double m_energyConsumptionPulseTx;      //!< amount of energy consumed for transmission of a pulse in frames
+  double m_energyConsumptionPulseRx;      //!< amount of energy consumed for reception of a pulse in frames
+  double m_codingWeight;                  //!< Percentage of transmitting a pulse instead of being silent
+
+  double m_dataCallbacklEnergy;           //!< remaining energy, in frames
+  TracedValue<double> m_remainingEnergy;  //!< remaining energy, in frames
   EventId m_energyUpdateEvent;            //!< energy update event
   Time m_energyUpdateInterval;            //!< energy update interval
 

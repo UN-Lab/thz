@@ -36,7 +36,7 @@ NS_LOG_COMPONENT_DEFINE ("THzEnergyModel");
 namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (THzEnergyModel);
-
+// 1 attoJoule = 0.125 energy frames
 TypeId
 THzEnergyModel::GetTypeId (void)
 {
@@ -63,6 +63,21 @@ THzEnergyModel::GetTypeId (void)
                    TimeValue (MicroSeconds (8.0)),
                    MakeTimeAccessor (&THzEnergyModel::m_energyUpdateInterval),
                    MakeTimeChecker ())
+    .AddAttribute ("EnergyConsumptionPulseTx",
+                   "Energy consumption for the transmission of a pulse.",
+                   DoubleValue (0.125),
+                   MakeDoubleAccessor (&THzEnergyModel::m_energyConsumptionPulseTx),
+                   MakeDoubleChecker<double> ())
+    .AddAttribute ("EnergyConsumptionPulseRx",
+                   "Energy consumption for the transmission of a pulse.",
+                   DoubleValue (12.5e-3),
+                   MakeDoubleAccessor (&THzEnergyModel::m_energyConsumptionPulseRx),
+                   MakeDoubleChecker<double> ())
+    .AddAttribute ("CodingWeight",
+                   "Percentage of transmitting a pulse instead of being silent.",
+                   DoubleValue (0.5),
+                   MakeDoubleAccessor (&THzEnergyModel::m_codingWeight),
+                   MakeDoubleChecker<double> ())
     .AddTraceSource ("RemainingEnergy",
                      "Remaining energy at THzEnergyModel.",
                      MakeTraceSourceAccessor (&THzEnergyModel::m_remainingEnergy))
@@ -160,24 +175,32 @@ THzEnergyModel::DoDispose (void)
 }
 
 bool
-THzEnergyModel::BookEnergy (double amount)
+THzEnergyModel::BookEnergy (double packetLengthTx, double packetLengthRx)
 {
   NS_LOG_FUNCTION ("node id" << m_node->GetId () << " now: " << Simulator::Now ());
-  if ((m_remainingEnergy - amount) >= 0)
+
+  double energyBook = packetLengthTx * 8 * m_energyConsumptionPulseTx * m_codingWeight
+                    + packetLengthRx * 8 * m_energyConsumptionPulseRx;
+
+  if ((m_remainingEnergy - energyBook) >= 0)
     {
-      m_remainingEnergy -= amount;
+      m_remainingEnergy -= energyBook;
+      NS_LOG_UNCOND (m_remainingEnergy);
       NS_LOG_DEBUG ("THzEnergyModel:Remaining energy = " << m_remainingEnergy);
       return true;
     }
   NS_LOG_DEBUG ("THzEnergyModel:Remaining energy is not sufficient!" << m_remainingEnergy);
   return false;
 }
+
 void
-THzEnergyModel::ReturnEnergy (double amount)
+THzEnergyModel::ReturnEnergy (double packetLengthTx, double packetLengthRx)
 {
   NS_LOG_FUNCTION (this);
-
-  m_remainingEnergy += amount;
+  double energyReturn = packetLengthTx * 8 * m_energyConsumptionPulseTx * m_codingWeight
+                      + packetLengthRx * 8 * m_energyConsumptionPulseRx;
+  m_remainingEnergy += energyReturn;
+  NS_LOG_UNCOND (m_remainingEnergy);
   NS_LOG_DEBUG ("THzEnergyModel:Remaining energy = " << m_remainingEnergy << " now: " << Simulator::Now ());
 }
 
