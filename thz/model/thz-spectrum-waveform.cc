@@ -46,7 +46,7 @@ THzSpectrumValueFactory::GetTypeId ()
     .SetParent<Object> ()
     .AddAttribute ("NumSubBand", 
                    "The number of sub-bands containing in the selected 3dB frequency window",
-                   DoubleValue (98), // for macro-central we select 98, for nano-adhoc we select 5242
+                   DoubleValue (98), 
                    MakeDoubleAccessor (&THzSpectrumValueFactory::m_numsb),
                    MakeDoubleChecker<int> ())
     .AddAttribute ("SubBandWidth", 
