@@ -74,7 +74,7 @@ NS_LOG_COMPONENT_DEFINE ("MacroCentral");
 int main (int argc, char* argv[])
 {
 
-  int seed_num = 2;
+  int seed_num = 1;
 
   RngSeedManager seed;
   seed.SetSeed (seed_num);

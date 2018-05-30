@@ -117,12 +117,6 @@ public:
     */
   virtual Ptr<SpectrumValue> LoadedAbsCoe (int s, int j, double f, double d,Ptr<const SpectrumValue> txPsd) const;
 
-  double m_numsb;     //!<NumSubBand
-  double m_sbw;       //!<SubBandWidth
-  double m_tbw;       //!<TotalBandWidth
-  double m_fc;        //!<CentralFrequency
-  double m_numsample; //!<NumSample
-
 };
 
 } // namespace ns3
