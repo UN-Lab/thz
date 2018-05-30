@@ -62,7 +62,7 @@ using namespace ns3;
  * probability of the DATA packets. In this example, a centralized network architecture is implemented. User can set network
  * topology in this file. High speed turning directional antenna is applied at the receiver (Servernodes), while all senders
  * (Clientnodes) pointing the beam of directional antennas toward the receiver. The basic parameters of the directional antennas
- * can be set in this file. User can also set the number of sub-bands and the number of sample bands of the selected 3dB frequency
+ * can be set in this file. User can also set the total bandwidth and the number of sample bands of the selected 3dB frequency
  * window in this file. There are two MAC protocols can be selected by user in this file, that include a 0-way and a 2-way handshake
  * protocols, which starts the link layer transmission with a DATA frame or a RTS frame respectively. The selection can be achieved
  * by setting the attribute value of EnableRts in THzMacMacro. In the end, the user can also set the generated packet size and the
