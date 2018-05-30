@@ -185,7 +185,6 @@ THzEnergyModel::BookEnergy (double packetLengthTx, double packetLengthRx)
   if ((m_remainingEnergy - energyBook) >= 0)
     {
       m_remainingEnergy -= energyBook;
-      NS_LOG_UNCOND (m_remainingEnergy);
       NS_LOG_DEBUG ("THzEnergyModel:Remaining energy = " << m_remainingEnergy);
       return true;
     }
@@ -200,7 +199,6 @@ THzEnergyModel::ReturnEnergy (double packetLengthTx, double packetLengthRx)
   double energyReturn = packetLengthTx * 8 * m_energyConsumptionPulseTx * m_codingWeight
                       + packetLengthRx * 8 * m_energyConsumptionPulseRx;
   m_remainingEnergy += energyReturn;
-  NS_LOG_UNCOND (m_remainingEnergy);
   NS_LOG_DEBUG ("THzEnergyModel:Remaining energy = " << m_remainingEnergy << " now: " << Simulator::Now ());
 }
 
