@@ -114,11 +114,13 @@ Basically every THz-class in THz module holds attributs. Some key attributes fro
 
   * EnableRts: If true, RTS is enabled
   * DataRetryLimit: Maximum Limit for Data Retransmission
+  * FrameLength: Actual packet length at the MAC layer
 
 * THzEnergyModel:
   
   * EnergyHarvestingAmount: Amount of Energy Harvested in each time
   * PeriodicEnergyUpdateInterval: Time between two consecutive periodic energy updates
+  * EnergyConsumptionPulseTx: Energy consumption for the transmission of a pulse
 * THzPhyMacro: 
 
   * SinrTh: SINR Threshold (dB)

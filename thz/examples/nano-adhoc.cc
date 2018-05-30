@@ -48,7 +48,7 @@ using namespace ns3;
  * of the DATA packets. In this example, an adhoc network architecture is implemented. User can set network topology in this
  * file. The nodes in the nanonetwork are equipped with the energy module we developed. The basic parameters of the energy
  * model can be set in this file. User can also set the number of samples of the TSOOK pulse within frequency range 0.9-4 THz
- * window in this file. IUser can select one of the teo MAC protocols that include a 0-way and a 2-way handshake protocols. 
+ * window in this file. User can select one of the two MAC protocols that include a 0-way and a 2-way handshake protocols. 
  * 0-way starts the link layer transmission with a DATA frame and 2-way with an RTS frame. The selection can be done by setting
  * the attribute value of EnableRts in THzMacNano. In the end, the user can also set the generated packet size and the
  * mean value of the packet generation interval in this file.
