@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2017 UBNANO (http://ubnano.tech/)
+ * Copyright (c) YEAR COPYRIGHTHOLDER
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -16,8 +16,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Author: Qing Xia <qingxia@buffalo.edu>
- *         Zahed Hossain <zahedhos@buffalo.edu>
- *         Josep Miquel Jornet <jmjornet@buffalo.edu>
  */
 #include <ns3/object.h>
 #include <ns3/simulator.h>
@@ -76,7 +74,7 @@ NS_LOG_COMPONENT_DEFINE ("MacroCentral");
 int main (int argc, char* argv[])
 {
 
-  int seed_num = 1;
+  int seed_num = 2;
 
   RngSeedManager seed;
   seed.SetSeed (seed_num);
@@ -124,7 +122,7 @@ int main (int argc, char* argv[])
   Ptr<THzChannel> thzChan = CreateObject<THzChannel> ();
   THzMacMacroHelper thzMac = THzMacMacroHelper::Default ();
 
-  bool rtsOn = 0;
+  bool rtsOn = 1;
   std::printf ("rts on? %d\n", rtsOn);
   if (rtsOn == true)
     {
@@ -144,7 +142,7 @@ int main (int argc, char* argv[])
 
   THzHelper thz;
   NetDeviceContainer devices = thz.Install (nodes, thzChan, thzPhy, thzMac, thzDirAntenna);
-  Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSubBand", DoubleValue (98));
+  Config::SetDefault ("ns3::THzSpectrumValueFactory::TotalBandWidth", DoubleValue (7.476812e10));
   Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSample", DoubleValue (1));
 
 

@@ -60,6 +60,8 @@ NS_LOG_COMPONENT_DEFINE ("NanoAdhoc");
 int main (int argc, char* argv[])
 {
   Time::SetResolution (Time::FS ); //femtoseconds
+  uint8_t packetLength = 75;       //bytes
+  uint8_t frameLength = packetLength + 8 + 20 + 8 + 17;//UDP header 8, IP header 20, LLC header 8, MAC header 17 bytes
   int seed_run = 1;
   RngSeedManager seed;
   seed.SetRun (seed_run);
@@ -85,6 +87,7 @@ int main (int argc, char* argv[])
   //***********************************Aggregation**********************************//
   Ptr<THzChannel> thzChan = CreateObject<THzChannel> ();
   THzMacNanoHelper thzMac = THzMacNanoHelper::Default ();
+  thzMac.Set("FrameLength",UintegerValue (frameLength));
 
   bool rtsOn = 0;
   std::printf ("rts on? %d\n", rtsOn);
@@ -174,7 +177,7 @@ int main (int argc, char* argv[])
 
   TrafficGeneratorHelper Traffic;
   Traffic.SetAttribute ("Mean", DoubleValue (300));
-  Traffic.SetAttribute ("PacketSize",UintegerValue (75));
+  Traffic.SetAttribute ("PacketSize",UintegerValue (packetLength));
   ApplicationContainer Apps = Traffic.Install (nodes);
   Apps.Start (MicroSeconds (200));
   Apps.Stop (MilliSeconds (2000));
