@@ -109,10 +109,12 @@ THzNetDevice::GetTypeId ()
                    MakePointerChecker<THzMac> ())
     .AddTraceSource ("Rx", 
                      "Received payload from the MAC layer.",
-                     MakeTraceSourceAccessor (&THzNetDevice::m_rxLogger))
+                     MakeTraceSourceAccessor (&THzNetDevice::m_rxLogger),
+                     "ns3::Packet::Mac48AddressTracedCallback") 
     .AddTraceSource ("Tx", 
                      "Send payload to the MAC layer.",
-                     MakeTraceSourceAccessor (&THzNetDevice::m_txLogger))
+                     MakeTraceSourceAccessor (&THzNetDevice::m_txLogger),
+                     "ns3::Packet::Mac48AddressTracedCallback") 
   ;
   return tid;
 }
