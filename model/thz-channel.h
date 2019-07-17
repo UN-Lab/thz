@@ -81,8 +81,8 @@ public:
   virtual ~THzChannel ();
   static TypeId GetTypeId ();
 
-  virtual uint32_t GetNDevices () const;
-  virtual Ptr<NetDevice> GetDevice (uint32_t i) const;
+  virtual std::size_t GetNDevices () const;
+  virtual Ptr<NetDevice> GetDevice (std::size_t i) const;
   void AddDevice (Ptr<THzNetDevice> dev, Ptr<THzPhy> phy);
   void Clear ();
 

@@ -78,13 +78,13 @@ THzChannel::Clear ()
   m_devList.clear ();
   m_noiseEntry.clear ();
 }
-uint32_t
+std::size_t
 THzChannel::GetNDevices () const
 {
   return m_devList.size ();
 }
 Ptr<NetDevice>
-THzChannel::GetDevice (uint32_t i) const
+THzChannel::GetDevice (std::size_t i) const
 {
   return m_devList[i].first;
 }
