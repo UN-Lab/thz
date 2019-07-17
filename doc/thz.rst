@@ -17,7 +17,7 @@ Model Description
 
 The source code for the new module lives in the directory ``src/thz``.
 
-* The frequency database file (data_frequency.txt) and the corresponding molecular absorption coefficient database file (data_AbsCoe.txt) are located inside ``src/thz``.
+* The frequency database file (data_frequency.txt) and the corresponding molecular absorption coefficient database file (data_AbsCoe.txt) are located inside ``src/thz/model``.
 
 Design
 ======
