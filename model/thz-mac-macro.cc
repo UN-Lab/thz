@@ -155,19 +155,24 @@ THzMacMacro::GetTypeId (void)
                    MakeUintegerChecker<uint16_t> ())
     .AddTraceSource ("CtsTimeout",
                      "Trace Hookup for CTS Timeout",
-                     MakeTraceSourceAccessor (&THzMacMacro::m_traceCtsTimeout))
+                     MakeTraceSourceAccessor (&THzMacMacro::m_traceCtsTimeout),
+                     "ns3::THzMac::TimeTracedCallback") 
     .AddTraceSource ("AckTimeout",
                      "Trace Hookup for ACK Timeout",
-                     MakeTraceSourceAccessor (&THzMacMacro::m_traceAckTimeout))
+                     MakeTraceSourceAccessor (&THzMacMacro::m_traceAckTimeout),
+                     "ns3::THzMac::TimeTracedCallback") 
     .AddTraceSource ("SendDataDone",
                      "Trace Hookup for sending a data",
-                     MakeTraceSourceAccessor (&THzMacMacro::m_traceSendDataDone))
+                     MakeTraceSourceAccessor (&THzMacMacro::m_traceSendDataDone),
+                     "ns3::THzMac::SendDataDoneTracedCallback")
     .AddTraceSource ("Enqueue",
                      "Trace Hookup for enqueue a data",
-                     MakeTraceSourceAccessor (&THzMacMacro::m_traceEnqueue))
+                     MakeTraceSourceAccessor (&THzMacMacro::m_traceEnqueue),
+                     "ns3::THzMac::TimeTracedCallback")
     .AddTraceSource ("Throughput",
                      "Trace Hookup for Throughput",
-                     MakeTraceSourceAccessor (&THzMacMacro::m_traceThroughput))
+                     MakeTraceSourceAccessor (&THzMacMacro::m_traceThroughput),
+                     "ns3::THzMac::ThroughputTracedCallback")
   ;
   return tid;
 }
