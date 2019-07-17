@@ -80,7 +80,8 @@ THzEnergyModel::GetTypeId (void)
                    MakeDoubleChecker<double> ())
     .AddTraceSource ("RemainingEnergy",
                      "Remaining energy at THzEnergyModel.",
-                     MakeTraceSourceAccessor (&THzEnergyModel::m_remainingEnergy))
+                     MakeTraceSourceAccessor (&THzEnergyModel::m_remainingEnergy),
+                     "ns3::TracedValueCallback::Double") 
   ;
   return tid;
 }
