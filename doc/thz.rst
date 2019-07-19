@@ -38,7 +38,7 @@ Design
 Scope and Limitations
 =====================
 
-* In its current state, the THz system module is adapt to the latest ns-3 version (ns-3.28)
+* In its current state, the THz system module is adapt to the latest ns-3 version (ns-3.29)
 * As of now, the ns-3 interface to THz is Ipv4 only.
 
 References
@@ -57,18 +57,18 @@ The first step is to clone THz from the github repository and build it::
  $ git clone https://github.com/UBnano-Terasim/Terasim-ns3
  $ cd Terasim-ns3
 
-Copy the thz folder to your local source folder of ns-3 directory (../ns-allinone-3.28/ns-3.28/src), then go back to ns-allinone-3.28 folder to build the THz module by::
+Copy the thz folder to your local source folder of ns-3 directory (../ns-allinone-3.29/ns-3.29/src), then go back to ns-allinone-3.29 folder to build the THz module by::
 
  $ cd ../.. 
  $ ./build.py
  
-Once THz has been built successfully, try to run one of the examples (i.e., nano-adhoc.cc). First, you need to copy this example from ns-3.28/src/thz/examples to ns-3.28/scratch::
+Once THz has been built successfully, try to run one of the examples (i.e., nano-adhoc.cc). First, you need to copy this example from ns-3.29/src/thz/examples to ns-3.29/scratch::
 
- $ cp ns-3.28/src/thz/examples/nano-adhoc.cc ns-3.28/scratch/nano-adhoc.cc
+ $ cp ns-3.29/src/thz/examples/nano-adhoc.cc ns-3.29/scratch/nano-adhoc.cc
 
-Then enter the ns-3.28 folder and run the example::
+Then enter the ns-3.29 folder and run the example::
 
- $ cd ns-3.28
+ $ cd ns-3.29
  $ ./waf --run scratch/nano-adhoc
 
 
