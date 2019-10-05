@@ -20,25 +20,22 @@
  *         Josep Miquel Jornet <jmjornet@buffalo.edu>
  */
 
+#include <vector>
+#include <iostream>
+#include <fstream>
+#include <string>
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
 #include "ns3/mobility-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/applications-module.h"
-#include "ns3/node.h"
-
 #include "ns3/thz-mac-nano.h"
 #include "ns3/thz-channel.h"
 #include "ns3/thz-mac-nano-helper.h"
 #include "ns3/thz-phy-nano-helper.h"
 #include "ns3/thz-directional-antenna-helper.h"
-
 #include "ns3/traffic-generator-helper.h"
 #include "ns3/thz-energy-model-helper.h"
-#include <vector>
-#include <iostream>
-#include <fstream>
-#include <string>
 
 using namespace ns3;
 
