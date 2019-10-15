@@ -1,6 +1,7 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2017 UBNANO (http://ubnano.tech/)
+ * Copyright (c) 2019 University at Buffalo, the State University of New York
+ * (http://ubnano.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -35,21 +36,52 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("THzPathLoss");
+NS_LOG_COMPONENT_DEFINE ("THzPathLossTestSuite");
+
+class THzPathLossTestCase : public TestCase
+{
+public:
+  THzPathLossTestCase();
+  ~THzPathLossTestCase();
+  void DoRun (void);
+  double DbmToW (double dbm);
+};
+
+THzPathLossTestCase::THzPathLossTestCase()
+  : TestCase("Terahertz Path Loss test case")
+{  
+}
+THzPathLossTestCase::~THzPathLossTestCase()
+{
+}
+
 
 double
-DbmToW (double dbm)
+THzPathLossTestCase::DbmToW (double dbm)
 {
   double mw = pow (10.0,dbm / 10.0);
   return mw / 1000.0;
 }
 
-Gnuplot2dDataset
-DoRun (Ptr<THzSpectrumPropagationLoss> lossModel, std::string dataTitle)
+void
+THzPathLossTestCase::DoRun()
 {
 
+  LogComponentEnable ("THzSpectrumPropagationLoss", LOG_LEVEL_ALL);
+  std::string fileNameWithNoExtension = "thz-path-loss-vs-distance-nano";
+  std::string graphicsFileName        = fileNameWithNoExtension + ".png";
+  std::string plotFileName            = fileNameWithNoExtension + ".plt";
+  //std::string plotTitle               = "THz propagation loss vs distance for nanoscale communication";
+
+  Gnuplot plot (graphicsFileName);
+  //plot.SetTitle (plotTitle);
+  plot.SetLegend ("Distance (m)", "Recieved Power (dBm)");
+  plot.AppendExtra("set grid xtics ytics");
+
+  Ptr<THzSpectrumPropagationLoss> lossModel = CreateObject<THzSpectrumPropagationLoss> ();
+
   Gnuplot2dDataset dataset;
-  dataset.SetTitle (dataTitle);
+  dataset.SetTitle ("THz propagation loss for distances upto 1m");
   dataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
 
   double txPowerDbm = -20;  //dBm
@@ -86,35 +118,25 @@ DoRun (Ptr<THzSpectrumPropagationLoss> lossModel, std::string dataTitle)
       dataset.Add (10 * std::log10 (distance), rxPowerDbm);
     }
 
-  return dataset;
-
-}
-
-
-int main (int argc, char *argv[])
-{
-  LogComponentEnable ("THzSpectrumPropagationLoss", LOG_LEVEL_ALL);
-  std::string fileNameWithNoExtension = "thz-path-loss-vs-distance-nano";
-  std::string graphicsFileName        = fileNameWithNoExtension + ".png";
-  std::string plotFileName            = fileNameWithNoExtension + ".plt";
-  //std::string plotTitle               = "THz propagation loss vs distance for nanoscale communication";
-
-  Gnuplot plot (graphicsFileName);
-  //plot.SetTitle (plotTitle);
-  plot.SetLegend ("Distance (m)", "Recieved Power (dBm)");
-  plot.AppendExtra("set grid xtics ytics");
-
-  Ptr<THzSpectrumPropagationLoss> lossModel = CreateObject<THzSpectrumPropagationLoss> ();
-
-  Gnuplot2dDataset dataset1 = DoRun (lossModel, "THz propagation loss for distances upto 1m");
-
-  plot.AddDataset (dataset1);
+  plot.AddDataset (dataset);
 
   std::ofstream plotFile (plotFileName.c_str ());
 
   plot.GenerateOutput (plotFile);
   plotFile.close ();
-  return 0;
+
 }
 
+class THzPathLossTestSuite : public TestSuite
+{
+public:
+  THzPathLossTestSuite();
+};
 
+THzPathLossTestSuite::THzPathLossTestSuite ()
+  : TestSuite("thz-path-loss", UNIT)
+{
+  AddTestCase (new THzPathLossTestCase, TestCase::QUICK);
+}
+// create an instance of the test suite
+THzPathLossTestSuite g_thzPathLossTestSuite;

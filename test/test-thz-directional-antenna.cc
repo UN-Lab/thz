@@ -1,6 +1,7 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2017 UBNANO (http://ubnano.tech/)
+ * Copyright (c) 2019 University at Buffalo, the State University of New York
+ * (http://ubnano.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -30,11 +31,29 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("TestTHzDirectionalAntenna");
+NS_LOG_COMPONENT_DEFINE ("THzDirectionalAntennaTestSuite");
 
-int main (int argc, char *argv[])
+class THzDirectionalAntennaTestCase : public TestCase
 {
+public:
+   THzDirectionalAntennaTestCase();
+   ~THzDirectionalAntennaTestCase();
 
+   void DoRun(void);
+};
+
+THzDirectionalAntennaTestCase::THzDirectionalAntennaTestCase()
+ :TestCase("Terahertz Directional Antenna test case")
+{
+}
+THzDirectionalAntennaTestCase::~THzDirectionalAntennaTestCase()
+{
+}
+
+
+void 
+THzDirectionalAntennaTestCase::DoRun()
+{
   //--- setting up ---//
   Ptr<MobilityModel> rx_node = CreateObject<ConstantPositionMobilityModel> ();
   rx_node->SetPosition (Vector (0,0,0));
@@ -52,6 +71,7 @@ int main (int argc, char *argv[])
   Gnuplot2dDataset dataset;
   dataset.SetTitle ("THz Directional Antenna Gain");
   dataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
+
 
   int i = 0;
   while (i <= n_sector)
@@ -88,8 +108,19 @@ int main (int argc, char *argv[])
   plot.GenerateOutput (plotFile);
   plotFile.close ();
 
-
-
-  return 0;
-
 }
+
+class THzDirectionalAntennaTestSuite : public TestSuite
+{
+public:
+  THzDirectionalAntennaTestSuite ();
+};
+
+THzDirectionalAntennaTestSuite::THzDirectionalAntennaTestSuite ()
+  :TestSuite ("thz-directional-antenna", UNIT)
+{
+  AddTestCase(new THzDirectionalAntennaTestCase, TestCase::QUICK);
+}
+
+// create an instance of the test suite
+static THzDirectionalAntennaTestSuite g_thzDirectionalAntennaTestSuite;

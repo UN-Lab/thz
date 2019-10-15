@@ -1,6 +1,7 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2017 UBNANO (http://ubnano.tech/)
+ * Copyright (c) 2019 University at Buffalo, the State University of New York
+ * (http://ubnano.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -34,31 +35,62 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("THzPathLoss");
+NS_LOG_COMPONENT_DEFINE ("THzPsdMacroTestSuite");
+
+class THzPsdMacroTestCase : public TestCase
+{
+public: 
+  THzPsdMacroTestCase ();
+  ~THzPsdMacroTestCase();
+  void DoRun (void);
+  double DbmToW (double dbm);
+};
+
+THzPsdMacroTestCase::THzPsdMacroTestCase()
+  : TestCase ("terahertz PSD Macro test case")
+{
+}
+THzPsdMacroTestCase::~THzPsdMacroTestCase()
+{
+}
 
 double
-DbmToW (double dbm)
+THzPsdMacroTestCase::DbmToW (double dbm)
 {
   double mw = pow (10.0,dbm / 10.0);
   return mw / 1000.0;
 }
 
-Gnuplot2dDataset
-DoRun (Ptr<THzSpectrumPropagationLoss> lossModel, std::string dataTitle)
+void
+THzPsdMacroTestCase::DoRun ()
 {
-
-    Gnuplot2dDataset dataset;
-    dataset.SetTitle (dataTitle);
-    dataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
+  LogComponentEnable("THzSpectrumPropagationLoss", LOG_LEVEL_ALL);
+  std::string fileNameWithNoExtension = "thz-received-power-spectral-density-macro";
+  std::string graphicsFileName        = fileNameWithNoExtension + ".png";
+  std::string plotFileName            = fileNameWithNoExtension + ".plt";
+  //std::string plotTitle               = "THz received signal power spectral density for nanoscale communication";
+        
+  Gnuplot plot(graphicsFileName);
+  //plot.SetTitle(plotTitle);
+  plot.SetLegend ("Frequency [THz]", "p.s.d. [Watts/Hz]");
+  plot.AppendExtra("set grid xtics ytics");
     
-    double txPowerDbm = -20;//dBm
-    double txPowerW = DbmToW(txPowerDbm);
-    double gain = 17.27;
-    gain = std::pow (10.0, gain / 10.0);
+  Ptr<THzSpectrumPropagationLoss> lossModel = CreateObject<THzSpectrumPropagationLoss> ();
+  Config::SetDefault ("ns3::THzSpectrumValueFactory::TotalBandWidth", DoubleValue (7.476812e10));
+  Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSample", DoubleValue (1));
+
+  Gnuplot2dDataset dataset;
+  dataset.SetTitle ("Transmitted signal p.s.d. for macroscale");
+  dataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
+    
+  double txPowerDbm = -20;//dBm
+  double txPowerW = DbmToW(txPowerDbm);
+  double gain = 17.27;
+  gain = std::pow (10.0, gain / 10.0);
   
-    double distance = 10;//m
-    Ptr<SpectrumValue> txPsd;
-    Ptr<SpectrumValue> rxPsd;
+  double distance = 10;//m
+  Ptr<SpectrumValue> txPsd;
+  Ptr<SpectrumValue> rxPsd;
 
   Ptr<THzSpectrumValueFactory> sf = CreateObject<THzSpectrumValueFactory> ();
 
@@ -85,37 +117,25 @@ DoRun (Ptr<THzSpectrumPropagationLoss> lossModel, std::string dataTitle)
 	++vit;
 	++fit; 
       }
-    
-    return dataset;
-    
-}
-
-
-int main (int argc, char *argv[])
-{
-    LogComponentEnable("THzSpectrumPropagationLoss", LOG_LEVEL_ALL);
-    std::string fileNameWithNoExtension = "thz-received-power-spectral-density-macro";
-    std::string graphicsFileName        = fileNameWithNoExtension + ".png";
-    std::string plotFileName            = fileNameWithNoExtension + ".plt";
-    //std::string plotTitle               = "THz received signal power spectral density for nanoscale communication";
-        
-    Gnuplot plot(graphicsFileName);
-    //plot.SetTitle(plotTitle);
-    plot.SetLegend ("Frequency [THz]", "p.s.d. [Watts/Hz]");
-    plot.AppendExtra("set grid xtics ytics");
-    
-    Ptr<THzSpectrumPropagationLoss> lossModel = CreateObject<THzSpectrumPropagationLoss> ();
-    Config::SetDefault ("ns3::THzSpectrumValueFactory::TotalBandWidth", DoubleValue (7.476812e10));
-    Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSample", DoubleValue (1));
-    Gnuplot2dDataset dataset1 = DoRun(lossModel, "Transmitted signal p.s.d. for macroscale");
-
-    plot.AddDataset(dataset1);
+    plot.AddDataset(dataset);
 
     std::ofstream plotFile (plotFileName.c_str());
     
     plot.GenerateOutput (plotFile);
     plotFile.close ();
-    return 0;
+    
 }
 
+class THzPsdMacroTestSuite : public TestSuite
+{
+public:
+  THzPsdMacroTestSuite ();
+};
 
+THzPsdMacroTestSuite::THzPsdMacroTestSuite ()
+  :TestSuite ("thz-psd-macro", UNIT)
+{
+AddTestCase(new THzPsdMacroTestCase, TestCase::QUICK);
+}
+// create an instance of the test suite
+static THzPsdMacroTestSuite g_thzPsdMacroTestSuite;

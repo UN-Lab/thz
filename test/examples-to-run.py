@@ -10,6 +10,9 @@
 cpp_examples = [
     ("macro-central", "True", "True"),
     ("nano-adhoc", "True", "True"),
+    ("thz-directional-antenna", "True","True"),
+    ("thz-path-loss", "True", "True"),
+    ("thz-psd-macro", "True", "True"),
 ]
 
 # A list of Python examples to run in order to ensure that they remain

@@ -40,9 +40,9 @@ def build(bld):
 
     module_test = bld.create_ns3_module_test_library('thz')
     module_test.source = [
-        #'test/test-thz-directional-antenna.cc',
-        #'test/test-thz-path-loss.cc',
-        #'test/test-thz-psd-macro.cc',
+        'test/test-thz-directional-antenna.cc',
+        'test/test-thz-path-loss.cc',
+        'test/test-thz-psd-macro.cc',
         #'test/test-thz-psd-nano.cc',
         ]
 
