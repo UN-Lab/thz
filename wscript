@@ -43,7 +43,7 @@ def build(bld):
         'test/test-thz-directional-antenna.cc',
         'test/test-thz-path-loss.cc',
         'test/test-thz-psd-macro.cc',
-        #'test/test-thz-psd-nano.cc',
+        'test/test-thz-psd-nano.cc',
         ]
 
     headers = bld(features='ns3header')

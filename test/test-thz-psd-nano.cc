@@ -35,21 +35,51 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("THzRxPsd");
+NS_LOG_COMPONENT_DEFINE ("THzRxPsdTestSuite");
+
+class THzRxPsdTestCase : public TestCase
+{
+public:
+  THzRxPsdTestCase();
+  ~THzRxPsdTestCase();
+  void DoRun(void);
+  double DbmToW (double dbm);
+};
+
+THzRxPsdTestCase::THzRxPsdTestCase()
+  : TestCase("terahertz Rx PSD Nano test case")
+{
+}
+
+THzRxPsdTestCase::~THzRxPsdTestCase()
+{
+}
 
 double
-DbmToW (double dbm)
+THzRxPsdTestCase::DbmToW (double dbm)
 {
   double mw = pow (10.0,dbm / 10.0);
   return mw / 1000.0;
 }
 
-Gnuplot2dDataset
-DoRun (Ptr<THzSpectrumPropagationLoss> lossModel, std::string dataTitle)
+void
+THzRxPsdTestCase::DoRun ()
 {
+  LogComponentEnable ("THzSpectrumPropagationLoss", LOG_LEVEL_ALL);
+  std::string fileNameWithNoExtension = "thz-received-power-spectral-density-nano";
+  std::string graphicsFileName        = fileNameWithNoExtension + ".png";
+  std::string plotFileName            = fileNameWithNoExtension + ".plt";
+  //std::string plotTitle               = "THz received signal power spectral density for nanoscale communication";
+  Gnuplot plot (graphicsFileName);
+  //plot.SetTitle (plotTitle);
+  plot.SetLegend ("Frequency [THz]", "p.s.d. [Watts/Hz]");
+  plot.AppendExtra("set grid xtics ytics");
 
+  Ptr<THzSpectrumPropagationLoss> lossModel = CreateObject<THzSpectrumPropagationLoss> ();
+  
+  Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSample", DoubleValue (1000));
   Gnuplot2dDataset dataset;
-  dataset.SetTitle (dataTitle);
+  dataset.SetTitle ("Transmitted pulse p.s.d. for nanoscale");
   dataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
 
   double txPowerDbm = -20;  //dBm
@@ -83,36 +113,26 @@ DoRun (Ptr<THzSpectrumPropagationLoss> lossModel, std::string dataTitle)
       ++fit;
     }
 
-  return dataset;
-
-}
-
-
-int main (int argc, char *argv[])
-{
-  LogComponentEnable ("THzSpectrumPropagationLoss", LOG_LEVEL_ALL);
-  std::string fileNameWithNoExtension = "thz-received-power-spectral-density-nano";
-  std::string graphicsFileName        = fileNameWithNoExtension + ".png";
-  std::string plotFileName            = fileNameWithNoExtension + ".plt";
-  //std::string plotTitle               = "THz received signal power spectral density for nanoscale communication";
-
-  Gnuplot plot (graphicsFileName);
-  //plot.SetTitle (plotTitle);
-  plot.SetLegend ("Frequency [THz]", "p.s.d. [Watts/Hz]");
-  plot.AppendExtra("set grid xtics ytics");
-
-  Ptr<THzSpectrumPropagationLoss> lossModel = CreateObject<THzSpectrumPropagationLoss> ();
-  
-  Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSample", DoubleValue (1000));
-  Gnuplot2dDataset dataset1 = DoRun (lossModel, "Transmitted pulse p.s.d. for nanoscale");
-
-  plot.AddDataset (dataset1);
+  plot.AddDataset (dataset);
 
   std::ofstream plotFile (plotFileName.c_str ());
 
   plot.GenerateOutput (plotFile);
   plotFile.close ();
-  return 0;
 }
+
+class THzRxPsdTestSuite : public TestSuite
+{
+public:
+  THzRxPsdTestSuite();
+};
+
+THzRxPsdTestSuite::THzRxPsdTestSuite()
+  :TestSuite("thz-rx-psd-nano", UNIT)
+{
+AddTestCase(new THzRxPsdTestCase, TestCase::QUICK);
+}
+//create an instance of the test suite
+static THzRxPsdTestSuite g_thzRxPsdTestSuite;
 
 

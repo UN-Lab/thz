@@ -13,6 +13,7 @@ cpp_examples = [
     ("thz-directional-antenna", "True","True"),
     ("thz-path-loss", "True", "True"),
     ("thz-psd-macro", "True", "True"),
+    ("thz-rx-psd-nano", "True", "True"),
 ]
 
 # A list of Python examples to run in order to ensure that they remain
