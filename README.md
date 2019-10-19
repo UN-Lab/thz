@@ -8,4 +8,5 @@ Please refer to the thz.rst in the thz/doc folder
 
 Copy Right
 ------------------------------------------------
+University at Buffalo, the State University of New York
 http://ubnano.tech/
