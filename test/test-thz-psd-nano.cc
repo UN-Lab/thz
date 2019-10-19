@@ -35,35 +35,35 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("THzRxPsdTestSuite");
+NS_LOG_COMPONENT_DEFINE ("THzPsdNanoTestSuite");
 
-class THzRxPsdTestCase : public TestCase
+class THzPsdNanoTestCase : public TestCase
 {
 public:
-  THzRxPsdTestCase();
-  ~THzRxPsdTestCase();
+  THzPsdNanoTestCase();
+  ~THzPsdNanoTestCase();
   void DoRun(void);
   double DbmToW (double dbm);
 };
 
-THzRxPsdTestCase::THzRxPsdTestCase()
+THzPsdNanoTestCase::THzPsdNanoTestCase()
   : TestCase("terahertz Rx PSD Nano test case")
 {
 }
 
-THzRxPsdTestCase::~THzRxPsdTestCase()
+THzPsdNanoTestCase::~THzPsdNanoTestCase()
 {
 }
 
 double
-THzRxPsdTestCase::DbmToW (double dbm)
+THzPsdNanoTestCase::DbmToW (double dbm)
 {
   double mw = pow (10.0,dbm / 10.0);
   return mw / 1000.0;
 }
 
 void
-THzRxPsdTestCase::DoRun ()
+THzPsdNanoTestCase::DoRun ()
 {
   LogComponentEnable ("THzSpectrumPropagationLoss", LOG_LEVEL_ALL);
   std::string fileNameWithNoExtension = "thz-received-power-spectral-density-nano";
@@ -121,18 +121,18 @@ THzRxPsdTestCase::DoRun ()
   plotFile.close ();
 }
 
-class THzRxPsdTestSuite : public TestSuite
+class THzPsdNanoTestSuite : public TestSuite
 {
 public:
-  THzRxPsdTestSuite();
+  THzPsdNanoTestSuite();
 };
 
-THzRxPsdTestSuite::THzRxPsdTestSuite()
+THzPsdNanoTestSuite::THzPsdNanoTestSuite()
   :TestSuite("thz-rx-psd-nano", UNIT)
 {
-AddTestCase(new THzRxPsdTestCase, TestCase::QUICK);
+AddTestCase(new THzPsdNanoTestCase, TestCase::QUICK);
 }
 //create an instance of the test suite
-static THzRxPsdTestSuite g_thzRxPsdTestSuite;
+static THzPsdNanoTestSuite g_thzPsdNanoTestSuite;
 
 

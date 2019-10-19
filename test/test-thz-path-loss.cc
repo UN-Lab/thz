@@ -68,7 +68,7 @@ THzPathLossTestCase::DoRun()
 {
 
   LogComponentEnable ("THzSpectrumPropagationLoss", LOG_LEVEL_ALL);
-  std::string fileNameWithNoExtension = "thz-path-loss-vs-distance-nano";
+  std::string fileNameWithNoExtension = "thz-path-loss-for-nanoscale-pulse-based-waveform";
   std::string graphicsFileName        = fileNameWithNoExtension + ".png";
   std::string plotFileName            = fileNameWithNoExtension + ".plt";
   //std::string plotTitle               = "THz propagation loss vs distance for nanoscale communication";
@@ -81,7 +81,7 @@ THzPathLossTestCase::DoRun()
   Ptr<THzSpectrumPropagationLoss> lossModel = CreateObject<THzSpectrumPropagationLoss> ();
 
   Gnuplot2dDataset dataset;
-  dataset.SetTitle ("THz propagation loss for distances upto 1m");
+  dataset.SetTitle ("THz propagation loss for nanoscale pulse based waveform");
   dataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
 
   double txPowerDbm = -20;  //dBm
