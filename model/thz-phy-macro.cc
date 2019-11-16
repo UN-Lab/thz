@@ -48,9 +48,9 @@ NS_OBJECT_ENSURE_REGISTERED (THzPhyMacro);
 
 THzPhyMacro::THzPhyMacro ()
   : m_device (0),
-    m_mac (0),
-    m_channel (0),
-    m_pktRx (0)
+  m_mac (0),
+  m_channel (0),
+  m_pktRx (0)
 
 {
   m_csBusy = false;

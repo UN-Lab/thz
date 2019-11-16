@@ -54,12 +54,12 @@ struct THzSpectrumSignalParameters : public SpectrumSignalParameters
 
   THzSpectrumSignalParameters (const THzSpectrumSignalParameters& p);
   /**
-   * The power spectral density of the transmitted signal. 
+   * The power spectral density of the transmitted signal.
    */
   Ptr <SpectrumValue> txPsd;
 
   /**
-   * The duration of the packet transmission. 
+   * The duration of the packet transmission.
    */
   Time txDuration;
 
@@ -73,27 +73,27 @@ struct THzSpectrumSignalParameters : public SpectrumSignalParameters
    */
   Ptr<Packet> packet;
   /**
-   * The transmission power. 
+   * The transmission power.
    */
   double txPower;
   /**
-   * The number of frequency samples from the database. 
+   * The number of frequency samples from the database.
    */
   double numberOfSamples;
   /**
-   * The number of sub-bands from the database. 
+   * The number of sub-bands from the database.
    */
   double numberOfSubBands;
   /**
-   * The bandwidth of individual sub-band. 
+   * The bandwidth of individual sub-band.
    */
   double subBandBandwidth;
   /**
-   * The center frequency of the overall signal band. 
+   * The center frequency of the overall signal band.
    */
   double centerFrequency;
   /**
-   * The total bandwidth of the signal. 
+   * The total bandwidth of the signal.
    */
   double totalBandwidth;
 };

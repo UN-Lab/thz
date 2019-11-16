@@ -36,15 +36,15 @@ class Node;
 
 /**
  * \ingroup energy
- * \brief THzEnergyModel models the energy harvesting and consumption by THz nodes 
- * 
+ * \brief THzEnergyModel models the energy harvesting and consumption by THz nodes
+ *
  * This class is installed in the Node by object aggregation facility provided in
  * the classes derived from NS-3 Object. It harvests fixed amount of energy at a
- * user defined interval. It also provides interfaces to consume certain amount of 
+ * user defined interval. It also provides interfaces to consume certain amount of
  * energy. The MAC layer can use the interface to consume energy whenever it transmits
- * or receives a packet. 
+ * or receives a packet.
  */
-class THzEnergyModel : public Object 
+class THzEnergyModel : public Object
 {
 public:
   static TypeId GetTypeId (void);
@@ -57,7 +57,7 @@ public:
   virtual void SetNode (Ptr<Node> node);
   /**
    *
-   * Setting up the callback to inform MAC layer to send Data 
+   * Setting up the callback to inform MAC layer to send Data
    */
   virtual void SetEnergyCallback (Callback<void> energyCbData);
   /**
@@ -122,7 +122,7 @@ private:
 private:
   Ptr<Node> m_node;                       //!< Node attached to this energy model.
   double m_initialEnergy;                 //!< initial energy, in frames
-  
+
   double m_energyHarvestingAmount;        //!< amount of energy harvested each time
   double m_energyConsumptionPulseTx;      //!< amount of energy consumed for transmission of a pulse in frames
   double m_energyConsumptionPulseRx;      //!< amount of energy consumed for reception of a pulse in frames

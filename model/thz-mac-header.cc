@@ -37,9 +37,9 @@ THzMacHeader::THzMacHeader ()
 
 THzMacHeader::THzMacHeader (const Mac48Address srcAddr, const Mac48Address dstAddr, uint8_t type)
   : Header (),
-    m_srcAddr (srcAddr),
-    m_dstAddr (dstAddr),
-    m_type (type)
+  m_srcAddr (srcAddr),
+  m_dstAddr (dstAddr),
+  m_type (type)
 {
 }
 

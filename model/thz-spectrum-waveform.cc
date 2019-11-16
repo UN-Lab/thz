@@ -45,27 +45,27 @@ THzSpectrumValueFactory::GetTypeId ()
 {
   static TypeId tid = TypeId ("ns3::THzSpectrumValueFactory")
     .SetParent<Object> ()
-    .AddAttribute ("NumSubBand", 
+    .AddAttribute ("NumSubBand",
                    "The number of sub-bands containing in the selected 3dB frequency window",
-                   DoubleValue (98), 
+                   DoubleValue (98),
                    MakeDoubleAccessor (&THzSpectrumValueFactory::m_numsb),
                    MakeDoubleChecker<int> ())
-    .AddAttribute ("SubBandWidth", 
+    .AddAttribute ("SubBandWidth",
                    "The bandwidth of each sub-band",
                    DoubleValue (7.6294e8),
                    MakeDoubleAccessor (&THzSpectrumValueFactory::m_sbw),
                    MakeDoubleChecker<double> ())
-    .AddAttribute ("TotalBandWidth", 
+    .AddAttribute ("TotalBandWidth",
                    "The total bandwidth of the selected 3dB frequency window",
                    DoubleValue (7.4768e10),
                    MakeDoubleAccessor (&THzSpectrumValueFactory::m_tbw),
                    MakeDoubleChecker<double> ())
-    .AddAttribute ("CentralFrequency", 
+    .AddAttribute ("CentralFrequency",
                    "The central frequency of the selected 3dB frequency window",
                    DoubleValue (1.0345e+012),
                    MakeDoubleAccessor (&THzSpectrumValueFactory::m_fc),
                    MakeDoubleChecker<double> ())
-    .AddAttribute ("NumSample", 
+    .AddAttribute ("NumSample",
                    "The number of sample bands of the selected 3dB frequency window",
                    DoubleValue (100),
                    MakeDoubleAccessor (&THzSpectrumValueFactory::m_numsample),
@@ -84,15 +84,15 @@ THzSpectrumValueFactory::~THzSpectrumValueFactory ()
 Ptr<SpectrumModel>
 THzSpectrumValueFactory::THzSpectrumWaveformInitializer ()
 {
-  m_numsb = m_tbw/m_sbw;
+  m_numsb = m_tbw / m_sbw;
   m_fstart = m_fc - (m_numsb / 2) * m_sbw;
-  NS_LOG_DEBUG("CHECK: THzSpectrumWaveformInitializer: m_numsb = "<< m_numsb);
+  NS_LOG_DEBUG ("CHECK: THzSpectrumWaveformInitializer: m_numsb = " << m_numsb);
 
   std:: ifstream frequencyfile;
   frequencyfile.open ("contrib/thz/model/data_frequency.txt", std::ifstream::in);
   if (!frequencyfile.is_open ())
     {
-	  NS_LOG_UNCOND("THzSpectrumValueFactory::THzSpectrumWaveformInitializer: open data_frequency.txt failed");
+      NS_LOG_UNCOND ("THzSpectrumValueFactory::THzSpectrumWaveformInitializer: open data_frequency.txt failed");
     }
 
   double f_starV;                      // Detected frequency from the frequency database
@@ -164,13 +164,13 @@ THzSpectrumValueFactory::THzPulseSpectrumWaveformInitializer ()
   frequencyfile.open ("contrib/thz/model/data_frequency.txt", std::ifstream::in);
   if (!frequencyfile.is_open ())
     {
-	  NS_LOG_UNCOND ( "THzSpectrumValueFactory::THzPulseSpectrumWaveformInitializer: open data_frequency.txt failed" );
+      NS_LOG_UNCOND ( "THzSpectrumValueFactory::THzPulseSpectrumWaveformInitializer: open data_frequency.txt failed" );
     }
 
 
   Bands bands;
-  double pulseStartingSample = PULSE_START_FREQUENCY/m_sbw;
-  m_numsb = (PULSE_END_FREQUENCY - PULSE_START_FREQUENCY)/m_sbw;
+  double pulseStartingSample = PULSE_START_FREQUENCY / m_sbw;
+  m_numsb = (PULSE_END_FREQUENCY - PULSE_START_FREQUENCY) / m_sbw;
 
   for (int j = 0; j < m_numsample; j++)
     {
@@ -198,7 +198,7 @@ THzSpectrumValueFactory::FreqSeqStart ()    // return sequence number of the fir
   frequencyfile.open ("contrib/thz/model/data_frequency.txt", std::ifstream::in);
   if (!frequencyfile.is_open ())
     {
-	  NS_LOG_UNCOND ( "THzSpectrumValueFactory::FreqSeqStart: open data_frequency.txt failed" );
+      NS_LOG_UNCOND ( "THzSpectrumValueFactory::FreqSeqStart: open data_frequency.txt failed" );
     }
 
   double f;
@@ -225,7 +225,7 @@ THzSpectrumValueFactory::FreqStartValue ()
   frequencyfile.open ("contrib/thz/model/data_frequency.txt", std::ifstream::in);
   if (!frequencyfile.is_open ())
     {
-	  NS_LOG_UNCOND ( "THzSpectrumValueFactory::FreqStartValue: open data_frequency.txt failed" );
+      NS_LOG_UNCOND ( "THzSpectrumValueFactory::FreqStartValue: open data_frequency.txt failed" );
     }
 
   double f;
@@ -247,7 +247,7 @@ THzSpectrumValueFactory::FreqBands ()
   frequencyfile.open ("contrib/thz/model/data_frequency.txt", std::ifstream::in);
   if (!frequencyfile.is_open ())
     {
-	  NS_LOG_UNCOND ( "THzSpectrumValueFactory::FreqBands: open data_frequency.txt failed" );
+      NS_LOG_UNCOND ( "THzSpectrumValueFactory::FreqBands: open data_frequency.txt failed" );
     }
 
   double f;
@@ -277,7 +277,7 @@ THzSpectrumValueFactory::FreqSeqEnd ()    // return the sequence number of the l
   frequencyfile.open ("contrib/thz/model/data_frequency.txt", std::ifstream::in);
   if (!frequencyfile.is_open ())
     {
-	  NS_LOG_UNCOND ( "THzSpectrumValueFactory::FreqSeqEnd: open data_frequency.txt failed" );
+      NS_LOG_UNCOND ( "THzSpectrumValueFactory::FreqSeqEnd: open data_frequency.txt failed" );
     }
 
   double f;
@@ -327,7 +327,7 @@ THzSpectrumValueFactory::CreateTxPowerSpectralDensity (double txPower)
   frequencyfile.open ("contrib/thz/model/data_frequency.txt", std::ifstream::in);
   if (!frequencyfile.is_open ())
     {
-	  NS_LOG_UNCOND ( "THzSpectrumValueFactory::CreateTxPowerSpectralDensity: open data_frequency.txt failed" );
+      NS_LOG_UNCOND ( "THzSpectrumValueFactory::CreateTxPowerSpectralDensity: open data_frequency.txt failed" );
     }
 
 
@@ -347,7 +347,7 @@ THzSpectrumValueFactory::CreateTxPowerSpectralDensity (double txPower)
 
   Bands bands;
 
-  m_numsb = m_tbw/m_sbw;
+  m_numsb = m_tbw / m_sbw;
 
   for (int j = 0; j < m_numsample; j++)
     {
@@ -358,7 +358,7 @@ THzSpectrumValueFactory::CreateTxPowerSpectralDensity (double txPower)
       bands.push_back (bi);
     }
 
-  NS_LOG_DEBUG("CHECK:CreateTxPowerSpectralDensity: m_numsb = "<< m_numsb);
+  NS_LOG_DEBUG ("CHECK:CreateTxPowerSpectralDensity: m_numsb = " << m_numsb);
 
   Ptr<SpectrumModel> txBand = Create <SpectrumModel> (bands);
   Ptr<SpectrumValue> txPsd = Create <SpectrumValue> (txBand);
@@ -462,7 +462,7 @@ THzSpectrumValueFactory::CreateAllPowerSpectralDensity (double n, double r, doub
   frequencyfile.open ("contrib/thz/model/data_frequency.txt", std::ifstream::in);
   if (!frequencyfile.is_open ())
     {
-	  NS_LOG_UNCOND ( "THzSpectrumValueFactory::CreateAllPowerSpectralDensity: open data_frequency.txt failed" );
+      NS_LOG_UNCOND ( "THzSpectrumValueFactory::CreateAllPowerSpectralDensity: open data_frequency.txt failed" );
     }
   double f;
   int i = 0;

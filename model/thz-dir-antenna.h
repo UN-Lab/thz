@@ -59,14 +59,14 @@ public:
   /**
    * \brief enable the directional antenna on certain device
    *
-   * \param device the related device 
+   * \param device the related device
    */
   void SetDevice (Ptr<THzNetDevice> device);
- 
+
   /**
    * \brief check directional antenna mode
    *
-   * if the mode is 0, the device is a directional transmitter; 
+   * if the mode is 0, the device is a directional transmitter;
    * if the mode is 1, the device is a directional receiver;
    * if the mode is 2, the device is an omni-directional tranceiver;
    * Note that the setting of antenna mode between 1 and 2 is depend on a specific receiver-initiated handshake protocol,
@@ -78,7 +78,7 @@ public:
 
   /**
     * \param turnSpeed the turning speed of the directional antenna
-    * 
+    *
     * \brief set the turning speed of the directional antenna on the receiver [circles/sec]
     *
     * in the receiver initiated handshake MAC protocol, the receiver's directional antenna periodically sweeps the entire area to avoid deafness problem.
@@ -93,7 +93,7 @@ public:
   /**
    * \param maxGain the maximum gain of directional antenna
    *
-   * \brief set the maximum gain of the directional antennas for both transmitter and receiver [dB] 
+   * \brief set the maximum gain of the directional antennas for both transmitter and receiver [dB]
    */
   void SetMaxGain (double maxGain);
 
@@ -113,7 +113,7 @@ public:
     * \brief get the beamwidth of the directional antennas for both transmitter and receiver [degrees]
     */
   double GetBeamwidth () const;
-  
+
   /**
     * \param phi_zero initial angle in phi-plane
     *
@@ -123,7 +123,7 @@ public:
 
   /**
     * \brief check the orientation of the receiver's directional antenna based on user setting
-    * 
+    *
     * returns a orientation of sector-by-sector turing directional antenna
     */
   double CheckRxOrientation ();
@@ -143,8 +143,8 @@ public:
   void RecTxOrientation (double phi_tx);
 
   /**
-   * \brief check the orientation of the transmitter's directional antenna 
-   */   
+   * \brief check the orientation of the transmitter's directional antenna
+   */
   double CheckTxOrientation ();
 
   /**
@@ -152,7 +152,7 @@ public:
     * \param recvMobility the mobility of the receiver
     *
     * \brief calculate the directional antenna's gain of the receiver [dB]
-    */ 
+    */
   double GetRxGainDb (Ptr<MobilityModel> senderMobility, Ptr<MobilityModel> recvMobility);
 
   /**
@@ -163,7 +163,7 @@ public:
     */
   double GetTxGainDb (Ptr<MobilityModel> senderMobility, Ptr<MobilityModel> recvMobility);
 
-  /** 
+  /**
     * \param XnodeMobility the mobility of one node of the node pair, which is denoted as X.
     * \param YnodeMobility the mobility of the other node of the node pair, which is denoted as Y.
     * \param XnodeMode the operation mode of the node X.
@@ -171,7 +171,7 @@ public:
     * \param RxorientationRadians the orientation of the receiver node in radians.
     *
     * \brief calculate the total directional antenna's gain between transmitter and receiver [dB].
-    * 
+    *
     * Antenna mode = 1 corresponding to Directional receiver.
     * Antenna mode = 0 corresponding to Directional transmitter.
     * Antenna mode = 2 corresponding to Omni-directional antenna.

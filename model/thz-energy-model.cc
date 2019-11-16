@@ -82,7 +82,7 @@ THzEnergyModel::GetTypeId (void)
     .AddTraceSource ("RemainingEnergy",
                      "Remaining energy at THzEnergyModel.",
                      MakeTraceSourceAccessor (&THzEnergyModel::m_remainingEnergy),
-                     "ns3::TracedValueCallback::Double") 
+                     "ns3::TracedValueCallback::Double")
   ;
   return tid;
 }
@@ -153,7 +153,7 @@ THzEnergyModel::HarvestEnergy (void)
   m_remainingEnergy += m_energyHarvestingAmount;
   if (m_remainingEnergy == m_dataCallbacklEnergy)
     {
-      m_energyCbData ();                                 
+      m_energyCbData ();
     }
   m_energyUpdateEvent = Simulator::Schedule (m_energyUpdateInterval,
                                              &THzEnergyModel::HarvestEnergy,
@@ -182,7 +182,7 @@ THzEnergyModel::BookEnergy (double packetLengthTx, double packetLengthRx)
   NS_LOG_FUNCTION ("node id" << m_node->GetId () << " now: " << Simulator::Now ());
 
   double energyBook = packetLengthTx * 8 * m_energyConsumptionPulseTx * m_codingWeight
-                    + packetLengthRx * 8 * m_energyConsumptionPulseRx;
+    + packetLengthRx * 8 * m_energyConsumptionPulseRx;
 
   if ((m_remainingEnergy - energyBook) >= 0)
     {
@@ -199,7 +199,7 @@ THzEnergyModel::ReturnEnergy (double packetLengthTx, double packetLengthRx)
 {
   NS_LOG_FUNCTION (this);
   double energyReturn = packetLengthTx * 8 * m_energyConsumptionPulseTx * m_codingWeight
-                      + packetLengthRx * 8 * m_energyConsumptionPulseRx;
+    + packetLengthRx * 8 * m_energyConsumptionPulseRx;
   m_remainingEnergy += energyReturn;
   NS_LOG_DEBUG ("THzEnergyModel:Remaining energy = " << m_remainingEnergy << " now: " << Simulator::Now ());
 }

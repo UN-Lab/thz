@@ -1,0 +1,40 @@
+--- helper/thz-energy-model-helper.cc
++++ helper/thz-energy-model-helper.cc
+@@ -36,10 +36,9 @@
+ #include <sstream>
+ #include <string>
+ 
+-NS_LOG_COMPONENT_DEFINE("THzEnergyModelHelper");
++NS_LOG_COMPONENT_DEFINE ("THzEnergyModelHelper");
+ 
+-namespace ns3
+-{
++namespace ns3 {
+ 
+ THzEnergyModelHelper::THzEnergyModelHelper ()
+ {
+@@ -47,19 +46,20 @@ THzEnergyModelHelper::THzEnergyModelHelper ()
+ }
+ 
+ THzEnergyModelHelper::~THzEnergyModelHelper ()
+-{}
++{
++}
+ 
+ void
+ THzEnergyModelHelper::Install (NodeContainer c) const
+ {
+-  
++
+   for (NodeContainer::Iterator i = c.Begin (); i != c.End (); i++)
+     {
+       Ptr<Node> node = *i;
+       Ptr<THzEnergyModel> energyModel = m_energyModel.Create<THzEnergyModel> ();
+       node->AggregateObject (energyModel);
+-      NS_LOG_DEBUG ("node="<<node);
+-  }
++      NS_LOG_DEBUG ("node=" << node);
++    }
+   return;
+ }
+ void

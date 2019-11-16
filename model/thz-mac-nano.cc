@@ -51,8 +51,8 @@ NS_OBJECT_ENSURE_REGISTERED (THzMacNano);
 
 THzMacNano::THzMacNano ()
   : THzMac (),
-    m_phy (0),
-    m_pktData (0)
+  m_phy (0),
+  m_pktData (0)
 
 {
   m_throughputAll = 0;
@@ -111,23 +111,23 @@ THzMacNano::GetTypeId (void)
     .AddTraceSource ("CtsTimeout",
                      "Trace Hookup for CTS Timeout",
                      MakeTraceSourceAccessor (&THzMacNano::m_traceCtsTimeout),
-                     "ns3::THzMac::TimeTracedCallback") 
+                     "ns3::THzMac::TimeTracedCallback")
     .AddTraceSource ("AckTimeout",
                      "Trace Hookup for ACK Timeout",
                      MakeTraceSourceAccessor (&THzMacNano::m_traceAckTimeout),
-                     "ns3::THzMac::TimeTracedCallback") 
+                     "ns3::THzMac::TimeTracedCallback")
     .AddTraceSource ("SendDataDone",
                      "Trace Hookup for sending a data",
                      MakeTraceSourceAccessor (&THzMacNano::m_traceSendDataDone),
-                     "ns3::THzMac::SendDataDoneTracedCallback") 
+                     "ns3::THzMac::SendDataDoneTracedCallback")
     .AddTraceSource ("Enqueue",
                      "Trace Hookup for enqueue a data",
                      MakeTraceSourceAccessor (&THzMacNano::m_traceEnqueue),
-                     "ns3::THzMac::TimeTracedCallback") 
+                     "ns3::THzMac::TimeTracedCallback")
     .AddTraceSource ("Throughput",
                      "Trace Hookup for Throughput",
                      MakeTraceSourceAccessor (&THzMacNano::m_traceThroughput),
-                     "ns3::THzMac::ThroughputTracedCallback") 
+                     "ns3::THzMac::ThroughputTracedCallback")
   ;
   return tid;
 }
@@ -141,7 +141,7 @@ THzMacNano::SetAntenna ()
   double MaxGain = 40; //dB
   double beamwidthDegrees = 360;
   m_thzAD = m_device->GetDirAntenna ();
-  m_thzAD->SetAttribute ("TuneRxTxMode", DoubleValue (2.0)); 
+  m_thzAD->SetAttribute ("TuneRxTxMode", DoubleValue (2.0));
   NS_LOG_DEBUG ( "Tune as OmnidirectionalMode At node: " << m_device->GetNode ()->GetId () << " Antenna Mode: " << m_thzAD->CheckAntennaMode () );
   m_thzAD->SetAttribute ("InitialAngle", DoubleValue (0.0));
   m_thzAD->SetMaxGain (MaxGain);
@@ -285,8 +285,8 @@ THzMacNano::CheckResources (Ptr<Packet> packet)
   if (header.GetDestination () != GetBroadcast () && m_rtsEnable == true)
     {
       THzMacHeader rtsHeader = THzMacHeader (m_address, m_address, THZ_PKT_TYPE_RTS);
-      uint32_t controlPacketLength = rtsHeader.GetSize();
-      if (m_device->GetNode ()->GetObject<THzEnergyModel> ()->BookEnergy (packet->GetSize () + controlPacketLength, 2*controlPacketLength))
+      uint32_t controlPacketLength = rtsHeader.GetSize ();
+      if (m_device->GetNode ()->GetObject<THzEnergyModel> ()->BookEnergy (packet->GetSize () + controlPacketLength, 2 * controlPacketLength))
         {
           NS_LOG_DEBUG ("Rem Energy after SendRTS: " << m_device->GetNode ()->GetObject<THzEnergyModel> ()->GetRemainingEnergy ());
           SendRts (packet);
@@ -296,7 +296,7 @@ THzMacNano::CheckResources (Ptr<Packet> packet)
   else
     {
       THzMacHeader ackHeader = THzMacHeader (m_address, m_address, THZ_PKT_TYPE_ACK);
-      if (m_device->GetNode ()->GetObject<THzEnergyModel> ()->BookEnergy (packet->GetSize () , ackHeader.GetSize()))
+      if (m_device->GetNode ()->GetObject<THzEnergyModel> ()->BookEnergy (packet->GetSize (), ackHeader.GetSize ()))
         {
           NS_LOG_DEBUG ("Rem Energy after SendData: " << m_device->GetNode ()->GetObject<THzEnergyModel> ()->GetRemainingEnergy ());
           SendData (packet);
@@ -507,9 +507,9 @@ THzMacNano::SendDataDone (bool success, Ptr<Packet> packet)
               NS_LOG_DEBUG ("  overall throughput : " << m_throughputAll);
               NS_LOG_DEBUG ("  average throughput : " << m_throughputavg);
               NS_LOG_UNCOND (" discarded packets: " << m_discarded << " successful packets: " << m_ite << " throughput: " << m_throughput << " average throughput: " << m_throughputavg << " at node: " << m_address);
-  /*----------------------------------------------------------------------------------------
-   * enable the result printing in a .txt file by uncommenting the content below
-   *----------------------------------------------------------------------------------------*/
+              /*----------------------------------------------------------------------------------------
+               * enable the result printing in a .txt file by uncommenting the content below
+               *----------------------------------------------------------------------------------------*/
               /*std::ofstream myfile;
               myfile.open ("nano_2way_sucessful.txt", std::ofstream::out | std::ios::app);
               myfile << m_device->GetNode ()->GetId () << "  " << m_timeRec.GetSeconds () << "   " << it->sequence << std::endl;
@@ -546,7 +546,7 @@ THzMacNano::ReceiveRts (Ptr<Packet> packet)
   NS_LOG_DEBUG ("---------------------------------------------------------------------------------------------------");
 
 
-  m_device->GetNode ()->GetObject<THzEnergyModel> ()->BookEnergy (0 , packet->GetSize ());
+  m_device->GetNode ()->GetObject<THzEnergyModel> ()->BookEnergy (0, packet->GetSize ());
   THzMacHeader header;
   packet->PeekHeader (header);
   NS_LOG_FUNCTION ("      Time: " << Simulator::Now () << " at node: " << m_address << " Energy: " << m_device->GetNode ()->GetObject<THzEnergyModel> ()->GetRemainingEnergy () << " from: " << header.GetSource ());
@@ -643,7 +643,7 @@ THzMacNano::ReceiveData (Ptr<Packet> packet)
   THzMacHeader ackHeader = THzMacHeader (m_address, m_address, THZ_PKT_TYPE_RTS);
   if  (m_rtsEnable == false) // for aloha
     {
-      if (m_device->GetNode ()->GetObject<THzEnergyModel> ()->BookEnergy (ackHeader.GetSize(),packet->GetSize ()) != true )
+      if (m_device->GetNode ()->GetObject<THzEnergyModel> ()->BookEnergy (ackHeader.GetSize (),packet->GetSize ()) != true )
         {
           NS_LOG_INFO ("Insufficient energy");
           return;
@@ -748,8 +748,8 @@ THzMacNano::CtsTimeout (Ptr<Packet> packet)
   m_traceCtsTimeout (m_device->GetNode ()->GetId (), m_device->GetIfIndex ());
 
   THzMacHeader rtsHeader = THzMacHeader (m_address, m_address, THZ_PKT_TYPE_RTS);
-  uint32_t controlPacketLength = rtsHeader.GetSize();
-  m_device->GetNode ()->GetObject<THzEnergyModel> ()->ReturnEnergy (m_FrameLength, 2*controlPacketLength);
+  uint32_t controlPacketLength = rtsHeader.GetSize ();
+  m_device->GetNode ()->GetObject<THzEnergyModel> ()->ReturnEnergy (m_FrameLength, 2 * controlPacketLength);
 
   std::list<CtsTimeouts>::iterator cit = m_ctsTimeouts.begin ();
   for (; cit != m_ctsTimeouts.end (); )
@@ -799,7 +799,7 @@ THzMacNano::AckTimeout (uint16_t sequence)
   m_traceAckTimeout (m_device->GetNode ()->GetId (), m_device->GetIfIndex ());
 
   THzMacHeader rtsHeader = THzMacHeader (m_address, m_address, THZ_PKT_TYPE_RTS);
-  uint32_t controlPacketLength = rtsHeader.GetSize();
+  uint32_t controlPacketLength = rtsHeader.GetSize ();
   m_device->GetNode ()->GetObject<THzEnergyModel> ()->ReturnEnergy (0,controlPacketLength);
 
   std::list<AckTimeouts>::iterator ait = m_ackTimeouts.begin ();
@@ -845,7 +845,7 @@ THzMacNano::DataTimeout (uint16_t sequence)
   NS_LOG_DEBUG ("!!! Data timeout !!! for packet: " << sequence << " at node: " << m_device->GetNode ()->GetId ());
 
   THzMacHeader rtsHeader = THzMacHeader (m_address, m_address, THZ_PKT_TYPE_RTS);
-  uint32_t controlPacketLength = rtsHeader.GetSize();
+  uint32_t controlPacketLength = rtsHeader.GetSize ();
   m_device->GetNode ()->GetObject<THzEnergyModel> ()->ReturnEnergy (controlPacketLength, m_FrameLength);
 
   std::list<DataTimeouts>::iterator dit = m_dataTimeouts.begin ();

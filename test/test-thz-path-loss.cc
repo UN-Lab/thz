@@ -41,17 +41,17 @@ NS_LOG_COMPONENT_DEFINE ("THzPathLossTestSuite");
 class THzPathLossTestCase : public TestCase
 {
 public:
-  THzPathLossTestCase();
-  ~THzPathLossTestCase();
+  THzPathLossTestCase ();
+  ~THzPathLossTestCase ();
   void DoRun (void);
   double DbmToW (double dbm);
 };
 
-THzPathLossTestCase::THzPathLossTestCase()
-  : TestCase("Terahertz Path Loss test case")
-{  
+THzPathLossTestCase::THzPathLossTestCase ()
+  : TestCase ("Terahertz Path Loss test case")
+{
 }
-THzPathLossTestCase::~THzPathLossTestCase()
+THzPathLossTestCase::~THzPathLossTestCase ()
 {
 }
 
@@ -64,7 +64,7 @@ THzPathLossTestCase::DbmToW (double dbm)
 }
 
 void
-THzPathLossTestCase::DoRun()
+THzPathLossTestCase::DoRun ()
 {
 
   LogComponentEnable ("THzSpectrumPropagationLoss", LOG_LEVEL_ALL);
@@ -76,7 +76,7 @@ THzPathLossTestCase::DoRun()
   Gnuplot plot (graphicsFileName);
   //plot.SetTitle (plotTitle);
   plot.SetLegend ("Distance (m)", "Recieved Power (dBm)");
-  plot.AppendExtra("set grid xtics ytics");
+  plot.AppendExtra ("set grid xtics ytics");
 
   Ptr<THzSpectrumPropagationLoss> lossModel = CreateObject<THzSpectrumPropagationLoss> ();
 
@@ -130,11 +130,11 @@ THzPathLossTestCase::DoRun()
 class THzPathLossTestSuite : public TestSuite
 {
 public:
-  THzPathLossTestSuite();
+  THzPathLossTestSuite ();
 };
 
 THzPathLossTestSuite::THzPathLossTestSuite ()
-  : TestSuite("thz-path-loss", UNIT)
+  : TestSuite ("thz-path-loss", UNIT)
 {
   AddTestCase (new THzPathLossTestCase, TestCase::QUICK);
 }

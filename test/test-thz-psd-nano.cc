@@ -40,18 +40,18 @@ NS_LOG_COMPONENT_DEFINE ("THzPsdNanoTestSuite");
 class THzPsdNanoTestCase : public TestCase
 {
 public:
-  THzPsdNanoTestCase();
-  ~THzPsdNanoTestCase();
-  void DoRun(void);
+  THzPsdNanoTestCase ();
+  ~THzPsdNanoTestCase ();
+  void DoRun (void);
   double DbmToW (double dbm);
 };
 
-THzPsdNanoTestCase::THzPsdNanoTestCase()
-  : TestCase("terahertz Rx PSD Nano test case")
+THzPsdNanoTestCase::THzPsdNanoTestCase ()
+  : TestCase ("terahertz Rx PSD Nano test case")
 {
 }
 
-THzPsdNanoTestCase::~THzPsdNanoTestCase()
+THzPsdNanoTestCase::~THzPsdNanoTestCase ()
 {
 }
 
@@ -73,10 +73,10 @@ THzPsdNanoTestCase::DoRun ()
   Gnuplot plot (graphicsFileName);
   //plot.SetTitle (plotTitle);
   plot.SetLegend ("Frequency [THz]", "p.s.d. [Watts/Hz]");
-  plot.AppendExtra("set grid xtics ytics");
+  plot.AppendExtra ("set grid xtics ytics");
 
   Ptr<THzSpectrumPropagationLoss> lossModel = CreateObject<THzSpectrumPropagationLoss> ();
-  
+
   Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSample", DoubleValue (1000));
   Gnuplot2dDataset dataset;
   dataset.SetTitle ("Transmitted pulse p.s.d. for nanoscale");
@@ -103,11 +103,11 @@ THzPsdNanoTestCase::DoRun ()
 
   Values::iterator vit = txPsd->ValuesBegin ();
   Bands::const_iterator fit = txPsd->ConstBandsBegin ();
-  
+
   while (vit != txPsd->ValuesEnd ())
     {
       NS_ASSERT (fit != txPsd->ConstBandsEnd ());
-      dataset.Add (fit->fc/1e12, *vit);
+      dataset.Add (fit->fc / 1e12, *vit);
 
       ++vit;
       ++fit;
@@ -124,13 +124,13 @@ THzPsdNanoTestCase::DoRun ()
 class THzPsdNanoTestSuite : public TestSuite
 {
 public:
-  THzPsdNanoTestSuite();
+  THzPsdNanoTestSuite ();
 };
 
-THzPsdNanoTestSuite::THzPsdNanoTestSuite()
-  :TestSuite("thz-rx-psd-nano", UNIT)
+THzPsdNanoTestSuite::THzPsdNanoTestSuite ()
+  : TestSuite ("thz-rx-psd-nano", UNIT)
 {
-AddTestCase(new THzPsdNanoTestCase, TestCase::QUICK);
+  AddTestCase (new THzPsdNanoTestCase, TestCase::QUICK);
 }
 //create an instance of the test suite
 static THzPsdNanoTestSuite g_thzPsdNanoTestSuite;
