@@ -58,7 +58,7 @@ THzUdpClient::GetTypeId (void)
                    AddressValue (),
                    MakeAddressAccessor (&THzUdpClient::m_peerAddress),
                    MakeAddressChecker ())
-    .AddAttribute ("RemotePort", 
+    .AddAttribute ("RemotePort",
                    "The destination port of the outbound packets",
                    UintegerValue (100),
                    MakeUintegerAccessor (&THzUdpClient::m_peerPort),
@@ -68,7 +68,7 @@ THzUdpClient::GetTypeId (void)
                    UintegerValue (1024),
                    MakeUintegerAccessor (&THzUdpClient::m_size),
                    MakeUintegerChecker<uint32_t> (12,60000))
-    .AddAttribute ("Mean", 
+    .AddAttribute ("Mean",
                    "The mean delay between two packets (s)",
                    DoubleValue (500.0),
                    MakeDoubleAccessor (&THzUdpClient::m_mean),

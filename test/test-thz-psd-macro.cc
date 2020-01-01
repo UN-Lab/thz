@@ -39,18 +39,18 @@ NS_LOG_COMPONENT_DEFINE ("THzPsdMacroTestSuite");
 
 class THzPsdMacroTestCase : public TestCase
 {
-public: 
+public:
   THzPsdMacroTestCase ();
-  ~THzPsdMacroTestCase();
+  ~THzPsdMacroTestCase ();
   void DoRun (void);
   double DbmToW (double dbm);
 };
 
-THzPsdMacroTestCase::THzPsdMacroTestCase()
+THzPsdMacroTestCase::THzPsdMacroTestCase ()
   : TestCase ("terahertz PSD Macro test case")
 {
 }
-THzPsdMacroTestCase::~THzPsdMacroTestCase()
+THzPsdMacroTestCase::~THzPsdMacroTestCase ()
 {
 }
 
@@ -64,17 +64,17 @@ THzPsdMacroTestCase::DbmToW (double dbm)
 void
 THzPsdMacroTestCase::DoRun ()
 {
-  LogComponentEnable("THzSpectrumPropagationLoss", LOG_LEVEL_ALL);
+  LogComponentEnable ("THzSpectrumPropagationLoss", LOG_LEVEL_ALL);
   std::string fileNameWithNoExtension = "thz-received-power-spectral-density-macro";
   std::string graphicsFileName        = fileNameWithNoExtension + ".png";
   std::string plotFileName            = fileNameWithNoExtension + ".plt";
   //std::string plotTitle               = "THz received signal power spectral density for nanoscale communication";
-        
-  Gnuplot plot(graphicsFileName);
+
+  Gnuplot plot (graphicsFileName);
   //plot.SetTitle(plotTitle);
   plot.SetLegend ("Frequency [THz]", "p.s.d. [Watts/Hz]");
-  plot.AppendExtra("set grid xtics ytics");
-    
+  plot.AppendExtra ("set grid xtics ytics");
+
   Ptr<THzSpectrumPropagationLoss> lossModel = CreateObject<THzSpectrumPropagationLoss> ();
   Config::SetDefault ("ns3::THzSpectrumValueFactory::TotalBandWidth", DoubleValue (7.476812e10));
   Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSample", DoubleValue (1));
@@ -82,12 +82,12 @@ THzPsdMacroTestCase::DoRun ()
   Gnuplot2dDataset dataset;
   dataset.SetTitle ("Transmitted signal p.s.d. for macroscale");
   dataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
-    
+
   double txPowerDbm = -20;//dBm
-  double txPowerW = DbmToW(txPowerDbm);
+  double txPowerW = DbmToW (txPowerDbm);
   double gain = 17.27;
   gain = std::pow (10.0, gain / 10.0);
-  
+
   double distance = 10;//m
   Ptr<SpectrumValue> txPsd;
   Ptr<SpectrumValue> rxPsd;
@@ -99,31 +99,31 @@ THzPsdMacroTestCase::DoRun ()
   InitTHzSpectrumWave = sf->THzSpectrumWaveformInitializer ();
   InitTHzSpectrumWaveAll = sf->AllTHzSpectrumWaveformInitializer ();
   txPsd = sf->CreateTxPowerSpectralDensityMask (txPowerW);
-  
-    Ptr<MobilityModel> a = CreateObject<ConstantPositionMobilityModel> ();
-    a->SetPosition (Vector (0,0,0));
-    Ptr<MobilityModel> b = CreateObject<ConstantPositionMobilityModel> ();
-    b->SetPosition (Vector (distance, 0, 0));
-    rxPsd = lossModel->CalcRxPowerSpectralDensity (txPsd, a, b);
 
-    Values::iterator vit = txPsd->ValuesBegin ();
-    Bands::const_iterator fit = txPsd->ConstBandsBegin ();
+  Ptr<MobilityModel> a = CreateObject<ConstantPositionMobilityModel> ();
+  a->SetPosition (Vector (0,0,0));
+  Ptr<MobilityModel> b = CreateObject<ConstantPositionMobilityModel> ();
+  b->SetPosition (Vector (distance, 0, 0));
+  rxPsd = lossModel->CalcRxPowerSpectralDensity (txPsd, a, b);
 
-    while (vit != txPsd->ValuesEnd ())
-      {
-	NS_ASSERT (fit != txPsd->ConstBandsEnd ());
-	dataset.Add(fit->fc/1e12, std::log10 (*vit * 2*gain));      
-	
-	++vit;
-	++fit; 
-      }
-    plot.AddDataset(dataset);
+  Values::iterator vit = txPsd->ValuesBegin ();
+  Bands::const_iterator fit = txPsd->ConstBandsBegin ();
 
-    std::ofstream plotFile (plotFileName.c_str());
-    
-    plot.GenerateOutput (plotFile);
-    plotFile.close ();
-    
+  while (vit != txPsd->ValuesEnd ())
+    {
+      NS_ASSERT (fit != txPsd->ConstBandsEnd ());
+      dataset.Add (fit->fc / 1e12, std::log10 (*vit * 2 * gain));
+
+      ++vit;
+      ++fit;
+    }
+  plot.AddDataset (dataset);
+
+  std::ofstream plotFile (plotFileName.c_str ());
+
+  plot.GenerateOutput (plotFile);
+  plotFile.close ();
+
 }
 
 class THzPsdMacroTestSuite : public TestSuite
@@ -133,9 +133,9 @@ public:
 };
 
 THzPsdMacroTestSuite::THzPsdMacroTestSuite ()
-  :TestSuite ("thz-psd-macro", UNIT)
+  : TestSuite ("thz-psd-macro", UNIT)
 {
-AddTestCase(new THzPsdMacroTestCase, TestCase::QUICK);
+  AddTestCase (new THzPsdMacroTestCase, TestCase::QUICK);
 }
 // create an instance of the test suite
 static THzPsdMacroTestSuite g_thzPsdMacroTestSuite;

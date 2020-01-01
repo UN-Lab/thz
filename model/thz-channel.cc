@@ -48,12 +48,12 @@ THzChannel::GetTypeId ()
   static TypeId tid = TypeId ("ns3::THzChannel")
     .SetParent<Object> ()
     .AddConstructor<THzChannel> ()
-    .AddAttribute ("THzSpectrumPropagationLoss", 
+    .AddAttribute ("THzSpectrumPropagationLoss",
                    "A pointer to the propagation loss model attached to this channel.",
                    PointerValue (CreateObject<THzSpectrumPropagationLoss> ()),
                    MakePointerAccessor (&THzChannel::m_loss),
                    MakePointerChecker<THzSpectrumPropagationLoss> ())
-    .AddAttribute ("PropagationDelayModel", 
+    .AddAttribute ("PropagationDelayModel",
                    "A pointer to the propagation delay model attached to this channel.",
                    PointerValue (CreateObject<ConstantSpeedPropagationDelayModel> ()),
                    MakePointerAccessor (&THzChannel::m_delay),
@@ -143,7 +143,7 @@ THzChannel::SendPacket (Ptr<THzSpectrumSignalParameters> txParams)
             }
           m_totalGain = itt->first->GetDirAntenna ()->GetAntennaGain (XnodeMobility, YnodeMobility, m_XnodeMode, m_YnodeMode, m_Rxorientation);
           double rxPower = m_loss->CalcRxPowerDA (txParams, XnodeMobility, YnodeMobility, m_totalGain);
-          NS_LOG_DEBUG ("node "<<it->first->GetNode ()->GetId ()<<"->"<<itt->first->GetNode ()->GetId ()<<", txPower = "<< txParams->txPower<<" dBm, totalGain = "<< m_totalGain +30 <<" dBm, rxPower = "<<rxPower<< " dBm"<< "  now: "<< Simulator::Now());
+          NS_LOG_DEBUG ("node " << it->first->GetNode ()->GetId () << "->" << itt->first->GetNode ()->GetId () << ", txPower = " << txParams->txPower << " dBm, totalGain = " << m_totalGain + 30 << " dBm, rxPower = " << rxPower << " dBm" << "  now: " << Simulator::Now ());
           uint32_t dstNodeId = itt->first->GetNode ()->GetId ();
           Ptr<Packet> copy = txParams->packet->Copy ();
           ne.packet = copy;
@@ -178,7 +178,7 @@ THzChannel::ReceivePacketDone (uint32_t i, NoiseEntry ne)
 {
   NS_LOG_FUNCTION ("");
   m_devList[i].second->ReceivePacketDone (ne.packet, ne.rxPower);
-  Simulator::ScheduleNow(&THzChannel::DeleteNoiseEntry, this, ne);
+  Simulator::ScheduleNow (&THzChannel::DeleteNoiseEntry, this, ne);
 }
 
 void

@@ -168,14 +168,14 @@ THzDirectionalAntenna::TuneRxOrientation (double phi_zero)
   double phi_rx_rad = phi_rx * M_PI / 180.0;
   m_RxorientationDegrees = phi_rx;
   m_RxorientationRadians = phi_rx_rad;
-  NS_LOG_DEBUG("THzDirectionalAntenna::TuneRxOrientation: " << m_RxorientationDegrees);
+  NS_LOG_DEBUG ("THzDirectionalAntenna::TuneRxOrientation: " << m_RxorientationDegrees);
 }
 
 double
 THzDirectionalAntenna::CheckRxOrientation ()
 {
   return m_RxorientationRadians;
-  NS_LOG_DEBUG("THzDirectionalAntenna::CheckRxOrientation: " << RadiansToDegrees(m_RxorientationRadians));
+  NS_LOG_DEBUG ("THzDirectionalAntenna::CheckRxOrientation: " << RadiansToDegrees (m_RxorientationRadians));
 }
 
 
@@ -264,7 +264,7 @@ THzDirectionalAntenna::GetAntennaGain (Ptr<MobilityModel> XnodeMobility, Ptr<Mob
       while (phi_rx > M_PI)
         {
           phi_rx -= M_PI + M_PI;
-        }     
+        }
       double ef_rx = std::pow (std::cos (phi_rx / 2.0), m_exponent);
       double m_rxgainDb = 20 * std::log10 (ef_rx);
       NS_LOG_DEBUG ("   GetRxGainDb " << m_rxgainDb + m_maxGain);
@@ -283,7 +283,7 @@ THzDirectionalAntenna::GetAntennaGain (Ptr<MobilityModel> XnodeMobility, Ptr<Mob
         }
       m_TxorientationDegrees = phi_tx * 180.0 / M_PI;
       m_TxorientationRadians = phi_tx;
-      NS_LOG_DEBUG ("1-Rx = "<< m_RxorientationRadians * 180.0 / M_PI<<" Tx = "<<txAngles.phi* 180.0 / M_PI<<" NOW: "<<Simulator::Now());
+      NS_LOG_DEBUG ("1-Rx = " << m_RxorientationRadians * 180.0 / M_PI << " Tx = " << txAngles.phi * 180.0 / M_PI << " NOW: " << Simulator::Now ());
       double ef_tx = std::pow (std::cos (phi_tx / 2.0), m_exponent);
       double gainDb = 20 * std::log10 (ef_tx);
       m_TxGain = gainDb + m_maxGain;
@@ -319,7 +319,7 @@ THzDirectionalAntenna::GetAntennaGain (Ptr<MobilityModel> XnodeMobility, Ptr<Mob
         }
       m_TxorientationDegrees = phi_tx * 180.0 / M_PI;
       m_TxorientationRadians = phi_tx;
-      NS_LOG_DEBUG ("2-Rx = "<< m_RxorientationRadians * 180.0 / M_PI<<" Tx = "<<txAngles.phi* 180.0 / M_PI<<" NOW: "<<Simulator::Now());
+      NS_LOG_DEBUG ("2-Rx = " << m_RxorientationRadians * 180.0 / M_PI << " Tx = " << txAngles.phi * 180.0 / M_PI << " NOW: " << Simulator::Now ());
       double ef_tx = std::pow (std::cos (phi_tx / 2.0), m_exponent);
       double gainDb = 20 * std::log10 (ef_tx);
       m_TxGain = gainDb + m_maxGain;

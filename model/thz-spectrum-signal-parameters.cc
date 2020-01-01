@@ -60,7 +60,7 @@ Ptr<SpectrumSignalParameters>
 THzSpectrumSignalParameters::Copy ()
 {
   NS_LOG_FUNCTION (this);
- 
+
   Ptr<THzSpectrumSignalParameters> tssp (new THzSpectrumSignalParameters (*this), false);
   return tssp;
 }

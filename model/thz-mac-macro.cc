@@ -55,17 +55,17 @@ NS_OBJECT_ENSURE_REGISTERED (THzMacMacro);
 
 THzMacMacro::THzMacMacro ()
   : THzMac (),
-    m_phy (0),
-    m_state (IDLE),
-    m_ccaTimeoutEvent (),
-    m_backoffTimeoutEvent (),
-    m_ctsTimeoutEvent (),
-    m_ackTimeoutEvent (),
-    m_sendCtsEvent (),
-    m_sendAckEvent (),
-    m_sendDataEvent (),
-    m_retry (0),
-    m_pktData (0)
+  m_phy (0),
+  m_state (IDLE),
+  m_ccaTimeoutEvent (),
+  m_backoffTimeoutEvent (),
+  m_ctsTimeoutEvent (),
+  m_ackTimeoutEvent (),
+  m_sendCtsEvent (),
+  m_sendAckEvent (),
+  m_sendDataEvent (),
+  m_retry (0),
+  m_pktData (0)
 
 {
   m_cw = m_cwMin;
@@ -157,11 +157,11 @@ THzMacMacro::GetTypeId (void)
     .AddTraceSource ("CtsTimeout",
                      "Trace Hookup for CTS Timeout",
                      MakeTraceSourceAccessor (&THzMacMacro::m_traceCtsTimeout),
-                     "ns3::THzMac::TimeTracedCallback") 
+                     "ns3::THzMac::TimeTracedCallback")
     .AddTraceSource ("AckTimeout",
                      "Trace Hookup for ACK Timeout",
                      MakeTraceSourceAccessor (&THzMacMacro::m_traceAckTimeout),
-                     "ns3::THzMac::TimeTracedCallback") 
+                     "ns3::THzMac::TimeTracedCallback")
     .AddTraceSource ("SendDataDone",
                      "Trace Hookup for sending a data",
                      MakeTraceSourceAccessor (&THzMacMacro::m_traceSendDataDone),
@@ -391,9 +391,9 @@ THzMacMacro::SetRxAntennaParameters ()
   m_thzAD = m_device->GetDirAntenna ();
   m_thzAD->SetAttribute ("TuneRxTxMode", DoubleValue (1));     // set as receiver
   m_thzAD->SetAttribute ("InitialAngle", DoubleValue (0));
-  double beamwidthDegrees = m_thzAD->GetBeamwidth();  //get default beamwidth
+  double beamwidthDegrees = m_thzAD->GetBeamwidth ();  //get default beamwidth
   m_thzAD->SetBeamwidth (beamwidthDegrees);           //set beamwidth to calculate antenna exponent for thz-dir-antenna module
-  NS_LOG_DEBUG ("Tune as RxMode At node: "<<m_device->GetNode()->GetId() <<" Antenna Mode: "<<m_thzAD->CheckAntennaMode()<<" Antenna Beamwidth: "<<beamwidthDegrees<<" deg, TurningSpeed: "<<m_thzAD->GetRxTurningSpeed()<<" MaxGain: "<<m_thzAD->GetMaxGain()<<"dB");
+  NS_LOG_DEBUG ("Tune as RxMode At node: " << m_device->GetNode ()->GetId () << " Antenna Mode: " << m_thzAD->CheckAntennaMode () << " Antenna Beamwidth: " << beamwidthDegrees << " deg, TurningSpeed: " << m_thzAD->GetRxTurningSpeed () << " MaxGain: " << m_thzAD->GetMaxGain () << "dB");
 
   m_thzAD->TuneRxOrientation (m_rxIniAngle);
   m_rxIniAngle = m_rxIniAngle + beamwidthDegrees;
@@ -406,8 +406,8 @@ THzMacMacro::SetRxAntennaParameters ()
       m_rxIniAngle -= 360;
     }
 
-  Time tCircle = Seconds (1 / m_thzAD->GetRxTurningSpeed());
-  int nSector = 360/beamwidthDegrees;
+  Time tCircle = Seconds (1 / m_thzAD->GetRxTurningSpeed ());
+  int nSector = 360 / beamwidthDegrees;
   Time tSector = NanoSeconds (tCircle.GetNanoSeconds () / nSector);
   NS_LOG_DEBUG ("tSector = " << tSector << ", nSector = " << nSector << ", tCircle = " << tCircle );
   m_SetRxAntennaEvent = Simulator::Schedule (tSector, &THzMacMacro::SetRxAntennaParameters, this);
@@ -434,9 +434,9 @@ THzMacMacro::Enqueue (Ptr<Packet> packet, Mac48Address dest)
       m_thzAD = m_device->GetDirAntenna ();
       m_thzAD->SetAttribute ("TuneRxTxMode", DoubleValue (0)); // set as transmitter
       m_thzAD->SetAttribute ("InitialAngle", DoubleValue (0.0));
-      double beamwidthDegrees = m_thzAD->GetBeamwidth();  //get default beamwidth
+      double beamwidthDegrees = m_thzAD->GetBeamwidth ();  //get default beamwidth
       m_thzAD->SetBeamwidth (beamwidthDegrees);           //set beamwidth to calculate antenna exponent for thz-dir-antenna module
-      NS_LOG_DEBUG ("Tune as TxMode At node: "<<m_device->GetNode()->GetId()<<" Antenna Mode: "<<m_thzAD->CheckAntennaMode()<<" Antenna Beamwidth: "<<beamwidthDegrees<<" deg, MaxGain: "<<m_thzAD->GetMaxGain()<<"dB");
+      NS_LOG_DEBUG ("Tune as TxMode At node: " << m_device->GetNode ()->GetId () << " Antenna Mode: " << m_thzAD->CheckAntennaMode () << " Antenna Beamwidth: " << beamwidthDegrees << " deg, MaxGain: " << m_thzAD->GetMaxGain () << "dB");
 
       Rec rec;
       rec.RecSize = packet->GetSize ();
@@ -1067,22 +1067,22 @@ THzMacMacro::ResultsRecord ()
    * enable the result printing in a .txt file by uncommenting the content in this function
    *----------------------------------------------------------------------------------------*/
 
- /* 
- int seed_num;
-  RngSeedManager seed;
-  seed_num = seed.GetSeed ();
+  /*
+  int seed_num;
+   RngSeedManager seed;
+   seed_num = seed.GetSeed ();
 
-  std::stringstream txtname;
-  txtname << "scratch/result" << seed_num << ".txt";
-  std::string filename = txtname.str ();
+   std::stringstream txtname;
+   txtname << "scratch/result" << seed_num << ".txt";
+   std::string filename = txtname.str ();
 
-  std::ofstream resultfile;
-  resultfile.open (filename.c_str (), std::ios::app);
-  std::list<Result>::iterator it = m_result.begin ();
-  resultfile << it->nodeid << "   ;\t" << it->Psize << "   ;\t" << it->delay << "   ;\t" << it->success << "   ;\t" << it->discard << std::endl;
-  resultfile.close ();  
-  return;
-*/
+   std::ofstream resultfile;
+   resultfile.open (filename.c_str (), std::ios::app);
+   std::list<Result>::iterator it = m_result.begin ();
+   resultfile << it->nodeid << "   ;\t" << it->Psize << "   ;\t" << it->delay << "   ;\t" << it->success << "   ;\t" << it->discard << std::endl;
+   resultfile.close ();
+   return;
+ */
 
 }
 } // namespace ns3

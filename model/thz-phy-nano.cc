@@ -70,12 +70,12 @@ THzPhyNano::GetTypeId (void)
                    DoubleValue (-20),
                    MakeDoubleAccessor (&THzPhyNano::SetTxPower),
                    MakeDoubleChecker<double> ())
-    .AddAttribute ("PulseDuration", 
+    .AddAttribute ("PulseDuration",
                    "Duration of a short pulse",
                    TimeValue (FemtoSeconds (100)),
                    MakeTimeAccessor (&THzPhyNano::m_pulseDuration),
                    MakeTimeChecker ())
-    .AddAttribute ("Beta", 
+    .AddAttribute ("Beta",
                    "Ratio of symbol duratio to pulse duration",
                    DoubleValue (100),
                    MakeDoubleAccessor (&THzPhyNano::m_beta),
@@ -86,8 +86,8 @@ THzPhyNano::GetTypeId (void)
 
 THzPhyNano::THzPhyNano ()
   : m_device (0),
-    m_mac (0),
-    m_channel (0)
+  m_mac (0),
+  m_channel (0)
 {
   Simulator::ScheduleNow (&THzPhyNano::CalTxPsd, this);
 }

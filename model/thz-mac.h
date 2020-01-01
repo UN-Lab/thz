@@ -118,34 +118,31 @@ public:
   virtual void Clear (void) = 0;
 
 
-   /**
-   * TracedCallback signature for timeout.
-   *
-   * \param [in] node id.
-   * \param [in] device index.
-   */
-  typedef void (* TimeTracedCallback)
-    (uint32_t nodeID, uint32_t devIndex);
+  /**
+  * TracedCallback signature for timeout.
+  *
+  * \param [in] node id.
+  * \param [in] device index.
+  */
+  typedef void (* TimeTracedCallback)(uint32_t nodeID, uint32_t devIndex);
 
 
-   /**
-   * TracedCallback signature for SendDataDone.
-   *
-   * \param [in] node id.
-   * \param [in] device index.
-   * \param [in] Send Data Done true or false.
-   */
-  typedef void (* SendDataDoneTracedCallback)
-    (uint32_t nodeID, uint32_t devIndex, bool status);
+  /**
+  * TracedCallback signature for SendDataDone.
+  *
+  * \param [in] node id.
+  * \param [in] device index.
+  * \param [in] Send Data Done true or false.
+  */
+  typedef void (* SendDataDoneTracedCallback)(uint32_t nodeID, uint32_t devIndex, bool status);
 
 
-   /**
-   * TracedCallback signature for throughput.
-   *
-   * \param [in] value of throughput.
-   */
-  typedef void (* ThroughputTracedCallback)
-    (uint32_t throughput);
+  /**
+  * TracedCallback signature for throughput.
+  *
+  * \param [in] value of throughput.
+  */
+  typedef void (* ThroughputTracedCallback)(uint32_t throughput);
 
 };
 

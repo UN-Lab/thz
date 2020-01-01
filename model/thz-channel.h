@@ -46,9 +46,9 @@ class PropagationDelayModel;
  * \brief A Terahertz Channel
  * \ingroup thz
  *
- * This thz channel implements the propagation model descripted in J.M. Jornet and I.F. Akyildiz, 
+ * This thz channel implements the propagation model descripted in J.M. Jornet and I.F. Akyildiz,
  * "Channel Modeling and Capacity Analysis for Electromagnetic Wireless Nanonetworks in the Terahertz Band"
- * 
+ *
  * This class is expected to be used in tandem with the THzPhyMacro/Nano and ThzDirAntenna
  */
 
@@ -56,7 +56,7 @@ class THzChannel : public Channel
 {
   /**
    * typedef for a list of NoiseEntry
-   * 
+   *
    * This information will be used by PHY layer to obtain SINR value.
    */
   typedef struct
@@ -69,7 +69,6 @@ class THzChannel : public Channel
   } NoiseEntry;
 
 public:
-
   /**
    * Create a THzChannel
    */
@@ -92,11 +91,11 @@ public:
    *
    * \param txParams the data structure of the transmitted packet.
    *
-   * in this function a NoiseEntry will be updated, which recoreds the signel strength a node will receive 
+   * in this function a NoiseEntry will be updated, which recoreds the signel strength a node will receive
    * and how long will the signal exist, this information will be used by terahertz physical layer to calculate SINR.
-   * Also in this function, it checks the antenna mode for sending node and receiving node, by this process it 
+   * Also in this function, it checks the antenna mode for sending node and receiving node, by this process it
    * checking the receiver's orientation and thus the total antenna gain between transmitter and receiver.
-   * Note that the sending node is not necessarily to be the transmitter, e.g., node sending CTS or ACK packet is actually the receiver. 
+   * Note that the sending node is not necessarily to be the transmitter, e.g., node sending CTS or ACK packet is actually the receiver.
    */
   bool SendPacket (Ptr<THzSpectrumSignalParameters> txParams);
 
@@ -109,13 +108,12 @@ public:
 
   /**
    * \brief convert the value from dBm to Watt.
-   * 
+   *
    * \param dbm the value in dBm.
    */
   double DbmToW (double dbm);
 
 private:
-
   /**
    * \brief send packet done in terahertz channel.
    *
@@ -140,7 +138,7 @@ private:
    * \param i the recording of device ID of the receiver.
    * \param ne the noise entry.
    *
-   * Note that if concurrent transmissions end at the same time, some of them can be missed from SINR calculation, so delete 
+   * Note that if concurrent transmissions end at the same time, some of them can be missed from SINR calculation, so delete
    * a noise entry a few seconds later.
    */
   void ReceivePacketDone (uint32_t i, NoiseEntry ne);
@@ -171,7 +169,7 @@ private:
   std::list<Ptr<MobilityModel> > m_recMobList;
 
   /**
-   * A vector of pointers to THzDeviceList 
+   * A vector of pointers to THzDeviceList
    */
   typedef std::vector<std::pair<Ptr<THzNetDevice>, Ptr<THzPhy> > > THzDeviceList;
   THzDeviceList m_devList;

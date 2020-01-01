@@ -44,8 +44,8 @@ NS_OBJECT_ENSURE_REGISTERED (THzNetDevice);
 
 THzNetDevice::THzNetDevice ()
   : NetDevice (),
-    m_mtu (60000),
-    m_arp (true)
+  m_mtu (60000),
+  m_arp (true)
 {
 }
 THzNetDevice::~THzNetDevice ()
@@ -88,34 +88,34 @@ THzNetDevice::GetTypeId ()
 {
   static TypeId tid = TypeId ("ns3::THzNetDevice")
     .SetParent<NetDevice> ()
-    .AddAttribute ("Channel", 
+    .AddAttribute ("Channel",
                    "The channel attached to this device",
                    PointerValue (),
                    MakePointerAccessor (&THzNetDevice::DoGetChannel, &THzNetDevice::SetChannel),
                    MakePointerChecker<THzChannel> ())
-    .AddAttribute ("DirAntenna", 
+    .AddAttribute ("DirAntenna",
                    "The Directional Antenna attached to this device.",
                    PointerValue (),
                    MakePointerAccessor (&THzNetDevice::GetDirAntenna, &THzNetDevice::SetDirAntenna),
                    MakePointerChecker<THzDirectionalAntenna> ())
-    .AddAttribute ("Phy", 
+    .AddAttribute ("Phy",
                    "The PHY layer attached to this device.",
                    PointerValue (),
                    MakePointerAccessor (&THzNetDevice::GetPhy, &THzNetDevice::SetPhy),
                    MakePointerChecker<THzPhy> ())
-    .AddAttribute ("Mac", 
+    .AddAttribute ("Mac",
                    "The MAC layer attached to this device.",
                    PointerValue (),
                    MakePointerAccessor (&THzNetDevice::GetMac, &THzNetDevice::SetMac),
                    MakePointerChecker<THzMac> ())
-    .AddTraceSource ("Rx", 
+    .AddTraceSource ("Rx",
                      "Received payload from the MAC layer.",
                      MakeTraceSourceAccessor (&THzNetDevice::m_rxLogger),
-                     "ns3::Packet::Mac48AddressTracedCallback") 
-    .AddTraceSource ("Tx", 
+                     "ns3::Packet::Mac48AddressTracedCallback")
+    .AddTraceSource ("Tx",
                      "Send payload to the MAC layer.",
                      MakeTraceSourceAccessor (&THzNetDevice::m_txLogger),
-                     "ns3::Packet::Mac48AddressTracedCallback") 
+                     "ns3::Packet::Mac48AddressTracedCallback")
   ;
   return tid;
 }

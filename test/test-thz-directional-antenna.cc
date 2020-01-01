@@ -36,23 +36,23 @@ NS_LOG_COMPONENT_DEFINE ("THzDirectionalAntennaTestSuite");
 class THzDirectionalAntennaTestCase : public TestCase
 {
 public:
-   THzDirectionalAntennaTestCase();
-   ~THzDirectionalAntennaTestCase();
+  THzDirectionalAntennaTestCase ();
+  ~THzDirectionalAntennaTestCase ();
 
-   void DoRun(void);
+  void DoRun (void);
 };
 
-THzDirectionalAntennaTestCase::THzDirectionalAntennaTestCase()
- :TestCase("Terahertz Directional Antenna test case")
+THzDirectionalAntennaTestCase::THzDirectionalAntennaTestCase ()
+  : TestCase ("Terahertz Directional Antenna test case")
 {
 }
-THzDirectionalAntennaTestCase::~THzDirectionalAntennaTestCase()
+THzDirectionalAntennaTestCase::~THzDirectionalAntennaTestCase ()
 {
 }
 
 
-void 
-THzDirectionalAntennaTestCase::DoRun()
+void
+THzDirectionalAntennaTestCase::DoRun ()
 {
   //--- setting up ---//
   Ptr<MobilityModel> rx_node = CreateObject<ConstantPositionMobilityModel> ();
@@ -98,7 +98,7 @@ THzDirectionalAntennaTestCase::DoRun()
   // Make the graphics file, which the plot file will create when it
   // is used with Gnuplot, be a PNG file.
   plot.SetTerminal ("png");
-  plot.AppendExtra("set grid xtics ytics");
+  plot.AppendExtra ("set grid xtics ytics");
 
   // Set the labels for each axis.
   plot.SetLegend ("Orientation of RXDA [Degree]", "Total Gain [dB]");
@@ -117,9 +117,9 @@ public:
 };
 
 THzDirectionalAntennaTestSuite::THzDirectionalAntennaTestSuite ()
-  :TestSuite ("thz-directional-antenna", UNIT)
+  : TestSuite ("thz-directional-antenna", UNIT)
 {
-  AddTestCase(new THzDirectionalAntennaTestCase, TestCase::QUICK);
+  AddTestCase (new THzDirectionalAntennaTestCase, TestCase::QUICK);
 }
 
 // create an instance of the test suite

@@ -32,14 +32,13 @@
 #include "ns3/thz-energy-model.h"
 
 
-namespace ns3
-{
+namespace ns3 {
 
 /**
  * \ingroup thz
  *
  * This installer installs THzEnergyModel to the nodes,
- * using ns3 object aggregation 
+ * using ns3 object aggregation
  */
 class THzEnergyModelHelper
 {
@@ -47,16 +46,16 @@ public:
   /**
    * Create a THzEnergyModelHelper
    */
-  THzEnergyModelHelper();
+  THzEnergyModelHelper ();
   /**
    * \internal
    * Destroy a THzEnergyModelHelper
    */
-  virtual ~THzEnergyModelHelper();
+  virtual ~THzEnergyModelHelper ();
   /**
    * For each Ptr<node> in the provided container:
-   * it creates an ns3::THzEnergyModel (with the attributes 
-   * configured by THzEnergyModelHelper::SetEnergyModelAttribute); 
+   * it creates an ns3::THzEnergyModel (with the attributes
+   * configured by THzEnergyModelHelper::SetEnergyModelAttribute);
    * adds the energy model to the node;
    *
    * \param c The NodeContainer holding the nodes to be changed.
