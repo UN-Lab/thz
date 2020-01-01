@@ -15,9 +15,9 @@ In this module, it tests the link-layer transmission performance of the nanoscal
 Model Description
 *****************
 
-The source code for the new module lives in the directory ``src/thz``.
+The source code for the new module lives in the directory ``/thz``.
 
-* The frequency database file (data_frequency.txt) and the corresponding molecular absorption coefficient database file (data_AbsCoe.txt) are located inside ``src/thz/model``.
+* The frequency database file (data_frequency.txt) and the corresponding molecular absorption coefficient database file (data_AbsCoe.txt) are located inside ``/thz/model``.
 
 Design
 ======
@@ -38,7 +38,7 @@ Design
 Scope and Limitations
 =====================
 
-* In its current state, the THz system module is adapt to the latest ns-3 version (ns-3.29)
+* In its current state, the THz system module is adapt to the latest ns-3 version (ns-3.30)
 * As of now, the ns-3 interface to THz is Ipv4 only.
 
 References
@@ -57,24 +57,24 @@ The first step is to clone THz from the github repository and build it::
  $ git clone https://github.com/UBnano-Terasim/Terasim-ns3
  $ cd Terasim-ns3
 
-Copy the thz folder to your local source folder of ns-3 directory (../ns-allinone-3.29/ns-3.29/src), then go back to ns-allinone-3.29 folder to build the THz module by::
+Copy the thz folder to your local source folder of ns-3 directory (../ns-allinone-3.30/ns-3.30/contrib), then go back to ns-allinone-3.30 folder to build the THz module by::
 
  $ cd ../.. 
  $ ./build.py
  
-Once THz has been built successfully, try to run one of the examples (i.e., nano-adhoc.cc). First, you need to copy this example from ns-3.29/src/thz/examples to ns-3.29/scratch::
+Once THz has been built successfully, try to run one of the examples (i.e., nano-adhoc.cc). First, you need to copy this example from ../thz/examples to ns-3.30/scratch::
 
- $ cp ns-3.29/src/thz/examples/nano-adhoc.cc ns-3.29/scratch/nano-adhoc.cc
+ $ cp ns-3.30/contrib/thz/examples/nano-adhoc.cc ns-3.30/scratch/nano-adhoc.cc
 
-Then enter the ns-3.29 folder and run the example::
+Then enter the ns-3.30 folder and run the example::
 
- $ cd ns-3.29
+ $ cd ns-3.30
  $ ./waf --run scratch/nano-adhoc
 
 
 Helpers
 =======
-All the helper files can be found in ``src/thz/helper/``:
+All the helper files can be found in ``/thz/helper/``:
 
 * THzHelper: helps to create THzNetDevice objects:
 * THzMacHelper: create THz MAC layers for THzNetDevice
@@ -148,7 +148,7 @@ The link layer performance in terms of the throughput and the discarding probabi
 
 Examples
 ===============
-The following examples have been written, which can be found in ``src/thz/examples/``:
+The following examples have been written, which can be found in ``/thz/examples/``:
 
 * nano-adhoc.cc: This example file is for the nanoscale scenario of the THz-band communication networks, i.e., with transmission distance below one meter. It outputs the link layer performance mainly in terms of the throughput and the discarding probability  of the DATA packets. In this example, an adhoc network architecture is implemented. User can set network topology in this file. The nodes in the nanonetwork are equipped with the energy module we developed. The basic parameters of the energy model can be set in this file. User can also set the number of samples of the TSOOK pulse within frequency range 0.9-4 THz window in this file. User can select one of the two MAC protocols that include a 0-way and a 2-way handshake protocols.  0-way starts the link layer transmission with a DATA frame and 2-way with an RTS frame. The selection can be done by setting the attribute value of EnableRts in THzMacNano. In the end, the user can also set the generated packet size and the mean value of the packet generation interval in this file.
 
@@ -157,7 +157,7 @@ The following examples have been written, which can be found in ``src/thz/exampl
 Validation
 **********
 
-This model has been tested validated by the results generated from the following test files, which can be found in ``src/thz/test``:
+This model has been tested validated by the results generated from the following test files, which can be found in ``/thz/test``:
 
 * The test files ``test-thz-psd-macro.cc`` and ``test-thz-psd-nano.cc`` are used to plot the power spectral densities of the generated waveform by the physical layer and the received signal at certain distance for macroscale scenario and nanoscale scenario respectively.
 * The test file ``test-directional-antenna.cc`` plots the antenna radiation pattern of the directional antenna.
