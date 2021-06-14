@@ -1,7 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2019 University at Buffalo, the State University of New York
- * (http://ubnano.tech/)
+ * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -18,7 +17,8 @@
  *
  * Author: Qing Xia <qingxia@buffalo.edu>
  *         Zahed Hossain <zahedhos@buffalo.edu>
- *         Josep Miquel Jornet <jmjornet@buffalo.edu>
+ *         Josep Miquel Jornet <j.jornet@northeastern.edu>
+ *         Daniel Morales <danimoralesbrotons@gmail.com>
  */
 
 #ifndef THZ_MAC_MACRO_HELPER_H
