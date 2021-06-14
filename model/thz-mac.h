@@ -106,7 +106,7 @@ public:
    * \param phy The PHY attached to this MAC and received the packet
    * \param collision The true value means packet was received successfully
    */
-  virtual void ReceivePacketDone (Ptr<THzPhy> phy, Ptr<Packet> packet, bool collision) = 0;
+  virtual void ReceivePacketDone (Ptr<THzPhy> phy, Ptr<Packet> packet, bool collision, double rxPower) = 0;
 
   /**
    * \ brief set the callback to forward packtes up to higher layers

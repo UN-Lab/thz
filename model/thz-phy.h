@@ -99,7 +99,7 @@ public:
     * Called from higher layer (MAC layer) to send packet into physical layer to the specified destination Address.
     * Pass the packet to lower layer (channel).
     */
-  virtual bool SendPacket (Ptr<Packet> packet, bool rate) = 0;
+  virtual bool SendPacket (Ptr<Packet> packet, bool rate, uint16_t mcs) = 0;
 
   /**
     * \param packet packet sent out from the terahertz channel.
@@ -135,7 +135,7 @@ public:
     * \return the time duration for transmitting a packet.
     */
 
-  virtual Time CalTxDuration (uint32_t basicSize, uint32_t dataSize) = 0;
+  virtual Time CalTxDuration (uint32_t basicSize, uint32_t dataSize, uint8_t mcs) = 0;
 
 };
 

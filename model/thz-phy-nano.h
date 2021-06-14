@@ -144,7 +144,7 @@ public:
    * \param rate a boolean value that allows to choose between two transmission rates
    * \return True unless there is no slot left to interleave
    */
-  bool SendPacket (Ptr<Packet> packet, bool rate);
+  bool SendPacket (Ptr<Packet> packet, bool rate, uint16_t mcs);
   /**
    * \brief Indicates that the Phy has finished transmitting
    * the packet over the channel
@@ -178,7 +178,7 @@ public:
   /**
    * \return the time duration for transmitting a packet.
    */
-  Time CalTxDuration (uint32_t basicSize, uint32_t dataSize);
+  Time CalTxDuration (uint32_t basicSize, uint32_t dataSize, uint8_t mcs);
   /**
    * \brief Sort the array in ascending order
    *

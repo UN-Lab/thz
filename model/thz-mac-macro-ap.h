@@ -1,7 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2019 University at Buffalo, the State University of New York
- * (http://ubnano.tech/)
+ * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -19,10 +18,11 @@
  * Author: Qing Xia <qingxia@buffalo.edu>
  *         Zahed Hossain <zahedhos@buffalo.edu>
  *         Josep Miquel Jornet <jmjornet@buffalo.edu>
+ *         Daniel Morales <danimoralesbrotons@gmail.com>
  */
-
-#ifndef THZ_MAC_MACRO_H
-#define THZ_MAC_MACRO_H
+ 
+#ifndef THZ_MAC_MACRO_AP_H
+#define THZ_MAC_MACRO_AP_H
 
 #include "ns3/nstime.h"
 #include "ns3/simulator.h"
@@ -32,13 +32,22 @@
 #include "thz-mac.h"
 #include "thz-phy.h"
 #include <list>
+#include <map>
+#include <vector>
+
+#define LOGIC_HIGHEST_RETRY     10
+#define LOGIC_HIGHEST_RETRY_WL  11
+#define LOGIC_ANSWER_ALL        12
+#define LOGIC_ANSWER_ALL_WL     13
+#define LOGIC_ANSWER_ALL_MCS    14
+#define LOGIC_ANSWER_ALL_WL_MCS 15
 
 namespace ns3 {
 
 /**
  * \ingroup thz
- * \class THzMacMacro
- * \brief THzMacMacro models the MAC layer for macroscale THz communication.
+ * \class THzMacMacroAp
+ * \brief THzMacMacroAp models the MAC layer for macroscale THz communication.
  *
  * This file describes the link-layer MAC protocol for the centralized macro-scale scenario.
  * In this scenario, we consider that there is only one access point operating as a receiver,
@@ -51,58 +60,31 @@ namespace ns3 {
  * and discarding probability of the nodes in this file.
  */
 
-class THzMacMacro : public THzMac
+class THzMacMacroAp : public THzMac
 {
-  typedef struct
-  {
-    uint16_t sequence;
-    EventId m_ackTimeoutEvent;
-  } AckTimeouts;
 
-  typedef struct
-  {
-    uint16_t sequence;
-    EventId m_ctsTimeoutEvent;
-  } CtsTimeouts;
 
-  /**
-    * Record packet information since it got enqueued
-    */
-  typedef struct
-  {
-    uint16_t RecSeq;            //!< data packet's sequence number
-    Time RecTime;               //!< recording time
-    uint16_t RecSize;           //!< size of the data packet
-    uint16_t RecRetry;          //!< number of retransmittion
-    Ptr<Packet> Recpacket;      //!< the data packet been recorded
-  } Rec;
 
   /**
     * Encapsulate results for output
     */
-  typedef struct
+  /*typedef struct
   {
     uint32_t nodeid;
     uint16_t Psize;
     Time delay;
     bool success;
     bool discard;
-  } Result;
+  } Result;*/
 public:
-  THzMacMacro ();
-  virtual ~THzMacMacro ();
+  THzMacMacroAp ();
+  virtual ~THzMacMacroAp ();
 
   /**
    * Register this type.
    * \return the type ID.
    */
   static TypeId GetTypeId (void);
-  /**
-   * \param cw the number of contention window
-   *
-   * This function is to set the minimum contention window
-   */
-  virtual void SetCwMin (uint32_t cw);
 
   /**
    * \param duration the slot duration
@@ -110,11 +92,6 @@ public:
    * This function is to set the slot duration
    */
   virtual void SetSlotTime (Time duration);
-
-  /**
-   * \return the contention window
-   */
-  virtual uint32_t GetCw (void);
 
   /**
    * \return the slot time
@@ -133,11 +110,6 @@ public:
    * \param dev pointer to the netdevice to attach to the MAC
    */
   virtual void SetDevice (Ptr<THzNetDevice> dev);
-
-  /**
-    * \brief setup parameters for receiver directional antenna.
-    */
-  virtual void SetRxAntennaParameters ();
 
   /** Clears all pointer references. */
   virtual void Clear (void);
@@ -158,20 +130,6 @@ public:
    * \return the MAC address associated to this MAC layer.
    */
   virtual Mac48Address GetAddress () const;
-
-
-  /**
-    * \ brief enqueue a data packet
-    *
-    * \param pkt  Packet to be transmitted.
-    * \param dest Destination address.
-    *
-    * \return True if packet was successfully enqueued.
-    *
-    * When a packet been enqueued, it operates as the transmitter, thus the corresponding setting of
-    * the directional antenna need to been accomplished.
-    */
-  virtual bool Enqueue (Ptr<Packet> pkt, Mac48Address dest);
 
   /**
     * \brief PHY has finished sending a packet.
@@ -204,113 +162,18 @@ public:
     */
   virtual void ReceivePacketDone (Ptr<THzPhy> phy, Ptr<Packet> packet, bool collision, double rxPower);
 
+
 private:
   typedef enum
   {
-    IDLE, BACKOFF, WAIT_TX, TX, WAIT_RX, RX, COLL
+    IDLE, BACKOFF, WAIT_TX, TX, WAIT_ACK, RX, COLL
   } State;
 
   Time GetSifs (void) const;
   Time GetDifs (void) const;
   Time GetCtrlDuration (uint16_t type);
-  Time GetDataDuration (Ptr<Packet> p);
+  Time GetDataDuration (uint32_t size, uint8_t mcs);
   std::string StateToString (State state);
-
-  /**
-   * \param cw the number of contention window
-   *
-   * This function is to set the contention window
-   */
-  void SetCw (uint32_t cw);
-
-  /**
-    * \brief setup clear channel assessment function
-    */
-  void CcaForDifs ();
-
-  /**
-    * \brief start backoff
-    */
-  void BackoffStart ();
-
-  /**
-    * \brief setting channel becomes busy
-    *
-    * Freeze remainning backoff time.
-    */
-  void ChannelBecomesBusy ();
-
-  /**
-    * \brief grant channel access
-    */
-  void ChannelAccessGranted ();
-  /**
-    * \brief update nav
-    *
-    * \param nav the nav time
-    */
-  void UpdateNav (Time nav);
-
-  /**
-    * \brief update local nav
-    *
-    * \param nav the nav time
-    */
-  void UpdateLocalNav (Time nav);
-
-  /**
-    * \ brief remove a data packet from the queue
-    */
-  void Dequeue ();
-
-  /**
-    * \brief send RTS packet.
-    *
-    * \param packet The DATA Packet waiting to be sent
-    *
-    * The node need to calculate the nav to book the channel,
-    * it also scheludes the CTS time out when send out the RTS packet.
-    */
-  void SendRts (Ptr<Packet> pktData);
-
-  /**
-    * \brief receive RTS packet
-    *
-    * \param packet the RTS packet.
-    *
-    * Update local nav and schedule Send CTS event.
-    */
-  void ReceiveRts (Ptr<Packet> packet);
-
-  /**
-    * \brief send CTS packet
-    *
-    * \param dest MAC address of the destination
-    * \param duration nav duration recorded in the received RTS packet's header
-    * \param sequence the sequency number recorded in the RTS packet's header.
-    *
-    * Send CTS packet with the updated nav and sequence number set in the header.
-    */
-  void SendCts (Mac48Address dest, Time duration, uint16_t sequence);
-
-  /**
-    * \brief receive CTS packet
-    *
-    * \param packet the CTS packet.
-    *
-    * If the received CTS packet is the responding packet for the DATA packet waiting to be sent. Clear the
-    * CTS time out and schedule sending the DATA packet.
-    */
-  void ReceiveCts (Ptr<Packet> packet);
-
-  /**
-    * \brief send the DATA packet
-    *
-    * \param packet the DATA packet.
-    *
-    * Send DATA packet with updated nav and ACK time out in the header.
-    */
-  void SendData (Ptr<Packet> packet);
 
   /**
     * \brief receive the DATA packet
@@ -329,17 +192,7 @@ private:
     *
     * Updata local nav and send out ACK packet with corresponding sequence number in its header.
     */
-  void SendAck (Mac48Address dest, uint16_t sequence);
-
-  /**
-    * \brief receive ACK packet
-    *
-    * \param packet the received ACK packet.
-    *
-    * If the received ACK packet is the corresponding ACK to the DATA packet, schedule the SendDataDone
-    * function and cancel the ACK time out for this DATA packet.
-    */
-  void ReceiveAck (Ptr<Packet> packet);
+  void SendAck ();
 
   /**
   * \brief send Rts packet
@@ -351,42 +204,6 @@ private:
   */
   bool SendPacket (Ptr<Packet> packet, bool rate);
 
-  /**
-    * \brief send DATA packet done and evaluate the transmission performance.
-    *
-    * \param success value that indicates is the corresponding ACK packet has been successfully received or not.
-    * \param sequence the sequence number recorded in the received ACK packet header.
-    *
-    * The performance evaluation is based on the average throughput and discarding probability of the node.
-    */
-  void SendDataDone (bool success, uint16_t sequence);
-
-  void StartOver ();
-
-  /**
-    * \brief CTS time out
-    *
-    * Retransmission is caused by the CTS time out, if number of retransmission surpass the maximum retransmission
-    * limitation. The transmission of the corresponding DATA packet is considered as failed. No more retransmissions
-    * of this DATA packet need to process.
-    */
-  void CtsTimeout (uint16_t sequence);
-
-  /**
-    * \brief ACK time out
-    *
-    * Retransmission is caused by the ACK time out, if number of retransmission surpass the maximum retransmission
-    * limitation. The transmission of the corresponding DATA packet is considered as failed. No more retransmissions
-    * of this DATA packet need to process.
-    */
-  void AckTimeout (uint16_t sequence);
-
-  /**
-    * \brief Backoff Time
-    *
-    * The backoff time calculated based on the number of retransmission of the DATA packet.
-    */
-  void Backoff (uint32_t retry);
 
   /**
     * \brief check if it is a new sequence
@@ -398,20 +215,12 @@ private:
     */
   bool IsNewSequence (Mac48Address addr, uint16_t seq);
 
-  /**
-    * \brief double the contention window
-    */
-  void DoubleCw ();
+  virtual bool Enqueue (Ptr<Packet> pkt, Mac48Address dest);
 
   /**
-    * \brief round off time to be integer times of the slot duration.
+    * \brief record the cycle time into output file
     */
-  Time RoundOffTime (Time time);
-
-  /**
-    * \brief record the results into output file
-    */
-  void ResultsRecord ();
+  void CycleRecord ();
 
 
   Callback <void, Ptr<Packet>, Mac48Address, Mac48Address> m_forwardUpCb;
@@ -420,7 +229,6 @@ private:
   Ptr<THzNetDevice> m_device;
 
   State m_state;
-  bool m_rtsEnable;
 
   Ptr<THzDirectionalAntenna> m_thzAD;
 
@@ -429,20 +237,19 @@ private:
   EventId m_ctsTimeoutEvent;
   EventId m_ackTimeoutEvent;
   EventId m_sendCtsEvent;
-  EventId m_sendAckEvent;
+  //EventId m_sendAckEvent;
   EventId m_sendDataEvent;
   EventId m_SetRxAntennaEvent;
 
   // Mac parameters
-  uint16_t m_cw;
-  uint16_t m_cwMin;
-  uint16_t m_cwMax;
+  uint16_t m_boSlots;
   uint16_t m_rtsRetryLimit;
   uint16_t m_dataRetryLimit;
   uint16_t m_retry;
   uint16_t m_sequence;
 
   Time m_slotTime;
+  Time m_slotTime_3way;
   Time m_sifs;
   Time m_difs;
   Ptr<Packet> m_pktTx;
@@ -453,8 +260,8 @@ private:
   uint16_t m_discard;
 
   Time m_tData;             //!< transmission duration of the DATA packet
-  double m_rxIniAngle;      //!< initial angle of the receiver antenna
-  uint32_t m_MinEnquePacketSize;    //!< the minimum DATA packet size needed to enqueue the packet
+  double m_angle;      //!< initial angle of the receiver antenna
+  uint32_t m_packetSize;    //!< the minimum DATA packet size needed to enqueue the packet
   uint16_t m_probDiscard;   //!< the DATA packet discarding probability
 
   Time m_nav;
@@ -476,13 +283,15 @@ private:
 
   uint32_t m_queueLimit;
   std::list<Ptr<Packet> > m_pktQueue;
+  std::list<Ptr<Packet> > m_ackList;
   std::list<std::pair<Mac48Address, uint16_t> > m_seqList;
   std::list<std::pair<uint16_t, Time> > m_pktTxlist;
-  std::list<Rec> m_rec;
-  std::list<Result> m_result;
+  //std::list<Rec> m_rec;
+  //std::list<Result> m_result;
 
-  std::list<AckTimeouts> m_ackTimeouts;
-  std::list<CtsTimeouts> m_ctsTimeouts;
+  //std::list<AckTimeouts> m_ackTimeouts;
+  //std::list<CtsTimeouts> m_ctsTimeouts;
+
 
   TracedCallback<uint32_t, uint32_t> m_traceCtsTimeout;
   TracedCallback<uint32_t, uint32_t> m_traceAckTimeout;
@@ -490,10 +299,65 @@ private:
   TracedCallback<uint32_t, uint32_t, bool> m_traceSendDataDone;
   TracedCallback<double> m_traceThroughput;
 
+  // *** for 1-way ***
+  // should be formatted before going into app store
+  typedef struct
+  {
+  Time m_ctsLife;
+  Mac48Address m_ctsSource;
+  } CtsLife;
+
+  std::list<CtsLife> m_ctsLifeTrack;
+  void SendCta1 ();
+  void SendCta3 ();
+  void SendCts (Mac48Address dest, uint16_t sequence, Time duration, uint16_t flag);
+  void ReceiveRts (Ptr<Packet> packet, double rxPower);
+  void InitNodeMap ();
+
+  uint16_t m_ways;
+  bool m_isClient;
+  Ptr<MobilityModel> m_clientMobility;
+  Ptr<UniformRandomVariable> m_uniRand;
+  double m_beamwidth;
+  void Init ();
+  void TurnRxAntenna ();
+  void DataTimeout ();
+  void WaitTimeExpired ();
+  void SectorTimeout ();
+  void SendFeedbackCTA (double angle, Mac48Address dest);
+  int SelectMCS (double power);
+  Time GetMaxBackoff();
+  EventId m_dataTimeoutEvent;
+  EventId m_waitTimeEvent;
+  EventId m_sectorTimeoutEvent;
+  double m_nSector;
+  Time m_tMaxCircle;
+  Time m_tSector;
+  uint16_t m_nodeId;
+  std::string outputFile;
+  double m_turningSpeed;
+  double m_dataRate;
+  Time m_tProp;
+  uint16_t m_expectedData;
+  uint16_t m_AP_Logic;
+  
+  std::list<std::pair<Ptr<Packet>, double>> m_rtsList;
+  std::map<double, std::vector< std::pair<Mac48Address, double>> > m_sectorMap;
+  std::map<Mac48Address, std::vector<std::pair<double, double>>> m_nodeMap;
+  std::map<double, std::vector<Mac48Address>> m_whiteList;
+  bool m_recordNodeSector;
+  uint16_t m_dummyCycles;
+
+  double csth_BPSK;
+  double csth_QPSK;
+  double csth_8PSK;
+  double csth_16QAM;
+  double csth_64QAM;
+
 
 protected:
 };
 
 }
 
-#endif // THZ_MAC_MACRO_H
+#endif /* THZ_MAC_MACRO_AP_H */

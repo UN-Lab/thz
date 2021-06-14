@@ -135,7 +135,7 @@ public:
   /**
    * \brief get the data rate of the DATA packet
    */
-  uint32_t GetDataRate ();
+  double GetDataRate (int mcs);
 
   /**
     * \param packet packet sent from above down to terahertz physical layer.
@@ -144,7 +144,7 @@ public:
     * Called from higher layer (MAC layer) to send packet into physical layer to the specified destination Address.
     * Pass the packet to lower layer (channel).
     */
-  bool SendPacket (Ptr<Packet> packet, bool rate);
+  bool SendPacket (Ptr<Packet> packet, bool rate, uint16_t mcs);
 
   /**
     * \param packet packet sent out from the terahertz channel.
@@ -181,10 +181,11 @@ public:
   /**
     * \param basicSize the size of the control packet
     * \param dataSize the size of the DATA packet
+    * \param mcs the Modulation Coding Scheme chosen. 0 for default
     *
     * \return the time duration for transmitting a packet.
     */
-  Time CalTxDuration (uint32_t basicSize, uint32_t dataSize);
+  Time CalTxDuration (uint32_t basicSize, uint32_t dataSize, uint8_t mcs);
 
   /**
     * \param dbm input value in dBm.
@@ -224,6 +225,12 @@ private:
   Time m_csBusyEnd;
 
   bool m_daEnable;
+  double m_dataRateBSPK;
+  double m_dataRateQSPK;
+  double m_dataRate8SPK;
+  double m_dataRate16QAM;
+  double m_dataRate64QAM;
+
 
   std::list<OngoingRx> m_ongoingRx;
 protected:

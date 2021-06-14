@@ -125,7 +125,7 @@ public:
   virtual bool Enqueue (Ptr<Packet> pkt, Mac48Address dest);
   virtual void SendPacketDone (Ptr<Packet> packet);
   virtual void ReceivePacket (Ptr<THzPhy> phy, Ptr<Packet> packet);
-  virtual void ReceivePacketDone (Ptr<THzPhy> phy, Ptr<Packet> packet, bool collision);
+  virtual void ReceivePacketDone (Ptr<THzPhy> phy, Ptr<Packet> packet, bool collision, double rxPower);
   virtual void SetForwardUpCb (Callback<void, Ptr<Packet>, Mac48Address, Mac48Address> cb);
   virtual void Clear (void);
 

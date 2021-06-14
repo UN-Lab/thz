@@ -163,9 +163,10 @@ THzPhyNano::CalTxPsd ()
   m_subBandBandwidth = sf->m_sbw;
 }
 bool
-THzPhyNano::SendPacket (Ptr<Packet> packet, bool rate)
+THzPhyNano::SendPacket (Ptr<Packet> packet, bool rate, uint16_t mcs)
 {
   NS_LOG_FUNCTION ("packet" << packet << "now" << Simulator::Now ());
+  NS_LOG_DEBUG("MCS " << mcs);
 
   Time txDuration;
   Ts = FemtoSeconds (m_beta * m_pulseDuration.ToDouble (Time::FS)); //Symbol duration
@@ -173,11 +174,11 @@ THzPhyNano::SendPacket (Ptr<Packet> packet, bool rate)
 
   if (rate) // transmit packet with data rate
     {
-      txDuration = CalTxDuration (0, packet->GetSize ());
+      txDuration = CalTxDuration (0, packet->GetSize (), 0);
     }
   else // transmit packets (e.g. RTS, CTS) with basic rate
     {
-      txDuration = CalTxDuration (packet->GetSize (), 0);
+      txDuration = CalTxDuration (packet->GetSize (), 0, 0);
     }
 
   OngoingTx ot;  //Record the current transmissions, schedule to erase them after their duration
@@ -424,7 +425,7 @@ THzPhyNano::ReceivePacketDone (Ptr<Packet> packet, double rxPower)
           if ( it->m_collided == false)
             {
               NS_LOG_INFO ("Packet hasn't collided!");
-              m_mac->ReceivePacketDone (this, packet, true);
+              m_mac->ReceivePacketDone (this, packet, true, rxPower);
               m_ongoingRx.erase (it);
               return;
             }
@@ -432,7 +433,7 @@ THzPhyNano::ReceivePacketDone (Ptr<Packet> packet, double rxPower)
           else
             {
               NS_LOG_INFO ("Packet has collided");
-              m_mac->ReceivePacketDone (this, packet, false);
+              m_mac->ReceivePacketDone (this, packet, false, rxPower);
               m_ongoingRx.erase (it);
               return;
             }
@@ -444,7 +445,7 @@ THzPhyNano::ReceivePacketDone (Ptr<Packet> packet, double rxPower)
 }
 
 Time
-THzPhyNano::CalTxDuration (uint32_t basicSize, uint32_t dataSize)
+THzPhyNano::CalTxDuration (uint32_t basicSize, uint32_t dataSize, uint8_t mcs)
 {
   NS_LOG_FUNCTION ("");
   Ts = FemtoSeconds (m_beta * m_pulseDuration.ToDouble (Time::FS)); //Symbol duration

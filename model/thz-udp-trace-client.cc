@@ -22,6 +22,10 @@
  */
 
 
+// Sembla que el trace client serveix per enviar ràfagues de packets determinades per un Trace File. 
+// Quan li toca fer send, itera pel trace file i envia tots els paquets fins que en troba un de tipus 'B'.
+// Cada ràfaga també té el seu propi delay associat
+
 #include "ns3/log.h"
 #include "ns3/ipv4-address.h"
 #include "ns3/nstime.h"

@@ -79,10 +79,42 @@ THzMacHeader::SetType (uint8_t type)
   m_type = type;
 }
 void
+THzMacHeader::SetRetry (uint8_t retry)
+{
+  m_retry = retry;
+}
+
+/*
+--- Flag values (RTS/CTS/CTA) ---
+  0 (CTS/RTS/CTA):  Nothing to indicate. Normal packet
+
+  -- Beam sounding --
+  1 (CTA):  CTA requests RTS (dummy) from all nodes. 
+  1 (RTS):  Dummy RTS 
+  2 (CTA):  Feedback CTA announcing sector assigned
+
+  -- Adaptive MCS --
+  10 (CTS/RTS): BPSK
+  11 (CTS/RTS): QPSK
+  12 (CTS/RTS): 8-PSK
+  13 (CTS/RTS): 16-QAM
+  14 (CTS/RTS): 64-QAM
+*/  
+void
+THzMacHeader::SetFlags (uint16_t flags)
+{
+  m_flags = flags;
+}
+void
+THzMacHeader::SetSector (uint16_t sector)
+{
+  m_sector = sector;
+}
+void
 THzMacHeader::SetDuration (Time duration)
 {
-  int64_t duration_us = duration.GetMicroSeconds ();
-  m_duration = static_cast<uint16_t> (duration_us);
+  int64_t duration_ns = duration.GetNanoSeconds ();
+  m_duration = static_cast<uint16_t> (duration_ns);
 }
 void
 THzMacHeader::SetSequence (uint16_t seq)
@@ -105,10 +137,25 @@ THzMacHeader::GetType (void) const
 {
   return m_type;
 }
+uint8_t
+THzMacHeader::GetRetry (void) const
+{
+  return m_retry;
+}
+uint16_t
+THzMacHeader::GetFlags (void) const
+{
+  return m_flags;
+}
+uint16_t
+THzMacHeader::GetSector (void) const
+{
+  return m_sector;
+}
 Time
 THzMacHeader::GetDuration (void) const
 {
-  return MicroSeconds (m_duration);
+  return NanoSeconds (m_duration);
 }
 uint32_t
 THzMacHeader::GetSize (void) const
@@ -116,8 +163,15 @@ THzMacHeader::GetSize (void) const
   uint32_t size = 0;
   switch (m_type)
     {
+    case THZ_PKT_TYPE_CTA:
+      size = sizeof(m_type) + sizeof(m_sector) + sizeof(m_flags) + sizeof(Mac48Address) * 2;
+      break;
     case THZ_PKT_TYPE_RTS:
+      size = sizeof(m_type) + sizeof(m_flags) + sizeof(m_retry) + sizeof(Mac48Address) * 2 + sizeof(m_sequence);
+      break;
     case THZ_PKT_TYPE_CTS:
+      size = sizeof(m_type) + sizeof(m_flags) + sizeof(m_duration) + sizeof(Mac48Address) * 2 + sizeof(m_sequence);
+      break;
     case THZ_PKT_TYPE_ACK:
       size = sizeof(m_type) + sizeof(m_duration) + sizeof(Mac48Address) * 2 + sizeof(m_sequence);
       break;
@@ -146,17 +200,36 @@ void
 THzMacHeader::Serialize (Buffer::Iterator i) const
 {
   i.WriteU8 (m_type);
-  i.WriteHtolsbU16 (m_duration);
   switch (m_type)
     {
+    case THZ_PKT_TYPE_CTA:
+      i.WriteU16(m_sector);
+      i.WriteU16(m_flags);
+      WriteTo (i, m_srcAddr);
+      WriteTo (i, m_dstAddr);
+      break;
     case THZ_PKT_TYPE_RTS:
+      i.WriteU16(m_flags);
+      i.WriteU8(m_retry);
+      WriteTo (i, m_srcAddr);
+      WriteTo (i, m_dstAddr);
+      i.WriteU16 (m_sequence);
+      break;
     case THZ_PKT_TYPE_CTS:
+      i.WriteU16(m_flags);
+      i.WriteHtolsbU16 (m_duration);
+      WriteTo (i, m_srcAddr);
+      WriteTo (i, m_dstAddr);
+      i.WriteU16 (m_sequence);
+      break;
     case THZ_PKT_TYPE_ACK:
+      i.WriteHtolsbU16 (m_duration);
       WriteTo (i, m_srcAddr);
       WriteTo (i, m_dstAddr);
       i.WriteU16 (m_sequence);
       break;
     case THZ_PKT_TYPE_DATA:
+      i.WriteHtolsbU16 (m_duration);
       WriteTo (i, m_srcAddr);
       WriteTo (i, m_dstAddr);
       i.WriteU16 (m_sequence);
@@ -170,17 +243,36 @@ THzMacHeader::Deserialize (Buffer::Iterator start)
   Buffer::Iterator i = start;
 
   m_type = i.ReadU8 ();
-  m_duration = i.ReadLsbtohU16 ();
   switch (m_type)
     {
+    case THZ_PKT_TYPE_CTA:
+      m_sector = i.ReadU16();
+      m_flags = i.ReadU16();
+      ReadFrom (i, m_srcAddr);
+      ReadFrom (i, m_dstAddr);
+      break;
     case THZ_PKT_TYPE_RTS:
+      m_flags = i.ReadU16();
+      m_retry = i.ReadU8();
+      ReadFrom (i, m_srcAddr);
+      ReadFrom (i, m_dstAddr);
+      m_sequence = i.ReadU16 ();
+      break;
     case THZ_PKT_TYPE_CTS:
+      m_flags = i.ReadU16();
+      m_duration = i.ReadLsbtohU16 ();
+      ReadFrom (i, m_srcAddr);
+      ReadFrom (i, m_dstAddr);
+      m_sequence = i.ReadU16 ();
+      break;
     case THZ_PKT_TYPE_ACK:
+      m_duration = i.ReadLsbtohU16 ();
       ReadFrom (i, m_srcAddr);
       ReadFrom (i, m_dstAddr);
       m_sequence = i.ReadU16 ();
       break;
     case THZ_PKT_TYPE_DATA:
+      m_duration = i.ReadLsbtohU16 ();
       ReadFrom (i, m_srcAddr);
       ReadFrom (i, m_dstAddr);
       m_sequence = i.ReadU16 ();

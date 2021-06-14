@@ -170,14 +170,14 @@ THzChannel::ReceivePacket (uint32_t i, NoiseEntry ne)
 {
   NS_LOG_FUNCTION ("");
   m_noiseEntry.push_back (ne);
-  m_devList[i].second->ReceivePacket (ne.packet, ne.txDuration, ne.rxPower);
+  m_devList[i].second->ReceivePacket (ne.packet, ne.txDuration, ne.rxPower);  // calls PHY
   Simulator::Schedule (ne.txDuration, &THzChannel::ReceivePacketDone, this, i, ne);
 }
 void
 THzChannel::ReceivePacketDone (uint32_t i, NoiseEntry ne)
 {
   NS_LOG_FUNCTION ("");
-  m_devList[i].second->ReceivePacketDone (ne.packet, ne.rxPower);
+  m_devList[i].second->ReceivePacketDone (ne.packet, ne.rxPower); // calls PHY
   Simulator::ScheduleNow (&THzChannel::DeleteNoiseEntry, this, ne);
 }
 

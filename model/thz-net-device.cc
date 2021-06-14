@@ -329,6 +329,15 @@ THzNetDevice::Send (Ptr<Packet> packet, const Address& dest, uint16_t protocolNu
   llc.SetType (protocolNumber);
   packet->AddHeader (llc);
 
+  if (packet-> GetSize() == 60004)  // fix to be able to send packets of 65535 Bytes (UDP max). For some reason it is fragmented at 60004 B
+  {
+    Ptr<Packet> packet2 = Create<Packet> (65000); // 8+4 : the size of the seqTs header
+    packet2->AddHeader(llc);
+    m_mac->Enqueue (packet2, destAddr);
+    srcAddr = srcAddr;
+    return true;
+  }
+
   m_mac->Enqueue (packet, destAddr);
   srcAddr = srcAddr;
   return true;

@@ -216,12 +216,12 @@ Time
 THzMacNano::GetCtrlDuration (uint16_t type)
 {
   THzMacHeader header = THzMacHeader (m_address, m_address, type);
-  return m_phy->CalTxDuration (0, header.GetSize ());
+  return m_phy->CalTxDuration (0, header.GetSize (), 0);
 }
 Time
 THzMacNano::GetDataDuration (Ptr<Packet> p)
 {
-  return m_phy->CalTxDuration (0, p->GetSize ());
+  return m_phy->CalTxDuration (0, p->GetSize (), 0);
 }
 
 // ----------------------- Queue Functions -----------------------------
@@ -440,7 +440,7 @@ THzMacNano::SendPacket (Ptr<Packet> packet, bool rate)
   NS_LOG_FUNCTION ("        Time: " << Simulator::Now () << " at node: " << m_address << " Energy: " << m_device->GetNode ()->GetObject<THzEnergyModel> ()->GetRemainingEnergy () << " to: " << header.GetDestination ());
 
   NS_LOG_INFO ("sequence" << header.GetSequence ());
-  if (m_phy->SendPacket (packet, rate))
+  if (m_phy->SendPacket (packet, rate, 0))
     {
       return true;
     }
@@ -708,7 +708,7 @@ THzMacNano::ReceivePacket (Ptr<THzPhy> phy, Ptr<Packet> packet)
 
 }
 void
-THzMacNano::ReceivePacketDone (Ptr<THzPhy> phy, Ptr<Packet> packet, bool success)
+THzMacNano::ReceivePacketDone (Ptr<THzPhy> phy, Ptr<Packet> packet, bool success, double rxPower)
 {
 
   THzMacHeader header;

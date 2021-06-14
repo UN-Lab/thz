@@ -29,10 +29,11 @@
 #include "ns3/simulator.h"
 #include "ns3/mac48-address.h"
 
-#define THZ_PKT_TYPE_RTS   0
-#define THZ_PKT_TYPE_CTS   1
-#define THZ_PKT_TYPE_ACK   2
-#define THZ_PKT_TYPE_DATA  3
+#define THZ_PKT_TYPE_CTA   0
+#define THZ_PKT_TYPE_RTS   1
+#define THZ_PKT_TYPE_CTS   2
+#define THZ_PKT_TYPE_ACK   3
+#define THZ_PKT_TYPE_DATA  4
 
 namespace ns3 {
 /**
@@ -63,7 +64,9 @@ public:
     * \ brief set the packet type, i.e., RTS, CTS, ACK or DATA
     */
   void SetType (uint8_t type);
-
+  void SetRetry (uint8_t retry);
+  void SetFlags (uint16_t flags);
+  void SetSector (uint16_t sector);
   /**
     * \ brief set the duration field with the given duration
     *
@@ -90,6 +93,9 @@ public:
     * \ brief get the packet type, i.e., RTS, CTS, ACK or DATA
     */
   uint8_t GetType () const;
+  uint8_t GetRetry () const;
+  uint16_t GetFlags () const;
+  uint16_t GetSector () const;
 
   /**
     * \ brief get the duration field with the given duration
@@ -120,8 +126,11 @@ private:
   uint8_t m_type;
   uint16_t m_duration;
   uint16_t m_sequence;
+  uint8_t m_retry;
+  uint16_t m_flags;
+  uint16_t m_sector;
 };
 
 }
 
-#endif // THZ_MAC_HEADER_H
+#endif /* THZ_MAC_HEADER_H */
