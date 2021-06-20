@@ -5,11 +5,12 @@ TeraSim is the first simulation platform for THz communication networks which ca
 A detailed explanation of the module can be found in [TeraSim: An ns-3 extension to simulate Terahertz-band communication networks](https://doi.org/10.1016/j.nancom.2018.08.001).
 
 
-v1.1 patch notes
+v1.1 release notes
 ------------------------------------------------
 The latest TeraSim v1.1 release includes the following improvements:
 - Implementation of [ADAPT: An Adaptive Directional Antenna Protocol for medium access control in Terahertz communication networks](https://doi.org/10.1016/j.adhoc.2021.102540). This is a MAC protocol for the macroscale scenario.
 - Optimization of the code for improved computational efficiency
+- Compatibility with ns-3.33
 
 
 Model Description, Usage and Validation of the TeraSim
