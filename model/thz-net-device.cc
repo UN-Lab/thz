@@ -1,7 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2019 University at Buffalo, the State University of New York
- * (http://ubnano.tech/)
+ * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -18,9 +17,9 @@
  *
  * Author: Qing Xia <qingxia@buffalo.edu>
  *         Zahed Hossain <zahedhos@buffalo.edu>
- *         Josep Miquel Jornet <jmjornet@buffalo.edu>
+ *         Josep Miquel Jornet <j.jornet@northeastern.edu>
  */
-
+ 
 #include "ns3/trace-source-accessor.h"
 #include "ns3/traced-callback.h"
 #include "ns3/llc-snap-header.h"
@@ -328,6 +327,15 @@ THzNetDevice::Send (Ptr<Packet> packet, const Address& dest, uint16_t protocolNu
   LlcSnapHeader llc;
   llc.SetType (protocolNumber);
   packet->AddHeader (llc);
+
+  if (packet-> GetSize() == 60004)  // fix to be able to send packets of 65535 Bytes (UDP max). For some reason it is fragmented at 60004 B
+  {
+    Ptr<Packet> packet2 = Create<Packet> (65000); // 8+4 : the size of the seqTs header
+    packet2->AddHeader(llc);
+    m_mac->Enqueue (packet2, destAddr);
+    srcAddr = srcAddr;
+    return true;
+  }
 
   m_mac->Enqueue (packet, destAddr);
   srcAddr = srcAddr;

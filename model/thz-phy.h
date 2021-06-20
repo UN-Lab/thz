@@ -1,7 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2019 University at Buffalo, the State University of New York
- * (http://ubnano.tech/)
+ * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -18,7 +17,8 @@
  *
  * Author: Qing Xia <qingxia@buffalo.edu>
  *         Zahed Hossain <zahedhos@buffalo.edu>
- *         Josep Miquel Jornet <jmjornet@buffalo.edu>
+ *         Josep Miquel Jornet <j.jornet@northeastern.edu>
+ *         Daniel Morales <danimoralesbrotons@gmail.com>
  */
 
 #ifndef THZ_PHY_H
@@ -99,7 +99,7 @@ public:
     * Called from higher layer (MAC layer) to send packet into physical layer to the specified destination Address.
     * Pass the packet to lower layer (channel).
     */
-  virtual bool SendPacket (Ptr<Packet> packet, bool rate) = 0;
+  virtual bool SendPacket (Ptr<Packet> packet, bool rate, uint16_t mcs) = 0;
 
   /**
     * \param packet packet sent out from the terahertz channel.
@@ -135,7 +135,7 @@ public:
     * \return the time duration for transmitting a packet.
     */
 
-  virtual Time CalTxDuration (uint32_t basicSize, uint32_t dataSize) = 0;
+  virtual Time CalTxDuration (uint32_t basicSize, uint32_t dataSize, uint8_t mcs) = 0;
 
 };
 

@@ -21,32 +21,33 @@
  *         Daniel Morales <danimoralesbrotons@gmail.com>
  */
 
-#include "thz-phy-macro-helper.h"
-#include "ns3/thz-phy.h"
+#include "ns3/thz-mac.h"
+#include "ns3/pointer.h"
+#include "thz-mac-macro-client-helper.h"
 
 #include <sstream>
 #include <string>
 
 namespace ns3 {
 
-THzPhyMacroHelper::THzPhyMacroHelper ()
+THzMacMacroClientHelper::THzMacMacroClientHelper ()
 {
 }
 
-THzPhyMacroHelper::~THzPhyMacroHelper ()
+THzMacMacroClientHelper::~THzMacMacroClientHelper ()
 {
 }
 
-THzPhyMacroHelper
-THzPhyMacroHelper::Default (void)
+THzMacMacroClientHelper
+THzMacMacroClientHelper::Default (void)
 {
-  THzPhyMacroHelper helper;
-  helper.SetType ("ns3::THzPhyMacro");
+  THzMacMacroClientHelper helper;
+  helper.SetType ("ns3::THzMacMacroClient");
   return helper;
 }
 
 void
-THzPhyMacroHelper::SetType (std::string type,
+THzMacMacroClientHelper::SetType (std::string type,
                             std::string n0, const AttributeValue &v0,
                             std::string n1, const AttributeValue &v1,
                             std::string n2, const AttributeValue &v2,
@@ -56,28 +57,27 @@ THzPhyMacroHelper::SetType (std::string type,
                             std::string n6, const AttributeValue &v6,
                             std::string n7, const AttributeValue &v7)
 {
-  m_phy.SetTypeId (type);
-  m_phy.Set (n0, v0);
-  m_phy.Set (n1, v1);
-  m_phy.Set (n2, v2);
-  m_phy.Set (n3, v3);
-  m_phy.Set (n4, v4);
-  m_phy.Set (n5, v5);
-  m_phy.Set (n6, v6);
-  m_phy.Set (n7, v7);
+  m_mac.SetTypeId (type);
+  m_mac.Set (n0, v0);
+  m_mac.Set (n1, v1);
+  m_mac.Set (n2, v2);
+  m_mac.Set (n3, v3);
+  m_mac.Set (n4, v4);
+  m_mac.Set (n5, v5);
+  m_mac.Set (n6, v6);
+  m_mac.Set (n7, v7);
 }
-
 void
-THzPhyMacroHelper::Set (std::string n, const AttributeValue &v)
+THzMacMacroClientHelper::Set (std::string n, const AttributeValue &v)
 {
-  m_phy.Set (n, v);
+  m_mac.Set (n, v);
 }
 
-Ptr<THzPhy>
-THzPhyMacroHelper::Create (void) const
+Ptr<THzMac>
+THzMacMacroClientHelper::Create (void) const
 {
-  Ptr<THzPhy> phy = m_phy.Create<THzPhy> ();
-  return phy;
+  Ptr<THzMac> mac = m_mac.Create<THzMac> ();
+  return mac;
 }
 
 } //namespace ns3

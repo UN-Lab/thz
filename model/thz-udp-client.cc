@@ -1,7 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2019 University at Buffalo, the State University of New York
- * (http://ubnano.tech/)
+ * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -18,7 +17,8 @@
  *
  * Author: Qing Xia <qingxia@buffalo.edu>
  *         Zahed Hossain <zahedhos@buffalo.edu>
- *         Josep Miquel Jornet <jmjornet@buffalo.edu>
+ *         Josep Miquel Jornet <j.jornet@northeastern.edu>
+ *         Daniel Morales <danimoralesbrotons@gmail.com>
  */
 
 
@@ -67,7 +67,7 @@ THzUdpClient::GetTypeId (void)
                    "Size of packets generated. The minimum packet size is 12 bytes which is the size of the header carrying the sequence number and the time stamp.",
                    UintegerValue (1024),
                    MakeUintegerAccessor (&THzUdpClient::m_size),
-                   MakeUintegerChecker<uint32_t> (12,60000))
+                   MakeUintegerChecker<uint32_t> (12,2000000))
     .AddAttribute ("Mean",
                    "The mean delay between two packets (s)",
                    DoubleValue (500.0),
@@ -142,8 +142,19 @@ THzUdpClient::StartApplication (void)
         }
     }
 
+  // TO AVOID INITIAL TRANSITORY PHASE
+  Ptr<ExponentialRandomVariable> x = CreateObject<ExponentialRandomVariable> ();
+  x->SetAttribute ("Mean", DoubleValue (m_mean));
+  x->SetAttribute ("Bound", DoubleValue (std::max(1000.0, m_mean*3)));
+  m_delay = MicroSeconds (x->GetValue ());
+  NS_LOG_UNCOND ("Generate first packet after " << m_delay);
+
   m_socket->SetRecvCallback (MakeNullCallback<void, Ptr<Socket> > ()); //Notify application when new data is available to be read. This callback is intended to notify a socket that would have been blocked in a blocking socket model that data is available to be read.
-  m_sendEvent = Simulator::Schedule (Seconds (0.0), &THzUdpClient::Send, this);
+  m_sendEvent = Simulator::Schedule (m_delay, &THzUdpClient::Send, this);
+/*
+  m_socket->SetRecvCallback (MakeNullCallback<void, Ptr<Socket> > ()); //Notify application when new data is available to be read. This callback is intended to notify a socket that would have been blocked in a blocking socket model that data is available to be read.
+  m_sendEvent = Simulator::Schedule (Seconds(0.0), &THzUdpClient::Send, this);
+  */
 }
 
 void
@@ -161,7 +172,7 @@ THzUdpClient::Send (void)
   seqTs.SetSeq (m_sent); //seq:(m_sent) the sequence number
   Ptr<Packet> p = Create<Packet> (m_size - (8 + 4)); // 8+4 : the size of the seqTs header
   p->AddHeader (seqTs);
-
+  //NS_LOG_UNCOND("At UDP Client, packet created with size " << p->GetSize());
   std::stringstream peerAddressStringStream;
   if (Ipv4Address::IsMatchingType (m_peerAddress))
     {
@@ -176,7 +187,7 @@ THzUdpClient::Send (void)
     {
       Ptr<ExponentialRandomVariable> x = CreateObject<ExponentialRandomVariable> ();
       x->SetAttribute ("Mean", DoubleValue (m_mean));
-      x->SetAttribute ("Bound", DoubleValue (1000.0));
+      //x->SetAttribute ("Bound", DoubleValue (std::max(1000.0, m_mean*3)));  // Be careful: bounding shifts the mean to a lower value!
       m_delay = MicroSeconds (x->GetValue ());
       NS_LOG_INFO ("Generate next packet after " << m_delay);
       m_sendEvent = Simulator::Schedule (m_delay, &THzUdpClient::Send, this); //schedule next send

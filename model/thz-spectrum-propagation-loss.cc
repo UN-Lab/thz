@@ -1,7 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2019 University at Buffalo, the State University of New York
- * (http://ubnano.tech/)
+ * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -18,9 +17,9 @@
  *
  * Author: Qing Xia <qingxia@buffalo.edu>
  *         Zahed Hossain <zahedhos@buffalo.edu>
- *         Josep Miquel Jornet <jmjornet@buffalo.edu>
+ *         Josep Miquel Jornet <j.jornet@northeastern.edu>
+ *         Daniel Morales <danimoralesbrotons@gmail.com>
  */
-
 
 
 #include "thz-spectrum-propagation-loss.h"
@@ -38,6 +37,7 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <map>
 
 NS_LOG_COMPONENT_DEFINE ("THzSpectrumPropagationLoss");
 
@@ -53,11 +53,11 @@ THzSpectrumPropagationLoss::~THzSpectrumPropagationLoss ()
 {
 }
 
-
+       
 Ptr<SpectrumValue>
 THzSpectrumPropagationLoss::CalcRxPowerSpectralDensity (Ptr<const SpectrumValue> txPsd,
                                                         Ptr<const MobilityModel> a,
-                                                        Ptr<const MobilityModel> b) const
+                                                        Ptr<const MobilityModel> b) 
 {
   Ptr<SpectrumValue> rxPsd = Copy<SpectrumValue> (txPsd); //[W]
   Values::iterator vit = rxPsd->ValuesBegin ();
@@ -82,7 +82,7 @@ double
 THzSpectrumPropagationLoss::CalcRxPowerDA (Ptr<THzSpectrumSignalParameters> txParams,
                                            Ptr<MobilityModel> a,
                                            Ptr<MobilityModel> b,
-                                           double RxTxGainDb) const
+                                           double RxTxGainDb) 
 {
   double RxTxGainW = std::pow (10.0, (RxTxGainDb) / 10.0);
   Ptr<SpectrumValue> rxPsd = Copy<SpectrumValue> (txParams->txPsd); // [W]
@@ -132,63 +132,72 @@ THzSpectrumPropagationLoss::CalculateSpreadLoss (double f, double d) const
 }
 
 double
-THzSpectrumPropagationLoss::CalculateAbsLoss (double f, double d) const
+THzSpectrumPropagationLoss::CalculateAbsLoss (double f, double d) 
 {
-  std::ifstream AbsCoefile;
-  AbsCoefile.open ("contrib/thz/model/data_AbsCoe.txt", std::ifstream::in);
-  if (!AbsCoefile.is_open ())
-    {
-      NS_FATAL_ERROR ("THzSpectrumPropagationLoss::CalculateAbsLoss: open data_AbsCoe.txt failed 1");
-    }
-
-  std:: ifstream frequencyfile;
-  frequencyfile.open ("contrib/thz/model/data_frequency.txt", std::ifstream::in);
-  if (!frequencyfile.is_open ())
-    {
-      NS_FATAL_ERROR ("THzSpectrumPropagationLoss::CalculateAbsLoss: open data_frequency.txt failed");
-    }
-  double f_ite;
-  double k_ite;
   double kf = 0.0;
   double loss = 0.0;
-  int i = 0;
-  int j = 0;
 
+  if(mapContainsKey(m_freqMap, f))
+  {
+    kf = m_freqMap[f];
+  }
+  else
+  {
+    std::ifstream AbsCoefile;
+    AbsCoefile.open ("contrib/thz/model/data_AbsCoe.txt", std::ifstream::in);
+    if (!AbsCoefile.is_open ())
+        {
+        NS_FATAL_ERROR ("THzSpectrumPropagationLoss::CalculateAbsLoss: open data_AbsCoe.txt failed 1");
+        }
 
-  while (frequencyfile >> f_ite)
-    {
-      if (f_ite < f - 9.894e8 || f_ite > f + 9.894e8)
+    std:: ifstream frequencyfile;
+    frequencyfile.open ("contrib/thz/model/data_frequency.txt", std::ifstream::in);
+    if (!frequencyfile.is_open ())
         {
-          j++;
+        NS_FATAL_ERROR ("THzSpectrumPropagationLoss::CalculateAbsLoss: open data_frequency.txt failed");
         }
-      else
-        {
-          break;
-        }
-    }
-  while (AbsCoefile >> k_ite)
-    {
-      if (i != j)
-        {
-          i++;
-        }
-      else
-        {
-          kf = k_ite;
-          break;
-        }
-      NS_ASSERT (d >= 0);
+    double f_ite;
+    double k_ite;
+    int i = 0;
+    int j = 0;
 
-      if (d == 0)
+    while (frequencyfile >> f_ite)
         {
-          return 0;
+        if (f_ite < f - 9.894e8 || f_ite > f + 9.894e8)
+            {
+            j++;
+            }
+        else
+            {
+            break;
+            }
         }
-    }
-  NS_ASSERT (f > 0);
+    while (AbsCoefile >> k_ite)
+        {
+        if (i != j)
+            {
+            i++;
+            }
+        else
+            {
+            kf = k_ite;
+            break;
+            }
+        NS_ASSERT (d >= 0);
+
+        if (d == 0)
+            {
+            return 0;
+            }
+        }
+    NS_ASSERT (f > 0);
+    m_freqMap.insert(std::pair<double, double> (f, kf));
+    NS_LOG_UNCOND("inserted to map f: " << f << " kf: "<< kf);
+  } // if f != m_previousFc
+
   loss = exp (kf * d);
   return loss;
 }
-
 
 
 Ptr<SpectrumValue>
@@ -221,6 +230,13 @@ THzSpectrumPropagationLoss::LoadedAbsCoe (int s, int j, double f, double d,Ptr<c
         }
     }
   return kf_store;
+}
+
+bool 
+THzSpectrumPropagationLoss::mapContainsKey(std::map<double, double>& map, double key)
+{
+  if (map.find(key) == map.end()) return false;
+  return true;
 }
 
 } // namespace ns3

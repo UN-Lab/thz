@@ -1,7 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2019 University at Buffalo, the State University of New York
- * (http://ubnano.tech/)
+ * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -18,7 +17,8 @@
  *
  * Author: Qing Xia <qingxia@buffalo.edu>
  *         Zahed Hossain <zahedhos@buffalo.edu>
- *         Josep Miquel Jornet <jmjornet@buffalo.edu>
+ *         Josep Miquel Jornet <j.jornet@northeastern.edu>
+ *         Daniel Morales <danimoralesbrotons@gmail.com>
  */
 
 #include "ns3/packet.h"
@@ -170,14 +170,14 @@ THzChannel::ReceivePacket (uint32_t i, NoiseEntry ne)
 {
   NS_LOG_FUNCTION ("");
   m_noiseEntry.push_back (ne);
-  m_devList[i].second->ReceivePacket (ne.packet, ne.txDuration, ne.rxPower);
+  m_devList[i].second->ReceivePacket (ne.packet, ne.txDuration, ne.rxPower);  // calls PHY
   Simulator::Schedule (ne.txDuration, &THzChannel::ReceivePacketDone, this, i, ne);
 }
 void
 THzChannel::ReceivePacketDone (uint32_t i, NoiseEntry ne)
 {
   NS_LOG_FUNCTION ("");
-  m_devList[i].second->ReceivePacketDone (ne.packet, ne.rxPower);
+  m_devList[i].second->ReceivePacketDone (ne.packet, ne.rxPower); // calls PHY
   Simulator::ScheduleNow (&THzChannel::DeleteNoiseEntry, this, ne);
 }
 

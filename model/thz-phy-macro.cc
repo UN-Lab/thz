@@ -1,7 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2019 University at Buffalo, the State University of New York
- * (http://ubnano.tech/)
+ * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -18,7 +17,8 @@
  *
  * Author: Qing Xia <qingxia@buffalo.edu>
  *         Zahed Hossain <zahedhos@buffalo.edu>
- *         Josep Miquel Jornet <jmjornet@buffalo.edu>
+ *         Josep Miquel Jornet <j.jornet@northeastern.edu>
+ *         Daniel Morales <danimoralesbrotons@gmail.com>
  */
 
 #include "ns3/simulator.h"
@@ -117,6 +117,31 @@ THzPhyMacro::GetTypeId (void)
                    DoubleValue (1.4801e11),
                    MakeDoubleAccessor (&THzPhyMacro::m_dataRate),
                    MakeDoubleChecker<double> ())
+    .AddAttribute ("DataRateBPSK",
+                   "Transmission Rate (bps) for Data Packets",
+                   DoubleValue (52.48e9),
+                   MakeDoubleAccessor (&THzPhyMacro::m_dataRateBSPK),
+                   MakeDoubleChecker<double> ())
+    .AddAttribute ("DataRateQPSK",
+                   "Transmission Rate (bps) for Data Packets",
+                   DoubleValue (105.28e9),
+                   MakeDoubleAccessor (&THzPhyMacro::m_dataRateQSPK),
+                   MakeDoubleChecker<double> ())
+    .AddAttribute ("DataRate8PSK",
+                   "Transmission Rate (bps) for Data Packets",
+                   DoubleValue (157.44e9),
+                   MakeDoubleAccessor (&THzPhyMacro::m_dataRate8SPK),
+                   MakeDoubleChecker<double> ())
+    .AddAttribute ("DataRate16QAM",
+                   "Transmission Rate (bps) for Data Packets",
+                   DoubleValue (210.24e9),
+                   MakeDoubleAccessor (&THzPhyMacro::m_dataRate16QAM),
+                   MakeDoubleChecker<double> ())
+    .AddAttribute ("DataRate64QAM",
+                   "Transmission Rate (bps) for Data Packets",
+                   DoubleValue (315.52e9),
+                   MakeDoubleAccessor (&THzPhyMacro::m_dataRate64QAM),
+                   MakeDoubleChecker<double> ())
   ;
   return tid;
 }
@@ -175,10 +200,24 @@ THzPhyMacro::GetBasicRate ()
 {
   return m_basicRate;
 }
-uint32_t
-THzPhyMacro::GetDataRate ()
+double
+THzPhyMacro::GetDataRate (int mcs)
 {
-  return m_dataRate;
+  switch (mcs)
+  {
+  case 10:
+    return m_dataRateBSPK;
+  case 11:
+    return m_dataRateQSPK;
+  case 12:
+    return m_dataRate8SPK;
+  case 13:
+    return m_dataRate16QAM;
+  case 14:
+    return m_dataRate64QAM;
+  default:  // any other value, use default data rate
+    return m_dataRate;
+  }  
 }
 //-----------------------------------------------------------------
 Ptr<THzChannel>
@@ -198,7 +237,7 @@ THzPhyMacro::GetTxPower ()
 }
 
 bool
-THzPhyMacro::SendPacket (Ptr<Packet> packet, bool rate)
+THzPhyMacro::SendPacket (Ptr<Packet> packet, bool rate, uint16_t mcs)
 {
   NS_LOG_FUNCTION (" from node " << m_device->GetNode ()->GetId () << " state " << (m_state));
   // RX might be interrupted by TX, but not vice versa
@@ -211,13 +250,13 @@ THzPhyMacro::SendPacket (Ptr<Packet> packet, bool rate)
   Time txDuration;
   if (rate) // transmit packet with data rate
     {
-      txDuration = CalTxDuration (0, packet->GetSize ());
+      txDuration = CalTxDuration (0, packet->GetSize (), mcs);
     }
   else // transmit packets (e.g. RTS, CTS) with basic rate
     {
-      txDuration = CalTxDuration (packet->GetSize (), 0);
+      txDuration = CalTxDuration (packet->GetSize (), 0, 0);
     }
-  NS_LOG_DEBUG ("Tx will finish at " << (Simulator::Now () + txDuration).GetNanoSeconds () << "(ns) txPower=" << m_txPower << " dBm");
+  NS_LOG_DEBUG ("Tx will finish at " << (Simulator::Now () + txDuration).GetPicoSeconds () << "(ps) txPower=" << m_txPower << " dBm");
 
   Ptr<THzSpectrumSignalParameters> txParams = Create<THzSpectrumSignalParameters> ();
   txParams->txDuration = txDuration;
@@ -267,6 +306,8 @@ THzPhyMacro::ReceivePacket (Ptr<Packet> packet, Time txDuration, double_t rxPowe
         {
           m_csBusy = true;
           m_pktRx = packet;
+          //NS_LOG_UNCOND(m_device->GetNode ()->GetId () << ": Packet received. rxPower: " << rxPower << ", threshold: " << m_csTh);
+
           m_mac->ReceivePacket (this, packet);
         }
       m_state = RX;
@@ -275,6 +316,9 @@ THzPhyMacro::ReceivePacket (Ptr<Packet> packet, Time txDuration, double_t rxPowe
   if (rxPower < m_csTh)
     {
       NS_LOG_INFO ("rxPower < m_csTh");
+      /*if (rxPower > m_csTh - 10){
+        NS_LOG_UNCOND(m_device->GetNode ()->GetId () << ": Not enough power. rxPower: " << rxPower << ", threshold: " << m_csTh);
+      }*/
       return;
     }
 
@@ -306,6 +350,7 @@ THzPhyMacro::ReceivePacketDone (Ptr<Packet> packet, double rxPower)
           if (it->packet != m_pktRx &&  (Simulator::Now () - it->rxStart) <= it->rxDuration)
             {
               interference += DbmToW (it->rxPower);
+              //NS_LOG_UNCOND("Interference at " << m_device->GetNode ()->GetId () << " of " << it->rxPower << " W");
             }
         }
 
@@ -317,15 +362,16 @@ THzPhyMacro::ReceivePacketDone (Ptr<Packet> packet, double rxPower)
       NS_LOG_DEBUG ("SINR = " << sinrDb << " dB; SINR TH = " << m_sinrTh << " dB");
       // ADD: CHANGE STATUS
       m_state = IDLE;
+      //NS_LOG_UNCOND(m_device->GetNode ()->GetId () << ": SINR = " << sinrDb << " dB; SINR TH = " << m_sinrTh << " dB");
       if (sinrDb > m_sinrTh)
         {
           m_state = IDLE;
-          m_mac->ReceivePacketDone (this, packet, true);
+          m_mac->ReceivePacketDone (this, packet, true, rxPower);
           return;
         }
       else
         {
-          m_mac->ReceivePacketDone (this,packet,false);
+          m_mac->ReceivePacketDone (this,packet,false, rxPower);
         }
 
       for (; it != m_ongoingRx.end (); ++it)
@@ -340,7 +386,7 @@ THzPhyMacro::ReceivePacketDone (Ptr<Packet> packet, double rxPower)
   if (!m_csBusy)
     {
       m_state = IDLE;
-      m_mac->ReceivePacketDone (this, packet, false);
+      m_mac->ReceivePacketDone (this, packet, false, rxPower);
     }
 }
 
@@ -355,12 +401,13 @@ THzPhyMacro::IsIdle ()
 }
 
 Time
-THzPhyMacro::CalTxDuration (uint32_t basicSize, uint32_t dataSize)
+THzPhyMacro::CalTxDuration (uint32_t basicSize, uint32_t dataSize, uint8_t mcs)
 {
-  double_t txHdrTime = (double)(m_headerSize + basicSize + m_trailerSize) * 8.0 / m_basicRate;
-  double_t txMpduTime = (double)dataSize * 8.0 / m_dataRate;
+  double_t txHdrTime = (double)(m_headerSize + basicSize + m_trailerSize) * 8.0 / (double)GetDataRate(mcs);
+  double_t txMpduTime = (double)dataSize * 8.0 / (double)GetDataRate(mcs);
   return m_preambleDuration + Seconds (txHdrTime) + Seconds (txMpduTime);
 }
+
 
 double
 THzPhyMacro::DbmToW (double dbm)

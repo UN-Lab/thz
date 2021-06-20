@@ -18,11 +18,11 @@
  * Author: Qing Xia <qingxia@buffalo.edu>
  *         Zahed Hossain <zahedhos@buffalo.edu>
  *         Josep Miquel Jornet <j.jornet@northeastern.edu>
+ *         Daniel Morales <danimoralesbrotons@gmail.com>
  */
 
-
-#ifndef THZ_DIRECTIONAL_ANTENNA_HELPER_H
-#define THZ_DIRECTIONAL_ANTENNA_HELPER_H
+#ifndef THZ_MAC_MACRO_CLIENT_HELPER_H
+#define THZ_MAC_MACRO_CLIENT_HELPER_H
 
 #include <string>
 #include "thz-helper.h"
@@ -30,32 +30,35 @@
 namespace ns3 {
 
 /**
- * \brief create the THz directional antenna module
+ * \brief create the THz MAC layer for macro-scale scenario
+ *
+ * This class can create MACs of type ns3::THzMacMacro.
  */
-class THzDirectionalAntennaHelper : public THzDirAntennaHelper
+class THzMacMacroClientHelper : public THzMacHelper
 {
 public:
   /**
-   * Create a THzDirectionalAntennaHelper that is used to enable directional antenna
-   * with turning capability.
+   * Create a THzMacMacroClientHelper that is used to enable the THz MAC layer
+   * protocol of the macro-scale scenario.
    */
-  THzDirectionalAntennaHelper ();
+  THzMacMacroClientHelper ();
 
   /**
    * \internal
-   * Destroy a THzDirectionalAntennaHelper
+   * Destroy a THzMacMacroClientHelper
    */
-  virtual ~THzDirectionalAntennaHelper ();
+  virtual ~THzMacMacroClientHelper ();
 
   /**
-   * Create a THz directional antenna helper in a default working state.
+   * Create a THz MAC helper for macro-scale scenario in a default working state.
    */
-  static THzDirectionalAntennaHelper Default (void);
+  static THzMacMacroClientHelper Default (void);
 
   /**
-   * Set the underlying type of the THz directional antenna and its attributes.
+   * Set the underlying type of the THz MAC layer protocol for macro-scale scenario
+   * and its attributes.
    *
-   * \param type the type of ns3::THzDirectionalAntenna to create.
+   * \param type the type of ns3::THzMacMacro to create.
    * \param n0 the name of the attribute to set
    * \param v0 the value of the attribute to set
    * \param n1 the name of the attribute to set
@@ -73,7 +76,7 @@ public:
    * \param n7 the name of the attribute to set
    * \param v7 the value of the attribute to set
    *
-   * All the attributes specified in this method should exist in the requested directional antenna.
+   * All the attributes specified in this method should exist in the requested MAC.
    */
   void SetType (std::string type,
                 std::string n0 = "", const AttributeValue &v0 = EmptyAttributeValue (),
@@ -84,8 +87,9 @@ public:
                 std::string n5 = "", const AttributeValue &v5 = EmptyAttributeValue (),
                 std::string n6 = "", const AttributeValue &v6 = EmptyAttributeValue (),
                 std::string n7 = "", const AttributeValue &v7 = EmptyAttributeValue ());
+
   /**
-   * Set the attribute of the of the THz directional antenna.
+   * Set the attribute of the of the THz MAC layer protocol for macro-scale scenario.
    *
    * \param n the name of the attribute to set
    * \param v the value of the attribute to set
@@ -95,16 +99,16 @@ public:
 private:
   /**
    * \internal
-   * \returns a newly-created THzDirectionalAntenna object.
+   * \returns a newly-created THzMacMacro object.
    */
-  virtual Ptr<THzDirectionalAntenna> Create (void) const;
+  virtual Ptr<THzMac> Create (void) const;
 
   /**
-   * \directional antenna object factory.
+   * \MAC object factory.
    */
-  ObjectFactory m_dirantenna;
+  ObjectFactory m_mac;
 };
 
 } //namespace ns3
 
-#endif /* THZ_DIRECTIONAL_ANTENNA_HELPER_H */
+#endif /* THZ_MAC_MACRO_CLIENT_HELPER_H */

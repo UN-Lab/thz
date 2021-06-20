@@ -1,7 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2019 University at Buffalo, the State University of New York
- * (http://ubnano.tech/)
+ * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -16,9 +15,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Author: Zahed Hossain <zahedhos@buffalo.edu>
- *         Qing Xia <qingxia@buffalo.edu>
- *         Josep Miquel Jornet <jmjornet@buffalo.edu>
+ * Author: Qing Xia <qingxia@buffalo.edu>
+ *         Zahed Hossain <zahedhos@buffalo.edu>
+ *         Josep Miquel Jornet <j.jornet@northeastern.edu>
+ *         Daniel Morales <danimoralesbrotons@gmail.com>
  */
 
 
@@ -163,9 +163,10 @@ THzPhyNano::CalTxPsd ()
   m_subBandBandwidth = sf->m_sbw;
 }
 bool
-THzPhyNano::SendPacket (Ptr<Packet> packet, bool rate)
+THzPhyNano::SendPacket (Ptr<Packet> packet, bool rate, uint16_t mcs)
 {
   NS_LOG_FUNCTION ("packet" << packet << "now" << Simulator::Now ());
+  NS_LOG_DEBUG("MCS " << mcs);
 
   Time txDuration;
   Ts = FemtoSeconds (m_beta * m_pulseDuration.ToDouble (Time::FS)); //Symbol duration
@@ -173,11 +174,11 @@ THzPhyNano::SendPacket (Ptr<Packet> packet, bool rate)
 
   if (rate) // transmit packet with data rate
     {
-      txDuration = CalTxDuration (0, packet->GetSize ());
+      txDuration = CalTxDuration (0, packet->GetSize (), 0);
     }
   else // transmit packets (e.g. RTS, CTS) with basic rate
     {
-      txDuration = CalTxDuration (packet->GetSize (), 0);
+      txDuration = CalTxDuration (packet->GetSize (), 0, 0);
     }
 
   OngoingTx ot;  //Record the current transmissions, schedule to erase them after their duration
@@ -207,7 +208,7 @@ THzPhyNano::SendPacket (Ptr<Packet> packet, bool rate)
           double mod = fmod ((now - it->m_txStart).ToDouble (Time::FS),TsD);
           NS_LOG_INFO ("mod:" << mod << "m_pulse:" << m_pulseDuration);
 
-          if (mod < m_pulseDuration)
+          if (mod < m_pulseDuration.ToDouble (Time::FS))
             {
               NS_LOG_INFO ("Start time of the existing transmission is:" << it->m_txStart);
               nextPulse[txCount] = (nowD - mod);
@@ -229,7 +230,7 @@ THzPhyNano::SendPacket (Ptr<Packet> packet, bool rate)
         {
           double mod = fmod ((now - itr->m_rxStart).ToDouble (Time::FS),TsD);
           NS_LOG_INFO ("mod:" << mod << "m_pulse:" << m_pulseDuration);
-          if (mod < m_pulseDuration)
+          if (mod < m_pulseDuration.ToDouble (Time::FS))
             {
               NS_LOG_INFO ("Start time of the existing reception is:" << it->m_txStart);
               nextPulse[txCount] = (nowD - mod);
@@ -424,7 +425,7 @@ THzPhyNano::ReceivePacketDone (Ptr<Packet> packet, double rxPower)
           if ( it->m_collided == false)
             {
               NS_LOG_INFO ("Packet hasn't collided!");
-              m_mac->ReceivePacketDone (this, packet, true);
+              m_mac->ReceivePacketDone (this, packet, true, rxPower);
               m_ongoingRx.erase (it);
               return;
             }
@@ -432,7 +433,7 @@ THzPhyNano::ReceivePacketDone (Ptr<Packet> packet, double rxPower)
           else
             {
               NS_LOG_INFO ("Packet has collided");
-              m_mac->ReceivePacketDone (this, packet, false);
+              m_mac->ReceivePacketDone (this, packet, false, rxPower);
               m_ongoingRx.erase (it);
               return;
             }
@@ -444,7 +445,7 @@ THzPhyNano::ReceivePacketDone (Ptr<Packet> packet, double rxPower)
 }
 
 Time
-THzPhyNano::CalTxDuration (uint32_t basicSize, uint32_t dataSize)
+THzPhyNano::CalTxDuration (uint32_t basicSize, uint32_t dataSize, uint8_t mcs)
 {
   NS_LOG_FUNCTION ("");
   Ts = FemtoSeconds (m_beta * m_pulseDuration.ToDouble (Time::FS)); //Symbol duration

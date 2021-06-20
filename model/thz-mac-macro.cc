@@ -1,7 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2019 University at Buffalo, the State University of New York
- * (http://ubnano.tech/)
+ * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -18,7 +17,8 @@
  *
  * Author: Qing Xia <qingxia@buffalo.edu>
  *         Zahed Hossain <zahedhos@buffalo.edu>
- *         Josep Miquel Jornet <jmjornet@buffalo.edu>
+ *         Josep Miquel Jornet <j.jornet@northeastern.edu>
+ *         Daniel Morales <danimoralesbrotons@gmail.com>
  */
 
 #include "ns3/attribute.h"
@@ -257,12 +257,12 @@ Time
 THzMacMacro::GetCtrlDuration (uint16_t type)
 {
   THzMacHeader header = THzMacHeader (m_address, m_address, type);
-  return m_phy->CalTxDuration (header.GetSize (), 0);
+  return m_phy->CalTxDuration (header.GetSize (), 0, 0);
 }
 Time
 THzMacMacro::GetDataDuration (Ptr<Packet> p)
 {
-  return m_phy->CalTxDuration (0, p->GetSize ());
+  return m_phy->CalTxDuration (0, p->GetSize (), 0);
 }
 
 std::string
@@ -290,6 +290,7 @@ THzMacMacro::StateToString (State state)
 }
 
 // ------------------ Channel Access Functions -------------------------
+// Checks if NAV (Network Allocation Vector) time has arrived. If not, waits. If yes, schedules BOStart
 void
 THzMacMacro::CcaForDifs ()
 {
@@ -301,7 +302,7 @@ THzMacMacro::CcaForDifs ()
       return;
     }
   Time nav = std::max (m_nav, m_localNav);
-  if (nav > now + GetSlotTime ())
+  if (nav > now + GetSlotTime ()) // Slot time = 5ns. Time slot duration for MAC backoff
     {
       m_ccaTimeoutEvent = Simulator::Schedule (nav - now, &THzMacMacro::CcaForDifs, this);
       return;
@@ -312,7 +313,7 @@ THzMacMacro::CcaForDifs ()
       return;
     }
 
-  m_ccaTimeoutEvent = Simulator::Schedule (GetDifs (), &THzMacMacro::BackoffStart, this);
+  m_ccaTimeoutEvent = Simulator::Schedule (GetDifs (), &THzMacMacro::BackoffStart, this); // DIFS és 0 ns (m_difs), per tnat és el mateix que now
 }
 void
 THzMacMacro::BackoffStart ()
@@ -384,6 +385,7 @@ THzMacMacro::ChannelAccessGranted ()
     }
 }
 
+// Es crida periòdicament per anar girant l'antena al ritme indicat
 void
 THzMacMacro::SetRxAntennaParameters ()
 {
@@ -430,7 +432,7 @@ THzMacMacro::Enqueue (Ptr<Packet> packet, Mac48Address dest)
       header.SetSequence (m_sequence);
       packet->AddHeader (header);
       m_pktQueue.push_back (packet);
-      m_SetRxAntennaEvent.Cancel ();
+      m_SetRxAntennaEvent.Cancel ();    // WHY ??
       m_thzAD = m_device->GetDirAntenna ();
       m_thzAD->SetAttribute ("TuneRxTxMode", DoubleValue (0)); // set as transmitter
       m_thzAD->SetAttribute ("InitialAngle", DoubleValue (0.0));
@@ -486,7 +488,7 @@ THzMacMacro::SendRts (Ptr<Packet> pktData)
   NS_LOG_DEBUG ("Send RTS from " << m_address << " to " << dataHeader.GetDestination ());
   Ptr<Packet> packet = Create<Packet> (0);
   THzMacHeader rtsHeader = THzMacHeader (m_address, dataHeader.GetDestination (), THZ_PKT_TYPE_RTS);
-  Time nav = GetSifs () + GetCtrlDuration (THZ_PKT_TYPE_CTS) + NanoSeconds (33.3)
+  Time nav = GetSifs () + GetCtrlDuration (THZ_PKT_TYPE_CTS) + NanoSeconds (33.3) // Sifs = 0ns, CtrlDuration és el temps que es triga físicament a transmetre els X bits
     + GetSifs () + GetDataDuration (pktData) + NanoSeconds (33.3)
     + GetSifs () + GetCtrlDuration (THZ_PKT_TYPE_ACK) + NanoSeconds (33.3)
     + GetSlotTime () + NanoSeconds (33.3);
@@ -731,7 +733,7 @@ THzMacMacro::SendPacket (Ptr<Packet> packet, bool rate)
 
   if (m_state == IDLE || m_state == WAIT_TX)
     {
-      if (m_phy->SendPacket (packet, rate))
+      if (m_phy->SendPacket (packet, rate, 0))
         {
           m_state = TX;
           m_pktTx = packet;
@@ -873,7 +875,7 @@ THzMacMacro::ReceivePacket (Ptr<THzPhy> phy, Ptr<Packet> packet)
     }
 }
 void
-THzMacMacro::ReceivePacketDone (Ptr<THzPhy> phy, Ptr<Packet> packet, bool success)
+THzMacMacro::ReceivePacketDone (Ptr<THzPhy> phy, Ptr<Packet> packet, bool success, double rxPower)
 {
   NS_LOG_FUNCTION ("at node " << m_device->GetNode ()->GetId () << " success? " << success);
   m_state = IDLE;
@@ -1067,7 +1069,7 @@ THzMacMacro::ResultsRecord ()
    * enable the result printing in a .txt file by uncommenting the content in this function
    *----------------------------------------------------------------------------------------*/
 
-  /*
+  
   int seed_num;
    RngSeedManager seed;
    seed_num = seed.GetSeed ();
@@ -1079,10 +1081,10 @@ THzMacMacro::ResultsRecord ()
    std::ofstream resultfile;
    resultfile.open (filename.c_str (), std::ios::app);
    std::list<Result>::iterator it = m_result.begin ();
-   resultfile << it->nodeid << "   ;\t" << it->Psize << "   ;\t" << it->delay << "   ;\t" << it->success << "   ;\t" << it->discard << std::endl;
+   resultfile << it->nodeid << "\t" << it->Psize << "\t" << it->delay.GetNanoSeconds() << "\t" << it->success << "\t" << it->discard << std::endl;
    resultfile.close ();
    return;
- */
+ 
 
 }
 } // namespace ns3

@@ -1,7 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2019 University at Buffalo, the State University of New York
- * (http://ubnano.tech/)
+ * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -16,9 +15,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Author: Zahed Hossain <zahedhos@buffalo.edu>
- *         Qing Xia <qingxia@buffalo.edu>
- *         Josep Miquel Jornet <jmjornet@buffalo.edu>
+ * Author: Qing Xia <qingxia@buffalo.edu>
+ *         Zahed Hossain <zahedhos@buffalo.edu>
+ *         Josep Miquel Jornet <j.jornet@northeastern.edu>
  */
 
 
@@ -216,12 +215,12 @@ Time
 THzMacNano::GetCtrlDuration (uint16_t type)
 {
   THzMacHeader header = THzMacHeader (m_address, m_address, type);
-  return m_phy->CalTxDuration (0, header.GetSize ());
+  return m_phy->CalTxDuration (0, header.GetSize (), 0);
 }
 Time
 THzMacNano::GetDataDuration (Ptr<Packet> p)
 {
-  return m_phy->CalTxDuration (0, p->GetSize ());
+  return m_phy->CalTxDuration (0, p->GetSize (), 0);
 }
 
 // ----------------------- Queue Functions -----------------------------
@@ -440,7 +439,7 @@ THzMacNano::SendPacket (Ptr<Packet> packet, bool rate)
   NS_LOG_FUNCTION ("        Time: " << Simulator::Now () << " at node: " << m_address << " Energy: " << m_device->GetNode ()->GetObject<THzEnergyModel> ()->GetRemainingEnergy () << " to: " << header.GetDestination ());
 
   NS_LOG_INFO ("sequence" << header.GetSequence ());
-  if (m_phy->SendPacket (packet, rate))
+  if (m_phy->SendPacket (packet, rate, 0))
     {
       return true;
     }
@@ -708,7 +707,7 @@ THzMacNano::ReceivePacket (Ptr<THzPhy> phy, Ptr<Packet> packet)
 
 }
 void
-THzMacNano::ReceivePacketDone (Ptr<THzPhy> phy, Ptr<Packet> packet, bool success)
+THzMacNano::ReceivePacketDone (Ptr<THzPhy> phy, Ptr<Packet> packet, bool success, double rxPower)
 {
 
   THzMacHeader header;

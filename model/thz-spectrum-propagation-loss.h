@@ -1,7 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2019 University at Buffalo, the State University of New York
- * (http://ubnano.tech/)
+ * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -18,15 +17,16 @@
  *
  * Author: Qing Xia <qingxia@buffalo.edu>
  *         Zahed Hossain <zahedhos@buffalo.edu>
- *         Josep Miquel Jornet <jmjornet@buffalo.edu>
+ *         Josep Miquel Jornet <j.jornet@northeastern.edu>
+ *         Daniel Morales <danimoralesbrotons@gmail.com>
  */
-
 
 
 #ifndef THZ_SPECTRUM_PROPAGATION_LOSS_H
 #define THZ_SPECTRUM_PROPAGATION_LOSS_H
 
 #include <ns3/object.h>
+#include <map>
 #include <ns3/mobility-model.h>
 #include <ns3/spectrum-value.h>
 #include "thz-spectrum-signal-parameters.h"
@@ -43,6 +43,8 @@ public:
   THzSpectrumPropagationLoss ();
   virtual ~THzSpectrumPropagationLoss ();
 
+  virtual bool mapContainsKey(std::map<double, double>& map, double key);
+
   /**
     * \param txPsd the power spectral density of the transmitted signal, unit in Watt.
     * \param a the mobility of sender.
@@ -54,7 +56,7 @@ public:
     */
   virtual Ptr<SpectrumValue> CalcRxPowerSpectralDensity (Ptr<const SpectrumValue> txPsd,
                                                          Ptr<const MobilityModel> a,
-                                                         Ptr<const MobilityModel> b) const;
+                                                         Ptr<const MobilityModel> b) ;
 
   /**
     * \param txPsd the power spectral density of the transmitted signal, unit in Watt.
@@ -69,7 +71,7 @@ public:
   virtual double CalcRxPowerDA (Ptr<THzSpectrumSignalParameters> txParams,
                                 Ptr<MobilityModel> a,
                                 Ptr<MobilityModel> b,
-                                double RxTxGainDb) const;
+                                double RxTxGainDb) ;
 
   /**
     * \brief Calculate the spreading loss
@@ -103,7 +105,7 @@ public:
     *
     * The values of f and d are collected from HITRAN database.
     */
-  virtual double CalculateAbsLoss (double f, double d) const;
+  virtual double CalculateAbsLoss (double f, double d) ;
 
   /**
     * \param s the starting boundary of the absorption coefficent.
@@ -118,6 +120,9 @@ public:
     */
   virtual Ptr<SpectrumValue> LoadedAbsCoe (int s, int j, double f, double d,Ptr<const SpectrumValue> txPsd) const;
 
+  double m_previousFc;
+  double m_kf;
+  std::map<double, double> m_freqMap;
 };
 
 } // namespace ns3
