@@ -208,7 +208,7 @@ THzPhyNano::SendPacket (Ptr<Packet> packet, bool rate, uint16_t mcs)
           double mod = fmod ((now - it->m_txStart).ToDouble (Time::FS),TsD);
           NS_LOG_INFO ("mod:" << mod << "m_pulse:" << m_pulseDuration);
 
-          if (mod < m_pulseDuration)
+          if (mod < m_pulseDuration.ToDouble (Time::FS))
             {
               NS_LOG_INFO ("Start time of the existing transmission is:" << it->m_txStart);
               nextPulse[txCount] = (nowD - mod);
@@ -230,7 +230,7 @@ THzPhyNano::SendPacket (Ptr<Packet> packet, bool rate, uint16_t mcs)
         {
           double mod = fmod ((now - itr->m_rxStart).ToDouble (Time::FS),TsD);
           NS_LOG_INFO ("mod:" << mod << "m_pulse:" << m_pulseDuration);
-          if (mod < m_pulseDuration)
+          if (mod < m_pulseDuration.ToDouble (Time::FS))
             {
               NS_LOG_INFO ("Start time of the existing reception is:" << it->m_txStart);
               nextPulse[txCount] = (nowD - mod);
