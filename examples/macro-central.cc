@@ -17,9 +17,10 @@
  *
  * Author: Qing Xia <qingxia@buffalo.edu>
  *         Zahed Hossain <zahedhos@buffalo.edu>
- *         Josep Miquel Jornet <jmjornet@buffalo.edu>
+ *         Josep Miquel Jornet <j.jornet@northeastern.edu>
  *         Daniel Morales <danimoralesbrotons@gmail.com>
  */
+
 #include <vector>
 #include <iostream>
 #include <cmath>
@@ -67,8 +68,9 @@ using namespace ns3;
  *  - nodeNum: number of client nodes
  *  - interArrivalTime: average time between two packets arriving at client's queue 
  *
- * Output: .txt file with an entry for each packet in the format:
+ * Output: TXT file with an entry for each packet in the format:
  *    (client_id, packet_size, packet_delay, success, discard)
+ * Note that throughput and discard rate metrics have to be computed in postprocessing from this TXT file. A MATLAB script is provided.
  */
 
 NS_LOG_COMPONENT_DEFINE ("MacroCentral");
@@ -93,7 +95,8 @@ int main (int argc, char* argv[])
     int boSlots = 5;                  // number of slots in the random backoff
     int rtsLim = 5;
     double temperature = 300;
-    int ap_logic = LOGIC_ANSWER_ALL_WL_MCS;
+    bool use_whiteList = true;
+    bool use_adaptMCS = true;
 
     CommandLine cmd;
     cmd.AddValue("seedNum", "Seed number", seedNum);
@@ -138,7 +141,8 @@ int main (int argc, char* argv[])
         noiseTotal = noiseFloor + noiseFigure;
         carrierSenseTh = noiseFloor + sinrTh;
 
-        ap_logic = LOGIC_ANSWER_ALL;  // Adaptive MCS values are prepared for 802.15.3d window
+        use_whiteList = false;
+        use_adaptMCS = false;
 
         Config::SetDefault ("ns3::THzSpectrumValueFactory::TotalBandWidth", DoubleValue (bandwidth));
         Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSample", DoubleValue (32));
@@ -373,7 +377,8 @@ int main (int argc, char* argv[])
         thzMacAp.Set ("CS_16QAM", DoubleValue(csth_16QAM));
         thzMacAp.Set ("CS_64QAM", DoubleValue(csth_64QAM));
 
-        thzMacAp.Set ("APLogic", UintegerValue(ap_logic));
+        thzMacAp.Set ("UseWhiteList", BooleanValue(use_whiteList));
+        thzMacAp.Set ("UseAdaptMCS", BooleanValue(use_adaptMCS));
         thzMacAp.Set ("OutputFile", StringValue(outputFile));
         thzMacAp.Set ("BoSlots", UintegerValue(boSlots));
         thzMacAp.Set ("PacketSize", UintegerValue(packetSize));
@@ -457,7 +462,8 @@ int main (int argc, char* argv[])
     std::printf ("Radius = %f\n", radius);  
     std::printf ("Beamwidth = %f\n", beamwidth);  
     std::printf ("MaxGain = %f\n", maxGain);
-    std::printf ("AP Logic = %d\n", ap_logic);
+    std::printf ("Use white list = %d\n", use_whiteList);
+    std::printf ("Use adaptive MCS = %d\n", use_adaptMCS);
     std::printf ("Handshake ways: %d way\n", handshake_ways);
 
     /* --------------------------------- SETUP NETWORK LAYER --------------------------------- */

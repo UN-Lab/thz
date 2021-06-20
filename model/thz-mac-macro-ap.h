@@ -17,7 +17,7 @@
  *
  * Author: Qing Xia <qingxia@buffalo.edu>
  *         Zahed Hossain <zahedhos@buffalo.edu>
- *         Josep Miquel Jornet <j.jornet@northeastern.edu>
+ *         Josep Miquel Jornet <jmjornet@buffalo.edu>
  *         Daniel Morales <danimoralesbrotons@gmail.com>
  */
  
@@ -34,13 +34,6 @@
 #include <list>
 #include <map>
 #include <vector>
-
-#define LOGIC_HIGHEST_RETRY     10
-#define LOGIC_HIGHEST_RETRY_WL  11
-#define LOGIC_ANSWER_ALL        12
-#define LOGIC_ANSWER_ALL_WL     13
-#define LOGIC_ANSWER_ALL_MCS    14
-#define LOGIC_ANSWER_ALL_WL_MCS 15
 
 namespace ns3 {
 
@@ -339,7 +332,8 @@ private:
   double m_dataRate;
   Time m_tProp;
   uint16_t m_expectedData;
-  uint16_t m_AP_Logic;
+  bool m_useWhiteList;
+  bool m_useAdaptMCS;
   
   std::list<std::pair<Ptr<Packet>, double>> m_rtsList;
   std::map<double, std::vector< std::pair<Mac48Address, double>> > m_sectorMap;

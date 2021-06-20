@@ -17,7 +17,7 @@
  *
  * Author: Qing Xia <qingxia@buffalo.edu>
  *         Zahed Hossain <zahedhos@buffalo.edu>
- *         Josep Miquel Jornet <j.jornet@northeastern.edu>
+ *         Josep Miquel Jornet <jmjornet@buffalo.edu>
  *         Daniel Morales <danimoralesbrotons@gmail.com>
  */
 
@@ -151,11 +151,16 @@ THzMacMacroAp::GetTypeId (void)
                    TimeValue (NanoSeconds(33.3)),
                    MakeTimeAccessor (&THzMacMacroAp::m_tProp),
                    MakeTimeChecker ())
-    .AddAttribute ("APLogic",
-                   "Logic for 3-way",
-                   UintegerValue (LOGIC_ANSWER_ALL),
-                   MakeUintegerAccessor (&THzMacMacroAp::m_AP_Logic),
-                   MakeUintegerChecker<uint16_t> ())
+    .AddAttribute ("UseWhiteList",
+                   "Activate the use of a white list for sectors",
+                   BooleanValue (true),
+                   MakeBooleanAccessor (&THzMacMacroAp::m_useWhiteList),
+                   MakeBooleanChecker ())
+    .AddAttribute ("UseAdaptMCS",
+                   "Activate the use of a adaptive MCS mechanism",
+                   BooleanValue (true),
+                   MakeBooleanAccessor (&THzMacMacroAp::m_useAdaptMCS),
+                   MakeBooleanChecker ())
     .AddAttribute ("CS_BPSK",
                    "Carrier sense threshold for this MCS",
                    DoubleValue (-48),
@@ -230,7 +235,8 @@ THzMacMacroAp::Init(void) {
   NS_LOG_DEBUG ("tSector: " << m_tSector << " tCircle: " << m_tMaxCircle << " turning speed " << m_turningSpeed);
   m_nodeId = m_device -> GetNode () -> GetId ();
 
-  if (m_AP_Logic == LOGIC_ANSWER_ALL_WL ||  m_AP_Logic == LOGIC_ANSWER_ALL_WL_MCS)
+  m_recordNodeSector = false;
+  if (m_useWhiteList)
     {
       m_recordNodeSector = true;  // If using White List (WL), record the sector/s of each node
     }
@@ -406,7 +412,7 @@ THzMacMacroAp::WaitTimeExpired ()  // Wait Time will always expire. Check how ma
       rts->PeekHeader(header);
 
       int flag = 0;
-      if (m_AP_Logic == LOGIC_ANSWER_ALL_MCS ||  m_AP_Logic == LOGIC_ANSWER_ALL_WL_MCS)
+      if (m_useAdaptMCS)
         {
           flag = SelectMCS (it->second);  // it->second contains the RTS received power. Select MCS depending on power.
         }
