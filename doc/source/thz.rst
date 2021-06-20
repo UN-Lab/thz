@@ -20,7 +20,7 @@ In this module, it tests the link-layer transmission performance of the nanoscal
 Model Description
 *****************
 
-The source code for the new module lives in the directory ``/thz``.
+The source code for the new module lives in the directory ``/thz``. This directory is typically placed in the ``contrib/`` directory of ns-3.
 
 * The frequency database file (data_frequency.txt) and the corresponding molecular absorption coefficient database file (data_AbsCoe.txt) are located inside ``/thz/model``.
 
@@ -45,7 +45,7 @@ Design
 Scope and Limitations
 =====================
 
-* In its current state, the THz system module is adapt to the latest ns-3 version (ns-3.30)
+* In its current state, the THz system module is adapt to the latest ns-3 version (ns-3.33)
 * As of now, the ns-3 interface to THz is Ipv4 only.
 
 References
@@ -64,18 +64,18 @@ The first step is to clone THz from the github repository and build it::
 
  $ git clone https://github.com/UN-Lab/thz.git
 
-Copy the thz folder to your local source folder of ns-3 directory (../ns-allinone-3.30/ns-3.30/contrib), then go back to ns-allinone-3.30 folder to build the THz module by::
+Copy the thz folder to your local source folder of ns-3 directory (../ns-allinone-3.33/ns-3.33/contrib), then go back to ns-allinone-3.33 folder to build the THz module by::
 
  $ cd ../.. 
  $ ./build.py
  
-Once THz has been built successfully, try to run one of the examples (i.e., macro-central.cc). First, you need to copy this example from ../thz/examples to ns-3.30/scratch::
+Once THz has been built successfully, try to run one of the examples (i.e., macro-central.cc). First, you need to copy this example from ../thz/examples to ns-3.33/scratch::
 
- $ cp ns-3.30/contrib/thz/examples/nano-adhoc.cc ns-3.30/scratch/nano-adhoc.cc
+ $ cp ns-3.33/contrib/thz/examples/nano-adhoc.cc ns-3.33/scratch/nano-adhoc.cc
 
-Then enter the ns-3.30 folder and run the example::
+Then enter the ns-3.33 folder and run the example::
 
- $ cd ns-3.30
+ $ cd ns-3.33
  $ ./waf --run scratch/macro-central
  
 Optionally, run the example with customized argurments::
