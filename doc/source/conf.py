@@ -25,7 +25,7 @@ import sys, os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.pngmath']
+extensions = ['sphinx.ext.imgmath']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -37,11 +37,11 @@ source_suffix = '.rst'
 #source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = 'thz'
 
 # General information about the project.
-project = u'ns-3'
-copyright = u'ns-3 project'
+project = u'TeraSim'
+copyright = u'UN-Lab'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -178,10 +178,10 @@ html_theme = 'default'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-#  ('wifi-testing', 'wifi-doc-testing.tex', u'Wi-Fi Testing Documentation', u'ns-3 project', 'manual'),
-#  ('wifi-design', 'wifi-doc-design.tex', u'Wi-Fi Design Documentation', u'ns-3 project', 'manual'),
-#  ('wifi-user', 'wifi-doc-user.tex', u'Wi-Fi User Documentation', u'ns-3 project', 'manual'),
-  ('thz', 'thz.tex', u'ns-3 Terasim Module Documentation', u'UBnano project', 'manual'),
+#  ('thz-testing', 'thz-doc-testing.tex', u'TeraSim Testing Documentation', u'Ultrabroadband Nanonetworking Laboratory (UN Lab)', 'manual'),
+#  ('thz-design', 'thz-doc-design.tex', u'TeraSim Design Documentation', u'Ultrabroadband Nanonetworking Laboratory (UN Lab)', 'manual'),
+#  ('thz-user', 'thz-doc-user.tex', u'TeraSim User Documentation', u'Ultrabroadband Nanonetworking Laboratory (UN Lab)', 'manual'),
+  ('thz', 'thz-module-doc.tex', u'The ns-3 TeraSim Module Documentation', u'Ultrabroadband Nanonetworking Laboratory (UN Lab)', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -210,7 +210,7 @@ latex_documents = [
 
 
 # add page breaks in the pdf. Level 1 is for top-level sections, level 2 for subsections, and so on.
-pdf_break_level = 4 
+pdf_break_level = 4
 
 
 # -- Options for manual page output --------------------------------------------
@@ -218,6 +218,6 @@ pdf_break_level = 4
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'ns-3-terasim', u'ns-3 Terasim Module',
-     [u'UBnano project'], 1)
+    ('index', 'ns-3-model-library', u'ns-3 Model Library',
+     [u'ns-3 project'], 1)
 ]

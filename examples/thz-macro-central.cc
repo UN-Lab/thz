@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
+ * Copyright (c) 2023 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -59,14 +59,14 @@
 using namespace ns3;
 
 /* This example file is for the macroscale scenario of the THz-band communication networks, i.e., with transmission distance
- * larger than several meters. A centralized network architecture is implemented. A high speed turning directional antenna is 
+ * larger than several meters. A centralized network architecture is implemented. A high speed turning directional antenna is
  * used in the base station (Servernodes), while all clients (Clientnodes) point the directional antennas towards the receiver
- * 
- * Important parameters: 
+ *
+ * Important parameters:
  *  - configuration: sets the frequency window used, the number of sectors and modulation used.
  *  - handshake_ways: use a 0-, 1-, 2- or 3-way handshake. (0: CSMA, 1: ADAPT-1, 2: CSMA/CA, 3: ADAPT-3)
  *  - nodeNum: number of client nodes
- *  - interArrivalTime: average time between two packets arriving at client's queue 
+ *  - interArrivalTime: average time between two packets arriving at client's queue
  *
  * Output: TXT file with an entry for each packet in the format:
  *    (client_id, packet_size, packet_delay, success, discard)
@@ -89,7 +89,7 @@ int main (int argc, char* argv[])
     int seedNum = 1;
     int nodeNum = 50;
     int handshake_ways = 3;           // 0: CSMA, 1: ADAPT-1, 2: CSMA/CA, 3: ADAPT-3
-    int packetSize = 65000;           // Bytes 
+    int packetSize = 65000;           // Bytes
     int interArrivalTime = 200;       // microseconds
     double simDuration = 0.01;        // seconds
     int boSlots = 5;                  // number of slots in the random backoff
@@ -118,23 +118,23 @@ int main (int argc, char* argv[])
     //LogComponentEnable ("THzUdpServer", LOG_LEVEL_ALL);
 
     /* --------------------------------- CONFIGURATION PARAMETERS --------------------------------- */
-    
+
     // Config 1: True THz window (90 GHz wide at fc = 1.034 THz). Don't use Adaptive MCS - datarates are for 802.15.3d window
-    if (configuration == 1)    
+    if (configuration == 1)
       {
         txPower = 0;              // dBm
-        bandwidth = 90e9;    
+        bandwidth = 90e9;
         basicRate = 1.8e11;       // bps
         dataRate = 1.8e11;        // bps
         bit_energy = 10.6;        // dB, Eb/N0
         beamwidth = 6;
         maxGain = 30.59;
         radius = 2.7;
-        prop_delay = PicoSeconds(radius * 3333); 
+        prop_delay = PicoSeconds(radius * 3333);
 
-        // SINR_th (lineal) = Eb/N0 * DR/B 
+        // SINR_th (lineal) = Eb/N0 * DR/B
         sinrTh = bit_energy + 10 * log10(dataRate / bandwidth);   // 13.6 dB
-        
+
         // k·T·B, noise at 300 K. +30 is to convert from dB to dBm
         noiseFloor = 10 * log10(1.38064852e-23 * 300 * bandwidth) + 30;  // -64.3 dBm
         noiseFigure = 7;  // dB
@@ -153,139 +153,139 @@ int main (int argc, char* argv[])
 
       // Configs 20-29: 69.12 GHz window, at 252.72 − 321.84 GHz
       // Config 20 and 29 reproduce results in "ADAPT: An Adaptive Directional Antenna Protocol for medium access control in Terahertz communication networks"
-    else 
+    else
       {
         if (configuration == 20) // 8-PSK, 30 sectors, 18m
           {
-            mcs = _8PSK;                 
+            mcs = _8PSK;
             sectors = 30;
             radius = 18;
           }
         if (configuration == 21) // 64-QAM, 45 sectors, 17m
           {
-            mcs = _64QAM;                 
+            mcs = _64QAM;
             sectors = 45;
             radius = 16.7;
           }
         if (configuration == 22) // QPSK, 30 sectors, 34m
           {
-            mcs = _QPSK;                 
+            mcs = _QPSK;
             sectors = 30;
             radius = 34;
           }
-        
+
         if (configuration == 23) // 16-QAM, 45 sectors, 35m
           {
-            mcs = _16QAM;                 
+            mcs = _16QAM;
             sectors = 45;
             radius = 35;
           }
         if (configuration == 24) // 64-QAM, 60 sectors, 30m
           {
-            mcs = _64QAM;                 
+            mcs = _64QAM;
             sectors = 60;
             radius = 30;
           }
         if (configuration == 25) // BPSK, 30 sectors, 48m
           {
-            mcs = _BPSK;                 
+            mcs = _BPSK;
             sectors = 30;
             radius = 48;
           }
         if (configuration == 26) // 8-PSK, 45 sectors, 40m
           {
-            mcs = _8PSK;                 
+            mcs = _8PSK;
             sectors = 45;
             radius = 40;
           }
         if (configuration == 27) // 16-QAM, 60 sectors, 64m
           {
-            mcs = _16QAM;                 
+            mcs = _16QAM;
             sectors = 60;
             radius = 64;
           }
         if (configuration == 28) // QPSK, 15 sectors, 8.4m
           {
-            mcs = _QPSK;                 
+            mcs = _QPSK;
             sectors = 15;
             radius = 8.4;
           }
         if (configuration == 29) // 64-QAM, 30 sectors, 7.5m
           {
-            mcs = _64QAM;                 
+            mcs = _64QAM;
             sectors = 30;
             radius = 7.5;
           }
 
         txPower = 20;
-        bandwidth = 69.12e9;  
+        bandwidth = 69.12e9;
         noiseFloor = 10 * log10(1.38064852e-23 * temperature * bandwidth) + 30; // dBm
         noiseFigure = 7;          // dB
         noiseTotal = noiseFloor + noiseFigure;
 
         // BPSK
         dataRate = 52.4e9;        // bps
-        bit_energy = 10.6;        // dB, Eb/N0 
-        double sinrTh_BPSK = bit_energy + 10 * log10(dataRate / bandwidth);   
+        bit_energy = 10.6;        // dB, Eb/N0
+        double sinrTh_BPSK = bit_energy + 10 * log10(dataRate / bandwidth);
         csth_BPSK = noiseTotal + sinrTh_BPSK;
 
         // QPSK
-        dataRate = 105.28e9;        
-        bit_energy = 10.6;           
-        double sinrTh_QPSK = bit_energy + 10 * log10(dataRate / bandwidth);   
+        dataRate = 105.28e9;
+        bit_energy = 10.6;
+        double sinrTh_QPSK = bit_energy + 10 * log10(dataRate / bandwidth);
         csth_QPSK = noiseTotal + sinrTh_QPSK;
 
         // 8-PSK
-        dataRate = 157.44e9;        
-        bit_energy = 14;           
-        double sinrTh_8PSK = bit_energy + 10 * log10(dataRate / bandwidth);  
+        dataRate = 157.44e9;
+        bit_energy = 14;
+        double sinrTh_8PSK = bit_energy + 10 * log10(dataRate / bandwidth);
         csth_8PSK = noiseTotal + sinrTh_8PSK;
 
         // 16-QAM
-        dataRate = 210.24e9;        
-        bit_energy = 14.4;           
-        double sinrTh_16QAM = bit_energy + 10 * log10(dataRate / bandwidth);  
+        dataRate = 210.24e9;
+        bit_energy = 14.4;
+        double sinrTh_16QAM = bit_energy + 10 * log10(dataRate / bandwidth);
         csth_16QAM = noiseTotal + sinrTh_16QAM;
 
         // 64-QAM
-        dataRate = 315.52e9;        
-        bit_energy = 18.8;           
-        double sinrTh_64QAM = bit_energy + 10 * log10(dataRate / bandwidth);   
+        dataRate = 315.52e9;
+        bit_energy = 18.8;
+        double sinrTh_64QAM = bit_energy + 10 * log10(dataRate / bandwidth);
         csth_64QAM = noiseTotal + sinrTh_64QAM;
 
         // Modulation Coding Scheme
         if (mcs == _BPSK) // BPSK
           {
-            dataRate = 52.4e9;        
-            bit_energy = 10.6;           
+            dataRate = 52.4e9;
+            bit_energy = 10.6;
             sinrTh = sinrTh_BPSK;
             carrierSenseTh = csth_BPSK;
           }
         if (mcs == _QPSK) // QPSK
           {
-            dataRate = 105.28e9;        
-            bit_energy = 10.6;           
+            dataRate = 105.28e9;
+            bit_energy = 10.6;
             sinrTh = sinrTh_QPSK;
             carrierSenseTh = csth_QPSK;
           }
         if (mcs == _8PSK) // 8-PSK
           {
-            dataRate = 157.44e9;      
-            bit_energy = 14;          
+            dataRate = 157.44e9;
+            bit_energy = 14;
             sinrTh = sinrTh_8PSK;
-            carrierSenseTh = csth_8PSK; 
+            carrierSenseTh = csth_8PSK;
           }
         if (mcs == _16QAM) // 16-QAM
           {
-            dataRate = 210.24e9;        
-            bit_energy = 14.4;           
+            dataRate = 210.24e9;
+            bit_energy = 14.4;
             sinrTh = sinrTh_16QAM;
             carrierSenseTh = csth_16QAM;
           }
         if (mcs == _64QAM) // 64-QAM
           {
-            dataRate = 315.52e9;        
-            bit_energy = 18.8;           
+            dataRate = 315.52e9;
+            bit_energy = 18.8;
             sinrTh = sinrTh_64QAM;
             carrierSenseTh = csth_64QAM;
           }
@@ -320,9 +320,9 @@ int main (int argc, char* argv[])
         Config::SetDefault ("ns3::THzSpectrumValueFactory::SubBandWidth", DoubleValue (2.16e9));
         Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSubBand", DoubleValue (32));
       }
-    
+
     std::string outputFile = "result_" + std::to_string(handshake_ways) + "way_" + std::to_string(nodeNum) + "n_" + std::to_string(interArrivalTime) + "us_" + std::to_string(seedNum) + ".txt";
-    
+
     RngSeedManager seed;
     seed.SetSeed (seedNum);
 
@@ -361,11 +361,11 @@ int main (int argc, char* argv[])
 
     // PHY
     THzPhyMacroHelper thzPhy = THzPhyMacroHelper::Default ();
-    thzPhy.Set("CsPowerTh", DoubleValue(carrierSenseTh));    
-    thzPhy.Set("TxPower", DoubleValue(txPower));        
-    thzPhy.Set("SinrTh", DoubleValue(sinrTh));        
-    thzPhy.Set("BasicRate", DoubleValue(basicRate));        
-    thzPhy.Set("DataRate", DoubleValue(dataRate));   
+    thzPhy.Set("CsPowerTh", DoubleValue(carrierSenseTh));
+    thzPhy.Set("TxPower", DoubleValue(txPower));
+    thzPhy.Set("SinrTh", DoubleValue(sinrTh));
+    thzPhy.Set("BasicRate", DoubleValue(basicRate));
+    thzPhy.Set("DataRate", DoubleValue(dataRate));
 
     if (handshake_ways == 1 || handshake_ways == 3) // ADAPT-3 or ADAPT-1
       {
@@ -395,7 +395,7 @@ int main (int argc, char* argv[])
         thzMacClient.Set ("PropDelay", TimeValue(prop_delay));
         thzMacClient.Set ("HandshakeWays", UintegerValue(handshake_ways));
 
-        // Directional Antenna     
+        // Directional Antenna
         THzDirectionalAntennaHelper thzDirAntenna = THzDirectionalAntennaHelper::Default ();
         thzDirAntenna.Set("MaxGain", DoubleValue (maxGain));
         thzDirAntenna.Set("BeamWidth", DoubleValue (beamwidth));
@@ -437,7 +437,7 @@ int main (int argc, char* argv[])
         thzDirAntenna.Set("TurningSpeed", DoubleValue (turningSpeed));
         thzDirAntenna.Set("MaxGain", DoubleValue (maxGain));
         thzDirAntenna.Set("BeamWidth", DoubleValue (beamwidth));
-    
+
         // Connect all layers in a NetDevice
         THzHelper thz;
         serverDevices = thz.Install (Servernodes, thzChan, thzPhy, thzMac, thzDirAntenna);
@@ -459,8 +459,8 @@ int main (int argc, char* argv[])
     std::printf ("SinrTh = %f\n", sinrTh);
     std::printf ("BasicRate = %f\n", basicRate);
     std::printf ("DataRate = %f\n", dataRate);
-    std::printf ("Radius = %f\n", radius);  
-    std::printf ("Beamwidth = %f\n", beamwidth);  
+    std::printf ("Radius = %f\n", radius);
+    std::printf ("Beamwidth = %f\n", beamwidth);
     std::printf ("MaxGain = %f\n", maxGain);
     std::printf ("Use white list = %d\n", use_whiteList);
     std::printf ("Use adaptive MCS = %d\n", use_adaptMCS);
@@ -476,18 +476,18 @@ int main (int argc, char* argv[])
 
     /* --------------------------------- POPULATE ARP CACHE --------------------------------- */
     Ptr<ArpCache> arp = CreateObject<ArpCache> ();
-    arp->SetAliveTimeout (Seconds (3600)); 
+    arp->SetAliveTimeout (Seconds (3600));
     for (uint16_t i = 0; i < nodes.GetN (); i++)
       {
         Ptr<Ipv4L3Protocol> ip = nodes.Get (i)->GetObject<Ipv4L3Protocol> ();
-        NS_ASSERT (ip != 0);
+        NS_ASSERT (ip);
         int ninter = (int) ip->GetNInterfaces ();
         for (int j = 0; j < ninter; j++)
           {
             Ptr<Ipv4Interface> ipIface = ip->GetInterface (j);
-            NS_ASSERT (ipIface != 0);
+            NS_ASSERT (ipIface);
             Ptr<NetDevice> device = ipIface->GetDevice ();
-            NS_ASSERT (device != 0);
+            NS_ASSERT (device);
             Mac48Address addr = Mac48Address::ConvertFrom (device->GetAddress ());
             for (uint32_t k = 0; k < ipIface->GetNAddresses (); k++)
               {
@@ -497,11 +497,11 @@ int main (int argc, char* argv[])
                     continue;
                   }
                 ArpCache::Entry * entry = arp->Add (ipAddr);
-                
+
                 Ipv4Header ipHeader;
                 Ptr<Packet> packet = Create<Packet> ();
                 packet->AddHeader (ipHeader);
-                
+
                 entry->MarkWaitReply (ArpCache::Ipv4PayloadHeaderPair (packet, ipHeader));
                 entry->MarkAlive (addr);
               }
@@ -510,7 +510,7 @@ int main (int argc, char* argv[])
     for (uint16_t i = 0; i < nodes.GetN (); i++)
       {
         Ptr<Ipv4L3Protocol> ip = nodes.Get (i)->GetObject<Ipv4L3Protocol> ();
-        NS_ASSERT (ip != 0);
+        NS_ASSERT (ip);
         int ninter = (int) ip->GetNInterfaces ();
         for (int j = 0; j < ninter; j++)
           {

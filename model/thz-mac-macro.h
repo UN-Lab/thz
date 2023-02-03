@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
+ * Copyright (c) 2023 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -455,7 +455,6 @@ private:
   Time m_tData;             //!< transmission duration of the DATA packet
   double m_rxIniAngle;      //!< initial angle of the receiver antenna
   uint32_t m_MinEnquePacketSize;    //!< the minimum DATA packet size needed to enqueue the packet
-  uint16_t m_probDiscard;   //!< the DATA packet discarding probability
 
   Time m_nav;
   Time m_localNav;
@@ -465,7 +464,6 @@ private:
 
   Time m_tstart;
   Time m_tend;
-  uint16_t m_seqRec;
   uint16_t m_pktRec;
   Time m_timeRec;
   double m_throughput;

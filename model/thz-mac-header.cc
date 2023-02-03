@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
+ * Copyright (c) 2023 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -89,8 +89,8 @@ THzMacHeader::SetRetry (uint8_t retry)
   0 (CTS/RTS/CTA):  Nothing to indicate. Normal packet
 
   -- Beam sounding --
-  1 (CTA):  CTA requests RTS (dummy) from all nodes. 
-  1 (RTS):  Dummy RTS 
+  1 (CTA):  CTA requests RTS (dummy) from all nodes.
+  1 (RTS):  Dummy RTS
   2 (CTA):  Feedback CTA announcing sector assigned
 
   -- Adaptive MCS --
@@ -99,7 +99,7 @@ THzMacHeader::SetRetry (uint8_t retry)
   12 (CTS/RTS): 8-PSK
   13 (CTS/RTS): 16-QAM
   14 (CTS/RTS): 64-QAM
-*/  
+*/
 void
 THzMacHeader::SetFlags (uint16_t flags)
 {

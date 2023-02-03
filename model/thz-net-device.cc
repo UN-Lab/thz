@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
+ * Copyright (c) 2023 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -19,7 +19,7 @@
  *         Zahed Hossain <zahedhos@buffalo.edu>
  *         Josep Miquel Jornet <j.jornet@northeastern.edu>
  */
- 
+
 #include "ns3/trace-source-accessor.h"
 #include "ns3/traced-callback.h"
 #include "ns3/llc-snap-header.h"
@@ -129,12 +129,12 @@ THzNetDevice::SetNode (Ptr<Node> node)
 void
 THzNetDevice::SetMac (Ptr<THzMac> mac)
 {
-  if (mac != 0)
+  if (mac)
     {
       m_mac = mac;
       NS_LOG_DEBUG ("Set MAC");
 
-      if (m_phy != 0)
+      if (m_phy)
         {
           m_phy->SetMac (m_mac);
           m_mac->AttachPhy (m_phy);
@@ -148,12 +148,12 @@ THzNetDevice::SetMac (Ptr<THzMac> mac)
 void
 THzNetDevice::SetPhy (Ptr<THzPhy> phy)
 {
-  if (phy != 0)
+  if (phy)
     {
       m_phy = phy;
       m_phy->SetDevice (Ptr<THzNetDevice> (this));
       NS_LOG_DEBUG ("Set PHY");
-      if (m_mac != 0)
+      if (m_mac)
         {
           m_mac->AttachPhy (phy);
           m_mac->SetDevice (this);
@@ -166,11 +166,11 @@ THzNetDevice::SetPhy (Ptr<THzPhy> phy)
 void
 THzNetDevice::SetChannel (Ptr<THzChannel> channel)
 {
-  if (channel != 0)
+  if (channel)
     {
       m_channel = channel;
       NS_LOG_DEBUG ("Set CHANNEL");
-      if (m_phy != 0)
+      if (m_phy)
         {
           m_channel->AddDevice (this, m_phy);
           m_phy->SetChannel (channel);
@@ -182,7 +182,7 @@ THzNetDevice::SetChannel (Ptr<THzChannel> channel)
 void
 THzNetDevice::SetDirAntenna (Ptr<THzDirectionalAntenna> dirantenna)
 {
-  if (dirantenna != 0)
+  if (dirantenna)
     {
       m_dirantenna = dirantenna;
       m_dirantenna->SetDevice (this);
@@ -267,7 +267,7 @@ THzNetDevice::GetMtu () const
 bool
 THzNetDevice::IsLinkUp () const
 {
-  return  (m_linkup && (m_phy != 0));
+  return  (m_linkup && m_phy);
 }
 
 bool
@@ -322,7 +322,6 @@ THzNetDevice::Send (Ptr<Packet> packet, const Address& dest, uint16_t protocolNu
   NS_LOG_FUNCTION ("pkt" << packet << "dest" << dest);
   NS_ASSERT (Mac48Address::IsMatchingType (dest));
   Mac48Address destAddr = Mac48Address::ConvertFrom (dest);
-  Mac48Address srcAddr = Mac48Address::ConvertFrom (GetAddress ());
 
   LlcSnapHeader llc;
   llc.SetType (protocolNumber);
@@ -333,12 +332,10 @@ THzNetDevice::Send (Ptr<Packet> packet, const Address& dest, uint16_t protocolNu
     Ptr<Packet> packet2 = Create<Packet> (65000); // 8+4 : the size of the seqTs header
     packet2->AddHeader(llc);
     m_mac->Enqueue (packet2, destAddr);
-    srcAddr = srcAddr;
     return true;
   }
 
   m_mac->Enqueue (packet, destAddr);
-  srcAddr = srcAddr;
   return true;
 }
 bool
@@ -349,14 +346,12 @@ THzNetDevice::SendFrom (Ptr<Packet> packet, const Address& src, const Address& d
   NS_ASSERT (Mac48Address::IsMatchingType (dest));
   NS_ASSERT (Mac48Address::IsMatchingType (src));
   Mac48Address destAddr = Mac48Address::ConvertFrom (dest);
-  Mac48Address srcAddr = Mac48Address::ConvertFrom (src);
 
   LlcSnapHeader llc;
   llc.SetType (protocolNumber);
   packet->AddHeader (llc);
 
   m_mac->Enqueue (packet, destAddr);
-  srcAddr = srcAddr;
   return true;
 }
 
@@ -411,4 +406,3 @@ THzNetDevice::SetPromiscReceiveCallback (PromiscReceiveCallback cb)
 }
 
 } // namespace ns3
-

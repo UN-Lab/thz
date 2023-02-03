@@ -1,8 +1,0 @@
-# -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
- 
-def build(bld):
-    obj = bld.create_ns3_program('macro-central', ['thz', 'core', 'antenna', 'config-store', 'network', 'mobility', 'internet', 'applications'])
-    obj.source = 'macro-central.cc'
- 
-    obj = bld.create_ns3_program('nano-adhoc', ['thz', 'core', 'network', 'mobility', 'internet', 'applications'])
-    obj.source = 'nano-adhoc.cc'

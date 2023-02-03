@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
+ * Copyright (c) 2023 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -81,9 +81,9 @@ public:
     *
     * \return the spreading loss unit in Watt.
     *
-    * The reference is J. M. Jornet and I. F. Akyildiz, Channel modeling and capacity analysis
-    * of electromagnetic wireless nanonetworks in the terahertz band, IEEE
-    * Transactions on Wireless Communications, vol. 10, no. 10, pp. 3211
+    * The reference is J. M. Jornet and I. F. Akyildiz, "Channel modeling and capacity analysis
+    * of electromagnetic wireless nanonetworks in the terahertz band," IEEE
+    * Transactions on Wireless Communications, vol. 10, no. 10, pp. 3211,
     * 3221, Oct. 2011
     *
     * The values of f and d are collected from HITRAN database.
@@ -98,9 +98,9 @@ public:
     *
     * \return the absorption coefficient loss, unit in Watt.
     *
-    * The reference is J. M. Jornet and I. F. Akyildiz, Channel modeling and capacity analysis
-    * of electromagnetic wireless nanonetworks in the terahertz band, IEEE
-    * Transactions on Wireless Communications, vol. 10, no. 10, pp. 3211
+    * The reference is J. M. Jornet and I. F. Akyildiz, "Channel modeling and capacity analysis
+    * of electromagnetic wireless nanonetworks in the terahertz band," IEEE
+    * Transactions on Wireless Communications, vol. 10, no. 10, pp. 3211,
     * 3221, Oct. 2011.
     *
     * The values of f and d are collected from HITRAN database.
@@ -128,5 +128,3 @@ public:
 } // namespace ns3
 
 #endif /* SPECTRUM_PROPAGATION_LOSS_H */
-
-

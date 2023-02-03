@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
+ * Copyright (c) 2023 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -82,9 +82,9 @@ THzMacMacro::THzMacMacro ()
   m_thzAD = 0;
   m_rxIniAngle = 0;
   m_MinEnquePacketSize = 15000;
-  m_tData = NanoSeconds (810.76);
+  m_tData = PicoSeconds (810760);
   m_result.clear ();
-  Simulator::Schedule (NanoSeconds (0.0001),&THzMacMacro::SetRxAntennaParameters, this); // initialization: turn antenna mode as receiver mode at all devices
+  Simulator::ScheduleNow (&THzMacMacro::SetRxAntennaParameters, this); // initialization: turn antenna mode as receiver mode at all devices
 
 }
 THzMacMacro::~THzMacMacro ()
@@ -366,7 +366,7 @@ THzMacMacro::ChannelAccessGranted ()
   m_backoffStart = Seconds (0);
   m_backoffRemain = Seconds (0);
   m_pktData = m_pktQueue.front ();
-  if (m_pktData == 0)
+  if (!m_pktData)
     {
       NS_LOG_DEBUG ("Queue has null packet");
       return;
@@ -448,7 +448,7 @@ THzMacMacro::Enqueue (Ptr<Packet> packet, Mac48Address dest)
       rec.Recpacket = packet;
       m_rec.push_back (rec);
       m_pktData = packet;
-      Simulator::Schedule (NanoSeconds (0.001), &THzMacMacro::CcaForDifs, this);
+      Simulator::Schedule (PicoSeconds(1), &THzMacMacro::CcaForDifs, this);
     }
   return false;
 }
@@ -488,15 +488,15 @@ THzMacMacro::SendRts (Ptr<Packet> pktData)
   NS_LOG_DEBUG ("Send RTS from " << m_address << " to " << dataHeader.GetDestination ());
   Ptr<Packet> packet = Create<Packet> (0);
   THzMacHeader rtsHeader = THzMacHeader (m_address, dataHeader.GetDestination (), THZ_PKT_TYPE_RTS);
-  Time nav = GetSifs () + GetCtrlDuration (THZ_PKT_TYPE_CTS) + NanoSeconds (33.3) // Sifs = 0ns, CtrlDuration és el temps que es triga físicament a transmetre els X bits
-    + GetSifs () + GetDataDuration (pktData) + NanoSeconds (33.3)
-    + GetSifs () + GetCtrlDuration (THZ_PKT_TYPE_ACK) + NanoSeconds (33.3)
-    + GetSlotTime () + NanoSeconds (33.3);
+  Time nav = GetSifs () + GetCtrlDuration (THZ_PKT_TYPE_CTS) + PicoSeconds (33356) // Sifs = 0 ns, CtrlDuration is the time that takes to physically transmit the X bits
+    + GetSifs () + GetDataDuration (pktData) + PicoSeconds (33356)
+    + GetSifs () + GetCtrlDuration (THZ_PKT_TYPE_ACK) + PicoSeconds (33356)
+    + GetSlotTime () + PicoSeconds (33356);
   rtsHeader.SetDuration (nav);
   rtsHeader.SetSequence (dataHeader.GetSequence ());
   packet->AddHeader (rtsHeader);
-  Time ctsTimeout = GetCtrlDuration (THZ_PKT_TYPE_RTS) + NanoSeconds (33.3)
-    + GetSifs () + GetCtrlDuration (THZ_PKT_TYPE_CTS) + NanoSeconds (33.3)
+  Time ctsTimeout = GetCtrlDuration (THZ_PKT_TYPE_RTS) + PicoSeconds (33356)
+    + GetSifs () + GetCtrlDuration (THZ_PKT_TYPE_CTS) + PicoSeconds (33356)
     + GetSlotTime ();
   if (SendPacket (packet, 0))
     {
@@ -533,7 +533,7 @@ THzMacMacro::ReceiveRts (Ptr<Packet> packet)
     }
   UpdateLocalNav (header.GetDuration ());
   m_state = WAIT_TX;
-  m_sendCtsEvent = Simulator::Schedule (NanoSeconds (0.001), &THzMacMacro::SendCts, this, header.GetSource (), header.GetDuration (), header.GetSequence ());
+  m_sendCtsEvent = Simulator::Schedule (PicoSeconds(1), &THzMacMacro::SendCts, this, header.GetSource (), header.GetDuration (), header.GetSequence ());
 }
 
 void
@@ -542,7 +542,7 @@ THzMacMacro::SendCts (Mac48Address dest, Time duration, uint16_t sequence)
   NS_LOG_FUNCTION (" from node " << m_device->GetNode ()->GetId () << " to " << dest);
   Ptr<Packet> packet = Create<Packet> (0);
   THzMacHeader ctsHeader = THzMacHeader (m_address, dest, THZ_PKT_TYPE_CTS);
-  Time nav = duration - GetSifs () - GetCtrlDuration (THZ_PKT_TYPE_CTS) - NanoSeconds (33.3);
+  Time nav = duration - GetSifs () - GetCtrlDuration (THZ_PKT_TYPE_CTS) - PicoSeconds (33356);
   ctsHeader.SetDuration (nav);
   ctsHeader.SetSequence (sequence);
   packet->AddHeader (ctsHeader);
@@ -584,7 +584,7 @@ THzMacMacro::ReceiveCts (Ptr<Packet> packet)
         {
           itt->m_ctsTimeoutEvent.Cancel ();
           m_state = WAIT_TX;
-          m_sendDataEvent = Simulator::Schedule (NanoSeconds (0.001), &THzMacMacro::SendData, this, m_pktData);
+          m_sendDataEvent = Simulator::Schedule (PicoSeconds (1), &THzMacMacro::SendData, this, m_pktData);
           itt = m_ctsTimeouts.erase (itt);
           return;
         }
@@ -613,7 +613,7 @@ THzMacMacro::SendData (Ptr<Packet> packet)
           header.SetDuration (Seconds (0));
           if (SendPacket (m_pktData, 0))
             {
-              UpdateLocalNav (GetDataDuration (m_pktData) + GetSlotTime () + NanoSeconds (33.3));
+              UpdateLocalNav (GetDataDuration (m_pktData) + GetSlotTime () + PicoSeconds (33356));
             }
           else
             {
@@ -623,11 +623,11 @@ THzMacMacro::SendData (Ptr<Packet> packet)
       if (header.GetDestination () != GetBroadcast ())  // Unicast
         {
           NS_LOG_INFO ("unicast");
-          Time nav = GetSifs () + GetCtrlDuration (THZ_PKT_TYPE_ACK) + NanoSeconds (33.3);
+          Time nav = GetSifs () + GetCtrlDuration (THZ_PKT_TYPE_ACK) + PicoSeconds (33356);
           header.SetDuration (nav);
           if (SendPacket (m_pktData, 1))
             {
-              Time ackTimeout = GetDataDuration (m_pktData) + NanoSeconds (33.3) + GetSifs () + GetCtrlDuration (THZ_PKT_TYPE_ACK) + NanoSeconds (33.3) + GetSlotTime ();
+              Time ackTimeout = GetDataDuration (m_pktData) + PicoSeconds (33356) + GetSifs () + GetCtrlDuration (THZ_PKT_TYPE_ACK) + PicoSeconds (33356) + GetSlotTime ();
               UpdateLocalNav (ackTimeout);
               AckTimeouts at;
               at.sequence = header.GetSequence ();
@@ -695,7 +695,7 @@ THzMacMacro::SendAck (Mac48Address dest, uint16_t sequence)
   THzMacHeader ackHeader = THzMacHeader (m_address, dest, THZ_PKT_TYPE_ACK);
   ackHeader.SetSequence (sequence);
   packet->AddHeader (ackHeader);
-  Time nav = GetCtrlDuration (THZ_PKT_TYPE_ACK) + NanoSeconds (33.33);
+  Time nav = GetCtrlDuration (THZ_PKT_TYPE_ACK) + PicoSeconds (33356);
   ackHeader.SetDuration (Seconds (0));
   UpdateLocalNav (nav + GetSlotTime ());
   SendPacket (packet, 0);
@@ -716,7 +716,7 @@ THzMacMacro::ReceiveAck (Ptr<Packet> packet)
           if (it->sequence == header.GetSequence ())
             {
               it->m_ackTimeoutEvent.Cancel ();
-              Simulator::Schedule (NanoSeconds (0.001), &THzMacMacro::SendDataDone, this, true, header.GetSequence ());
+              Simulator::Schedule (PicoSeconds (1), &THzMacMacro::SendDataDone, this, true, header.GetSequence ());
               it = m_ackTimeouts.erase (it);
               return;
             }
@@ -936,7 +936,7 @@ THzMacMacro::CtsTimeout (uint16_t sequence)
             {
               m_pktQueue.remove (it->Recpacket);
               NS_LOG_DEBUG ("at node " << m_device->GetNode ()->GetId () << " cts timeout at:" << Simulator::Now () << " #queue " << m_pktQueue.size ());
-              Simulator::Schedule (NanoSeconds (0.001), &THzMacMacro::SendDataDone, this, false, sequence);
+              Simulator::Schedule (PicoSeconds (1), &THzMacMacro::SendDataDone, this, false, sequence);
             }
           else
             {
@@ -977,7 +977,7 @@ THzMacMacro::AckTimeout (uint16_t sequence)
             {
               m_pktQueue.remove (it->Recpacket);
               NS_LOG_DEBUG ("at node " << m_device->GetNode ()->GetId () << " ack timeout at:" << Simulator::Now () << " #queue " << m_pktQueue.size ());
-              Simulator::Schedule (NanoSeconds (0.001), &THzMacMacro::SendDataDone, this, false, sequence);
+              Simulator::Schedule (PicoSeconds (1), &THzMacMacro::SendDataDone, this, false, sequence);
             }
           else
             {
@@ -1008,12 +1008,7 @@ THzMacMacro::IsNewSequence (Mac48Address addr, uint16_t seq)
     {
       if (it->first == addr)
         {
-          if (it->second == 65536 && seq < it->second)
-            {
-              it->second = seq;
-              return true;
-            }
-          else if (seq > it->second)
+          if (seq > it->second)
             {
               it->second = seq;
               return true;
@@ -1069,7 +1064,7 @@ THzMacMacro::ResultsRecord ()
    * enable the result printing in a .txt file by uncommenting the content in this function
    *----------------------------------------------------------------------------------------*/
 
-  
+
   int seed_num;
    RngSeedManager seed;
    seed_num = seed.GetSeed ();
@@ -1084,7 +1079,7 @@ THzMacMacro::ResultsRecord ()
    resultfile << it->nodeid << "\t" << it->Psize << "\t" << it->delay.GetNanoSeconds() << "\t" << it->success << "\t" << it->discard << std::endl;
    resultfile.close ();
    return;
- 
+
 
 }
 } // namespace ns3

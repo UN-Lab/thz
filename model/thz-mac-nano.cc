@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
+ * Copyright (c) 2023 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -60,7 +60,7 @@ THzMacNano::THzMacNano ()
   m_discarded = 0;
 
   Simulator::Schedule (MicroSeconds (0.0), &THzMacNano::InitEnergyCallback, this);
-  Simulator::Schedule (NanoSeconds (3.25), &THzMacNano::SetAntenna, this); // initialization: turn antenna mode as Omnidirectional mode at all devices
+  Simulator::Schedule (PicoSeconds (3250), &THzMacNano::SetAntenna, this); // initialization: turn antenna mode as Omnidirectional mode at all devices
 }
 THzMacNano::~THzMacNano ()
 {
@@ -866,12 +866,7 @@ THzMacNano::IsNewSequence (Mac48Address addr, uint16_t seq)
     {
       if (it->first == addr)
         {
-          if (it->second == 65536 && seq < it->second)
-            {
-              it->second = seq;
-              return true;
-            }
-          else if (seq > it->second)
+          if (seq > it->second)
             {
               it->second = seq;
               return true;
