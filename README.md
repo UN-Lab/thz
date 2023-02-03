@@ -27,7 +27,7 @@ You can use the following command to run the `thz-macro-central` example.
 Other examples are included in `examples`.
 
 ## Documentation ##
-The documentation of this module is available at [this link](./doc/thz.rst).
+The documentation of this module is available at [this link](./doc/source/thz.rst).
 
 ## References ##
 The following papers describe in detail the features implemented in the TeraSim module:
