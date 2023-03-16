@@ -9,11 +9,11 @@ A detailed explanation of the module can be found in
 
 ## Installation ##
 The first step is to clone the module from the github repository to your local source folder of ns-3 directory `ns-3.37/contrib`:
-```bash
+```
 git clone https://github.com/UN-Lab/thz.git
 ```
 Then go back to ns-3.37 folder to build the THz module by:
-```bash
+```
 cd ..
 ./ns3 configure --enable-examples --enable-tests
 ./ns3 build
