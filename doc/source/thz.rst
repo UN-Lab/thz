@@ -42,7 +42,7 @@ Design
 Scope and Limitations
 =====================
 
-* In its current state, the THz system module is adapt to the latest ns-3 version (ns-3.37)
+* In its current state, the THz system module is adapt to the latest ns-3 version (ns-3.38)
 * As of now, the ns-3 interface to THz is IPv4 only.
 
 References
@@ -60,14 +60,14 @@ The first step is to clone THz from the github repository::
 
  $ git clone https://github.com/UN-Lab/thz.git
 
-Copy the thz folder to your local source folder of ns-3 directory (../ns-allinone-3.37/ns-3.37/contrib), then go back to ns-3.37 folder to build the THz module by::
+Copy the thz folder to your local source folder of ns-3 directory (../ns-allinone-3.38/ns-3.38/contrib), then go back to ns-3.38 folder to build the THz module by::
 
  $ cd ..
  $ ./ns3 build
 
-Once THz has been built successfully, try to run one of the examples (i.e., thz-macro-central.cc). First, you need to copy this example from ../thz/examples to ns-3.37/scratch::
+Once THz has been built successfully, try to run one of the examples (i.e., thz-macro-central.cc). First, you need to copy this example from ../thz/examples to ns-3.38/scratch::
 
- $ cp ns-3.37/contrib/thz/examples/thz-macro-central.cc ns-3.37/scratch/thz-macro-central.cc
+ $ cp ns-3.38/contrib/thz/examples/thz-macro-central.cc ns-3.38/scratch/thz-macro-central.cc
 
 Then build and run the example::
 

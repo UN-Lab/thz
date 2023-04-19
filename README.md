@@ -8,11 +8,11 @@ A detailed explanation of the module can be found in
 [this paper](https://doi.org/10.1016/j.nancom.2018.08.001).
 
 ## Installation ##
-The first step is to clone the module from the github repository to your local source folder of ns-3 directory `ns-3.37/contrib`:
+The first step is to clone the module from the github repository to your local source folder of ns-3 directory `ns-3.38/contrib`:
 ```
 git clone https://github.com/UN-Lab/thz.git
 ```
-Then go back to ns-3.37 folder to build the THz module by:
+Then go back to ns-3.38 folder to build the THz module by:
 ```
 cd ..
 ./ns3 configure --enable-examples --enable-tests
