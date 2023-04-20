@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
+ * Copyright (c) 2023 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -17,10 +17,10 @@
  *
  * Author: Qing Xia <qingxia@buffalo.edu>
  *         Zahed Hossain <zahedhos@buffalo.edu>
- *         Josep Miquel Jornet <jmjornet@buffalo.edu>
+ *         Josep Miquel Jornet <j.jornet@northeastern.edu>
  *         Daniel Morales <danimoralesbrotons@gmail.com>
  */
- 
+
 #ifndef THZ_MAC_MACRO_AP_H
 #define THZ_MAC_MACRO_AP_H
 
@@ -236,10 +236,7 @@ private:
 
   // Mac parameters
   uint16_t m_boSlots;
-  uint16_t m_rtsRetryLimit;
-  uint16_t m_dataRetryLimit;
   uint16_t m_retry;
-  uint16_t m_sequence;
 
   Time m_slotTime;
   Time m_slotTime_3way;
@@ -255,7 +252,6 @@ private:
   Time m_tData;             //!< transmission duration of the DATA packet
   double m_angle;      //!< initial angle of the receiver antenna
   uint32_t m_packetSize;    //!< the minimum DATA packet size needed to enqueue the packet
-  uint16_t m_probDiscard;   //!< the DATA packet discarding probability
 
   Time m_nav;
   Time m_localNav;
@@ -265,16 +261,13 @@ private:
 
   Time m_tstart;
   Time m_tend;
-  uint16_t m_seqRec;
   uint16_t m_pktRec;
   Time m_timeRec;
   double m_throughput;
   double m_throughputAll;
-  double m_throughputavg;
   Mac48Address m_addRecS;
   int m_ite;
 
-  uint32_t m_queueLimit;
   std::list<Ptr<Packet> > m_pktQueue;
   std::list<Ptr<Packet> > m_ackList;
   std::list<std::pair<Mac48Address, uint16_t> > m_seqList;
@@ -308,7 +301,6 @@ private:
   void InitNodeMap ();
 
   uint16_t m_ways;
-  bool m_isClient;
   Ptr<MobilityModel> m_clientMobility;
   Ptr<UniformRandomVariable> m_uniRand;
   double m_beamwidth;
@@ -329,12 +321,11 @@ private:
   uint16_t m_nodeId;
   std::string outputFile;
   double m_turningSpeed;
-  double m_dataRate;
   Time m_tProp;
   uint16_t m_expectedData;
   bool m_useWhiteList;
   bool m_useAdaptMCS;
-  
+
   std::list<std::pair<Ptr<Packet>, double>> m_rtsList;
   std::map<double, std::vector< std::pair<Mac48Address, double>> > m_sectorMap;
   std::map<Mac48Address, std::vector<std::pair<double, double>>> m_nodeMap;

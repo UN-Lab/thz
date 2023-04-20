@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
+ * Copyright (c) 2023 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -190,15 +190,11 @@ private:
   double m_beamwidthRadians;
   double m_beamwidthDegrees;
   double m_TxorientationDegrees;
-  double m_TxorientationRadians;
   double m_RxorientationDegrees;
   double m_RxorientationRadians;
 
-
-  double m_phi_rx;
   double m_phi_tx;
   double m_maxGain;
-  double m_rxgainDb;
 
   Time m_CurrentTime;
   Time m_SectorTime;
@@ -214,8 +210,6 @@ private:
 
   double m_RxGain;
   double m_TxGain;
-  double m_rxGain;
-  double m_txGain;
 
 };
 

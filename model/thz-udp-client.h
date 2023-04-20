@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
+ * Copyright (c) 2023 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -84,7 +84,6 @@ private:
    */
   void Send (void);
 
-  uint32_t m_count; //!< Maximum number of packets the application will send
   Time m_interval; //!< Packet inter-send time
   uint32_t m_size; //!< Size of the sent packet (including the SeqTsHeader)
   // ADD: POISSION DISTRIBUTION MEAN

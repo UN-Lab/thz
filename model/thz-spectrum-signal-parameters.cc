@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
+ * Copyright (c) 2023 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -56,7 +56,7 @@ THzSpectrumSignalParameters::THzSpectrumSignalParameters (const THzSpectrumSigna
 }
 
 Ptr<SpectrumSignalParameters>
-THzSpectrumSignalParameters::Copy ()
+THzSpectrumSignalParameters::Copy () const
 {
   NS_LOG_FUNCTION (this);
 

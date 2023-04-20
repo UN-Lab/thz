@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 ## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
 
 # A list of C++ examples to run in order to ensure that they remain
@@ -8,12 +8,12 @@
 #
 # See test.py for more information.
 cpp_examples = [
-    ("macro-central", "True", "True"),
-    ("nano-adhoc", "True", "True"),
+    ("thz-macro-central", "True", "True"),
+    ("thz-nano-adhoc", "True", "True"),
     ("thz-directional-antenna", "True","True"),
     ("thz-path-loss", "True", "True"),
     ("thz-psd-macro", "True", "True"),
-    ("thz-rx-psd-nano", "True", "True"),
+    ("thz-psd-nano", "True", "True"),
 ]
 
 # A list of Python examples to run in order to ensure that they remain

@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
+ * Copyright (c) 2023 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -148,7 +148,7 @@ TrafficGenerator::StopApplication (void)
 {
   NS_LOG_FUNCTION (this);
   Simulator::Cancel (m_sendEvent);
-  if (m_socket != 0)
+  if (m_socket)
     {
       m_socket->Close ();
       m_socket->SetRecvCallback (MakeNullCallback<void, Ptr<Socket> > ());

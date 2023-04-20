@@ -1,7 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2019 University at Buffalo, the State University of New York
- * (http://ubnano.tech/)
+ * Copyright (c) 2023 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -18,7 +17,7 @@
  *
  * Author: Zahed Hossain <zahedhos@buffalo.edu>
  *         Qing Xia <qingxia@buffalo.edu>
- *         Josep Miquel Jornet <jmjornet@buffalo.edu>
+ *         Josep Miquel Jornet <j.jornet@northeastern.edu>
  */
 
 #include <vector>
@@ -42,11 +41,11 @@ using namespace ns3;
 
 
 /* This example file is for the nanoscale scenario of the THz-band communication networks, i.e., with transmission distance
- * below one meter. It outputs the link layer performance mainly in terms of the throughput and the discarding probability 
+ * below one meter. It outputs the link layer performance mainly in terms of the throughput and the discarding probability
  * of the DATA packets. In this example, an adhoc network architecture is implemented. User can set network topology in this
  * file. The nodes in the nanonetwork are equipped with the energy module we developed. The basic parameters of the energy
  * model can be set in this file. User can also set the number of samples of the TSOOK pulse within frequency range 0.9-4 THz
- * window in this file. User can select one of the two MAC protocols that include a 0-way and a 2-way handshake protocols. 
+ * window in this file. User can select one of the two MAC protocols that include a 0-way and a 2-way handshake protocols.
  * 0-way starts the link layer transmission with a DATA frame and 2-way with an RTS frame. The selection can be done by setting
  * the attribute value of EnableRts in THzMacNano. In the end, the user can also set the generated packet size and the
  * mean value of the packet generation interval in this file.
@@ -134,14 +133,14 @@ int main (int argc, char* argv[])
   for (uint16_t i = 0; i < nodes.GetN (); i++) // n nodecontainer**************************************
     {
       Ptr<Ipv4L3Protocol> ip = nodes.Get (i)->GetObject<Ipv4L3Protocol> ();
-      NS_ASSERT (ip != 0);
+      NS_ASSERT (ip);
       int ninter = (int) ip->GetNInterfaces ();
       for (int j = 0; j < ninter; j++)
         {
           Ptr<Ipv4Interface> ipIface = ip->GetInterface (j);
-          NS_ASSERT (ipIface != 0);
+          NS_ASSERT (ipIface);
           Ptr<NetDevice> device = ipIface->GetDevice ();
-          NS_ASSERT (device != 0);
+          NS_ASSERT (device);
           Mac48Address addr = Mac48Address::ConvertFrom (device->GetAddress ());
           for (uint32_t k = 0; k < ipIface->GetNAddresses (); k++)
             {
@@ -154,7 +153,7 @@ int main (int argc, char* argv[])
               Ipv4Header ipHeader;
               Ptr<Packet> packet = Create<Packet> ();
               packet->AddHeader (ipHeader);
-              
+
               entry->MarkWaitReply (ArpCache::Ipv4PayloadHeaderPair (packet, ipHeader));
               entry->MarkAlive (addr);
             }
@@ -163,7 +162,7 @@ int main (int argc, char* argv[])
   for (uint16_t i = 0; i < nodes.GetN (); i++)
     {
       Ptr<Ipv4L3Protocol> ip = nodes.Get (i)->GetObject<Ipv4L3Protocol> ();
-      NS_ASSERT (ip != 0);
+      NS_ASSERT (ip);
       int ninter = (int) ip->GetNInterfaces ();
       for (int j = 0; j < ninter; j++)
         {

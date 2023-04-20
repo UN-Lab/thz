@@ -1,7 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2019 University at Buffalo, the State University of New York
- * (http://ubnano.tech/)
+ * Copyright (c) 2023 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -18,7 +17,7 @@
  *
  * Author: Zahed Hossain <zahedhos@buffalo.edu>
  *         Qing Xia <qingxia@buffalo.edu>
- *         Josep Miquel Jornet <jmjornet@buffalo.edu>
+ *         Josep Miquel Jornet <j.jornet@northeastern.edu>
  */
 
 #include "ns3/log.h"
@@ -128,11 +127,9 @@ public:
 };
 
 THzPsdNanoTestSuite::THzPsdNanoTestSuite ()
-  : TestSuite ("thz-rx-psd-nano", UNIT)
+  : TestSuite ("thz-psd-nano", UNIT)
 {
   AddTestCase (new THzPsdNanoTestCase, TestCase::QUICK);
 }
 //create an instance of the test suite
 static THzPsdNanoTestSuite g_thzPsdNanoTestSuite;
-
-

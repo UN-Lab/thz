@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2021 Northeastern University (https://unlab.tech/)
+ * Copyright (c) 2023 Northeastern University (https://unlab.tech/)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -53,11 +53,11 @@ THzSpectrumPropagationLoss::~THzSpectrumPropagationLoss ()
 {
 }
 
-       
+
 Ptr<SpectrumValue>
 THzSpectrumPropagationLoss::CalcRxPowerSpectralDensity (Ptr<const SpectrumValue> txPsd,
                                                         Ptr<const MobilityModel> a,
-                                                        Ptr<const MobilityModel> b) 
+                                                        Ptr<const MobilityModel> b)
 {
   Ptr<SpectrumValue> rxPsd = Copy<SpectrumValue> (txPsd); //[W]
   Values::iterator vit = rxPsd->ValuesBegin ();
@@ -82,7 +82,7 @@ double
 THzSpectrumPropagationLoss::CalcRxPowerDA (Ptr<THzSpectrumSignalParameters> txParams,
                                            Ptr<MobilityModel> a,
                                            Ptr<MobilityModel> b,
-                                           double RxTxGainDb) 
+                                           double RxTxGainDb)
 {
   double RxTxGainW = std::pow (10.0, (RxTxGainDb) / 10.0);
   Ptr<SpectrumValue> rxPsd = Copy<SpectrumValue> (txParams->txPsd); // [W]
@@ -132,7 +132,7 @@ THzSpectrumPropagationLoss::CalculateSpreadLoss (double f, double d) const
 }
 
 double
-THzSpectrumPropagationLoss::CalculateAbsLoss (double f, double d) 
+THzSpectrumPropagationLoss::CalculateAbsLoss (double f, double d)
 {
   double kf = 0.0;
   double loss = 0.0;
@@ -232,7 +232,7 @@ THzSpectrumPropagationLoss::LoadedAbsCoe (int s, int j, double f, double d,Ptr<c
   return kf_store;
 }
 
-bool 
+bool
 THzSpectrumPropagationLoss::mapContainsKey(std::map<double, double>& map, double key)
 {
   if (map.find(key) == map.end()) return false;
