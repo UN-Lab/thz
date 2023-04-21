@@ -1,70 +1,42 @@
+% Script to compute the performance metrics
+
+clc, clear
+
 %% Parameters
-num_nodes = 50;
-tia = 200;
-handshake_ways = 3;
+handshake_ways = 1; % 0, 1, 2 or 3 way handshake (0: CSMA, 1: ADAPT-1, 2: CSMA/CA, 3: ADAPT-3)
+nodeNum = 50;       % Number of client nodes
+Tia = 800;          % [us] Mean inter-arrival time
 
-%% Check folder
-% Execute from 'macro_postprocessing' folder
-path = '../';
-if exist(path, 'dir')~= 7
-   Message = sprintf('Error: The following folder does not exist:\n%s', path);
-   uiwait(warndlg(Message));
-   return;
-end
+%% Load simulation results
+path = '../../../scratch';
+filename = sprintf('result_%uway_%un_%uus_1.txt',handshake_ways,nodeNum,Tia);
+fileID = fopen(fullfile(path, filename),'r');
+data = fscanf(fileID,'%u %u %u %u %u',[5 Inf]);
+fclose(fileID);
 
-%% Run
+%% Compute metrics
+data = data.';
 
-sname = sprintf('result_%uway_%un_%uus_1.txt', handshake_ways, num_nodes, tia);
-filePattern = fullfile(path, sname);
-fileID = fopen(filePattern);
-
-formatSpec = '%i %i %f %i %i'; 
-dims = [5 Inf];
-data = fscanf(fileID, formatSpec, dims);
-
-[thr, time, time_perm, Pdis] = computeMetrics(data,num_nodes);
-
-throughput = thr                    % [bps]
-average_packet_time = time_perm     % [ns]
-discard_rate = Pdis
-
-
-
-%% Compute metrics 
-% data: Matrix of results for the node. 
-% node: Number of nodes
-
-function [throughput, time, time_perm, discard_rate] = computeMetrics(data, num_nodes)
-
-data = data';
-packet_size = data(1,2);
-throughput = 0;
-time = 0;
-
-for j = 1:num_nodes
-    th_aux = 0;
-    time_aux = 0;
-    node_data = data(data(:,1)==j,:);           % Select only data from node j
-    succ_data = node_data(node_data(:,4)==1,:); % Select successfull packets 
-    num_succ = length(succ_data(:,1));
-    for i = 1:num_succ
-        th = packet_size * 8 / (succ_data(i,3) * 1e-9);
-        th_aux = th_aux + th;
-        time_aux = time_aux + (succ_data(i,3) * 1e-3);
+% Throughput calculation
+throughput_node = zeros(1,nodeNum); % [Gbps] Throughput of each node
+for n = 1:nodeNum
+    % Select only data from node n and succesfull packets
+    succ_data = data(data(:,1) == n & data(:,4) == 1,:);
+    throughput_node(n) = mean(succ_data(:,2)*8./(succ_data(:,3)));
+    if size(succ_data,1) == 0
+        throughput_node(n) = 0;
     end
-    th_node = th_aux / num_succ;
-    time = time + time_aux / num_succ;
-    if num_succ == 0
-        th_node = 0;
-    end
-    throughput = throughput + th_node;
 end
+throughput = mean(throughput_node); % [Gbps] Average throughput
 
-% average time on permanent phase
-succ = data(data(:,4)==1, :);
-time_perm = mean(succ(round(length(succ)/10) : length(succ), 3)) * 1e-3;
+% Discard rate
+discard_rate = sum(data(:,5))/size(data,1);
 
-throughput = throughput / num_nodes;
-time = time / num_nodes;
-discard_rate = length(data(data(:,5)==1,:)) / length(data);
-end
+% [us] Average packet time
+succ_data = data(data(:,4) == 1,:);
+average_packet_time = mean(succ_data(round(end/10):end,3))*1e-3;
+
+%% Print out results
+fprintf('Throughput = %.2f Gbps\n',throughput)
+fprintf('Discard rate = %.2f\n',discard_rate)
+fprintf('Average packet time = %.2f us\n',average_packet_time)
