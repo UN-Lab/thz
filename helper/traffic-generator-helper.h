@@ -23,14 +23,16 @@
 #ifndef TRAFFIC_GENERATOR_HELPER_H
 #define TRAFFIC_GENERATOR_HELPER_H
 
-#include <string>
-#include "ns3/attribute.h"
-#include "ns3/object-factory.h"
-#include "ns3/node-container.h"
-#include "ns3/traffic-generator.h"
 #include "ns3/application-container.h"
+#include "ns3/attribute.h"
+#include "ns3/node-container.h"
+#include "ns3/object-factory.h"
+#include "ns3/traffic-generator.h"
 
-namespace ns3 {
+#include <string>
+
+namespace ns3
+{
 /**
  * \ingroup thz
  * \brief A helper to make it easier to instantiate an ns3::TrafficGenerator
@@ -38,37 +40,36 @@ namespace ns3 {
  */
 class TrafficGeneratorHelper
 {
-public:
-  /**
-   * Create a TrafficGeneratorHelper
-   */
-  TrafficGeneratorHelper ();
-  /**
-   * Destroy a TrafficGeneratorHelper
-   */
-  virtual ~TrafficGeneratorHelper ();
-  /**
-   * Helper function used to set the underlying application attributes.
-   *
-   * \param name the name of the application attribute to set
-   * \param value the value of the application attribute to set
-   */
-  void SetAttribute (std::string name, const AttributeValue &value);
-  /**
-   * Install an ns3::TrafficGenerator on each node of the input container
-   * configured with all the attributes set with SetAttribute.
-   *
-   * \param c NodeContainer of the set of nodes on which an TrafficGenerator
-   * will be installed.
-   * \returns Container of Ptr to the applications installed.
-   */
-  ApplicationContainer Install (NodeContainer c);
+  public:
+    /**
+     * Create a TrafficGeneratorHelper
+     */
+    TrafficGeneratorHelper();
+    /**
+     * Destroy a TrafficGeneratorHelper
+     */
+    virtual ~TrafficGeneratorHelper();
+    /**
+     * Helper function used to set the underlying application attributes.
+     *
+     * \param name the name of the application attribute to set
+     * \param value the value of the application attribute to set
+     */
+    void SetAttribute(std::string name, const AttributeValue& value);
+    /**
+     * Install an ns3::TrafficGenerator on each node of the input container
+     * configured with all the attributes set with SetAttribute.
+     *
+     * \param c NodeContainer of the set of nodes on which an TrafficGenerator
+     * will be installed.
+     * \returns Container of Ptr to the applications installed.
+     */
+    ApplicationContainer Install(NodeContainer c);
 
-private:
-  ObjectFactory m_traffic;
+  private:
+    ObjectFactory m_traffic;
 };
 
-
-} //end namespace ns3
+} // end namespace ns3
 
 #endif /* THZ_HELPER_H_ */

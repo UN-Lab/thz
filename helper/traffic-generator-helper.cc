@@ -20,52 +20,54 @@
  *         Josep Miquel Jornet <j.jornet@northeastern.edu>
  */
 
-#include "ns3/log.h"
+#include "traffic-generator-helper.h"
+
 #include "ns3/config.h"
-#include "ns3/simulator.h"
+#include "ns3/log.h"
 #include "ns3/mac48-address.h"
+#include "ns3/simulator.h"
+#include "ns3/thz-channel.h"
 #include "ns3/thz-mac.h"
 #include "ns3/thz-phy.h"
-#include "ns3/thz-channel.h"
-#include "traffic-generator-helper.h"
 
 #include <sstream>
 #include <string>
 
-NS_LOG_COMPONENT_DEFINE ("TrafficGeneratorHelper");
+NS_LOG_COMPONENT_DEFINE("TrafficGeneratorHelper");
 
-namespace ns3 {
-
-TrafficGeneratorHelper::TrafficGeneratorHelper ()
+namespace ns3
 {
-  m_traffic.SetTypeId (TrafficGenerator::GetTypeId ());
+
+TrafficGeneratorHelper::TrafficGeneratorHelper()
+{
+    m_traffic.SetTypeId(TrafficGenerator::GetTypeId());
 }
 
-TrafficGeneratorHelper::~TrafficGeneratorHelper ()
+TrafficGeneratorHelper::~TrafficGeneratorHelper()
 {
 }
 
 ApplicationContainer
-TrafficGeneratorHelper::Install (NodeContainer c)
+TrafficGeneratorHelper::Install(NodeContainer c)
 {
-  ApplicationContainer apps;
-  for (NodeContainer::Iterator i = c.Begin (); i != c.End (); i++)
+    ApplicationContainer apps;
+    for (NodeContainer::Iterator i = c.Begin(); i != c.End(); i++)
     {
-      Ptr<Node> node = *i;
-      Ptr<TrafficGenerator> tg = m_traffic.Create<TrafficGenerator> ();
-      tg->AddNodeContainer (c);
+        Ptr<Node> node = *i;
+        Ptr<TrafficGenerator> tg = m_traffic.Create<TrafficGenerator>();
+        tg->AddNodeContainer(c);
 
-      node->AddApplication (tg);
-      apps.Add (tg);
-      NS_LOG_DEBUG ("node=" << node);
+        node->AddApplication(tg);
+        apps.Add(tg);
+        NS_LOG_DEBUG("node=" << node);
     }
-  return apps;
+    return apps;
 }
 
 void
-TrafficGeneratorHelper::SetAttribute (std::string name, const AttributeValue &value)
+TrafficGeneratorHelper::SetAttribute(std::string name, const AttributeValue& value)
 {
-  m_traffic.Set (name, value);
+    m_traffic.Set(name, value);
 }
 
-} //end namespace ns3
+} // end namespace ns3

@@ -1,16 +1,16 @@
 % Script to compute the performance metrics
 
-clc, clear
+clc
+clear
 
 %% Parameters
-handshake_ways = 1; % 0, 1, 2 or 3 way handshake (0: CSMA, 1: ADAPT-1, 2: CSMA/CA, 3: ADAPT-3)
+handshake_ways = 3; % 0, 1, 2 or 3 way handshake (0: CSMA, 1: ADAPT-1, 2: CSMA/CA, 3: ADAPT-3)
 nodeNum = 50;       % Number of client nodes
-Tia = 800;          % [us] Mean inter-arrival time
+Tia = 200;          % [us] Mean inter-arrival time
 
 %% Load simulation results
-path = '../../../scratch';
 filename = sprintf('result_%uway_%un_%uus_1.txt',handshake_ways,nodeNum,Tia);
-fileID = fopen(fullfile(path, filename),'r');
+fileID = fopen(filename,'r');
 data = fscanf(fileID,'%u %u %u %u %u',[5 Inf]);
 fclose(fileID);
 

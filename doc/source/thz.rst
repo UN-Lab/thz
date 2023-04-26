@@ -21,7 +21,7 @@ Model Description
 
 The source code for the new module lives in the directory ``/thz``. This directory is typically placed in the ``contrib/`` directory of ns-3.
 
-* The frequency database file (data_frequency.txt) and the corresponding molecular absorption coefficient database file (data_AbsCoe.txt) are located inside ``/thz/model``.
+* The frequency database file (data_frequency.txt) and the corresponding molecular absorption coefficient database file (data_AbsCoe.txt) are located inside ``/thz/model/``.
 
 Design
 ======
@@ -60,18 +60,13 @@ The first step is to clone THz from the github repository::
 
  $ git clone https://github.com/UN-Lab/thz.git
 
-Copy the thz folder to your local source folder of ns-3 directory (../ns-allinone-3.38/ns-3.38/contrib), then go back to ns-3.38 folder to build the THz module by::
+Copy the thz folder to your local source folder of ns-3 directory (../ns-3.38/contrib/), then go back to ns-3.38 folder to build the THz module by::
 
- $ cd ..
+ $ ./ns3 configure --enable-examples --enable-tests
  $ ./ns3 build
 
-Once THz has been built successfully, try to run one of the examples (i.e., thz-macro-central.cc). First, you need to copy this example from ../thz/examples to ns-3.38/scratch::
+Once THz has been built successfully, try to run one of the examples (i.e., thz-macro-central.cc)::
 
- $ cp ns-3.38/contrib/thz/examples/thz-macro-central.cc ns-3.38/scratch/thz-macro-central.cc
-
-Then build and run the example::
-
- $ ./ns3 build
  $ ./ns3 run thz-macro-central
 
 Optionally, run the example with customized argurments::

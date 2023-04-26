@@ -21,63 +21,66 @@
  *         Daniel Morales <danimoralesbrotons@gmail.com>
  */
 
-#include "ns3/thz-mac.h"
-#include "ns3/pointer.h"
 #include "thz-mac-macro-client-helper.h"
+
+#include "ns3/pointer.h"
+#include "ns3/thz-mac.h"
 
 #include <sstream>
 #include <string>
 
-namespace ns3 {
+namespace ns3
+{
 
-THzMacMacroClientHelper::THzMacMacroClientHelper ()
+THzMacMacroClientHelper::THzMacMacroClientHelper()
 {
 }
 
-THzMacMacroClientHelper::~THzMacMacroClientHelper ()
+THzMacMacroClientHelper::~THzMacMacroClientHelper()
 {
 }
 
 THzMacMacroClientHelper
-THzMacMacroClientHelper::Default (void)
+THzMacMacroClientHelper::Default(void)
 {
-  THzMacMacroClientHelper helper;
-  helper.SetType ("ns3::THzMacMacroClient");
-  return helper;
+    THzMacMacroClientHelper helper;
+    helper.SetType("ns3::THzMacMacroClient");
+    return helper;
 }
 
 void
-THzMacMacroClientHelper::SetType (std::string type,
-                            std::string n0, const AttributeValue &v0,
-                            std::string n1, const AttributeValue &v1,
-                            std::string n2, const AttributeValue &v2,
-                            std::string n3, const AttributeValue &v3,
-                            std::string n4, const AttributeValue &v4,
-                            std::string n5, const AttributeValue &v5,
-                            std::string n6, const AttributeValue &v6,
-                            std::string n7, const AttributeValue &v7)
+THzMacMacroClientHelper::SetType(std::string type,
+                                 std::string n0, const AttributeValue& v0,
+                                 std::string n1, const AttributeValue& v1,
+                                 std::string n2, const AttributeValue& v2,
+                                 std::string n3, const AttributeValue& v3,
+                                 std::string n4, const AttributeValue& v4,
+                                 std::string n5, const AttributeValue& v5,
+                                 std::string n6, const AttributeValue& v6,
+                                 std::string n7, const AttributeValue& v7)
 {
-  m_mac.SetTypeId (type);
-  m_mac.Set (n0, v0);
-  m_mac.Set (n1, v1);
-  m_mac.Set (n2, v2);
-  m_mac.Set (n3, v3);
-  m_mac.Set (n4, v4);
-  m_mac.Set (n5, v5);
-  m_mac.Set (n6, v6);
-  m_mac.Set (n7, v7);
+    m_mac.SetTypeId(type);
+    m_mac.Set(n0, v0);
+    m_mac.Set(n1, v1);
+    m_mac.Set(n2, v2);
+    m_mac.Set(n3, v3);
+    m_mac.Set(n4, v4);
+    m_mac.Set(n5, v5);
+    m_mac.Set(n6, v6);
+    m_mac.Set(n7, v7);
 }
+
 void
-THzMacMacroClientHelper::Set (std::string n, const AttributeValue &v)
+THzMacMacroClientHelper::Set(std::string n, const AttributeValue& v)
 {
-  m_mac.Set (n, v);
+    m_mac.Set(n, v);
 }
 
 Ptr<THzMac>
-THzMacMacroClientHelper::Create (void) const
+THzMacMacroClientHelper::Create(void) const
 {
-  Ptr<THzMac> mac = m_mac.Create<THzMac> ();
-  return mac;
+    Ptr<THzMac> mac = m_mac.Create<THzMac>();
+    return mac;
 }
 
-} //namespace ns3
+} // namespace ns3
