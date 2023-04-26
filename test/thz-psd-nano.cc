@@ -20,116 +20,116 @@
  *         Josep Miquel Jornet <j.jornet@northeastern.edu>
  */
 
+#include "ns3/constant-position-mobility-model.h"
+#include "ns3/core-module.h"
+#include "ns3/double.h"
+#include "ns3/gnuplot.h"
 #include "ns3/log.h"
 #include "ns3/test.h"
-#include "ns3/double.h"
 #include "ns3/thz-spectrum-propagation-loss.h"
 #include "ns3/thz-spectrum-signal-parameters.h"
-#include "ns3/constant-position-mobility-model.h"
 #include "ns3/thz-spectrum-waveform.h"
 #include <ns3/spectrum-value.h>
-#include "ns3/gnuplot.h"
-#include "ns3/core-module.h"
-
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("THzPsdNanoTestSuite");
+NS_LOG_COMPONENT_DEFINE("THzPsdNanoTestSuite");
 
 class THzPsdNanoTestCase : public TestCase
 {
-public:
-  THzPsdNanoTestCase ();
-  ~THzPsdNanoTestCase ();
-  void DoRun (void);
-  double DbmToW (double dbm);
+  public:
+    THzPsdNanoTestCase();
+    ~THzPsdNanoTestCase();
+    void DoRun(void);
+    double DbmToW(double dbm);
 };
 
-THzPsdNanoTestCase::THzPsdNanoTestCase ()
-  : TestCase ("terahertz Rx PSD Nano test case")
+THzPsdNanoTestCase::THzPsdNanoTestCase()
+    : TestCase("terahertz Rx PSD Nano test case")
 {
 }
 
-THzPsdNanoTestCase::~THzPsdNanoTestCase ()
+THzPsdNanoTestCase::~THzPsdNanoTestCase()
 {
 }
 
 double
-THzPsdNanoTestCase::DbmToW (double dbm)
+THzPsdNanoTestCase::DbmToW(double dbm)
 {
-  double mw = pow (10.0,dbm / 10.0);
-  return mw / 1000.0;
+    double mw = pow(10.0, dbm / 10.0);
+    return mw / 1000.0;
 }
 
 void
-THzPsdNanoTestCase::DoRun ()
+THzPsdNanoTestCase::DoRun()
 {
-  LogComponentEnable ("THzSpectrumPropagationLoss", LOG_LEVEL_ALL);
-  std::string fileNameWithNoExtension = "thz-received-power-spectral-density-nano";
-  std::string graphicsFileName        = fileNameWithNoExtension + ".png";
-  std::string plotFileName            = fileNameWithNoExtension + ".plt";
-  //std::string plotTitle               = "THz received signal power spectral density for nanoscale communication";
-  Gnuplot plot (graphicsFileName);
-  //plot.SetTitle (plotTitle);
-  plot.SetLegend ("Frequency [THz]", "p.s.d. [Watts/Hz]");
-  plot.AppendExtra ("set grid xtics ytics");
+    LogComponentEnable("THzSpectrumPropagationLoss", LOG_LEVEL_ALL);
+    std::string fileNameWithNoExtension = "thz-received-power-spectral-density-nano";
+    std::string graphicsFileName = fileNameWithNoExtension + ".png";
+    std::string plotFileName = fileNameWithNoExtension + ".plt";
 
-  Ptr<THzSpectrumPropagationLoss> lossModel = CreateObject<THzSpectrumPropagationLoss> ();
+    Gnuplot plot(graphicsFileName);
+    plot.SetLegend("Frequency [THz]", "p.s.d. [Watts/Hz]");
+    plot.AppendExtra("set grid xtics ytics");
 
-  Config::SetDefault ("ns3::THzSpectrumValueFactory::NumSample", DoubleValue (1000));
-  Gnuplot2dDataset dataset;
-  dataset.SetTitle ("Transmitted pulse p.s.d. for nanoscale");
-  dataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
+    Ptr<THzSpectrumPropagationLoss> lossModel = CreateObject<THzSpectrumPropagationLoss>();
 
-  double txPowerDbm = -20;  //dBm
-  double pulseDuration = 100e-15;  //100 femtoseconds
-  double distance = 0.1;  //m
-  Ptr<SpectrumValue> txPsd;
-  Ptr<SpectrumValue> rxPsd;
-  double txPowerW = DbmToW (txPowerDbm);
-  Ptr<THzSpectrumValueFactory> sf = CreateObject<THzSpectrumValueFactory> ();
+    Config::SetDefault("ns3::THzSpectrumValueFactory::NumSample", DoubleValue(1000));
+    Gnuplot2dDataset dataset;
+    dataset.SetTitle("Transmitted pulse p.s.d. for nanoscale");
+    dataset.SetStyle(Gnuplot2dDataset::LINES_POINTS);
 
-  Ptr<SpectrumModel> InitTHzPulseSpectrumWaveform;
+    double txPowerDbm = -20;        // [dBm] Transmit power
+    double pulseDuration = 100e-15; // [s] Pulse duration
+    double distance = 0.1;          // [m] Distance
 
-  InitTHzPulseSpectrumWaveform = sf->THzPulseSpectrumWaveformInitializer ();
-  txPsd = sf->CreatePulsePowerSpectralDensity (1, pulseDuration, txPowerW);
+    Ptr<SpectrumValue> txPsd;
+    Ptr<SpectrumValue> rxPsd;
 
-  Ptr<MobilityModel> a = CreateObject<ConstantPositionMobilityModel> ();
-  a->SetPosition (Vector (0,0,0));
-  Ptr<MobilityModel> b = CreateObject<ConstantPositionMobilityModel> ();
-  b->SetPosition (Vector (distance, 0, 0));
-  rxPsd = lossModel->CalcRxPowerSpectralDensity (txPsd, a, b);
+    double txPowerW = DbmToW(txPowerDbm);
 
-  Values::iterator vit = txPsd->ValuesBegin ();
-  Bands::const_iterator fit = txPsd->ConstBandsBegin ();
+    Ptr<THzSpectrumValueFactory> sf = CreateObject<THzSpectrumValueFactory>();
+    Ptr<SpectrumModel> InitTHzPulseSpectrumWaveform;
+    InitTHzPulseSpectrumWaveform = sf->THzPulseSpectrumWaveformInitializer();
+    txPsd = sf->CreatePulsePowerSpectralDensity(1, pulseDuration, txPowerW);
 
-  while (vit != txPsd->ValuesEnd ())
+    Ptr<MobilityModel> a = CreateObject<ConstantPositionMobilityModel>();
+    a->SetPosition(Vector(0, 0, 0));
+    Ptr<MobilityModel> b = CreateObject<ConstantPositionMobilityModel>();
+    b->SetPosition(Vector(distance, 0, 0));
+    rxPsd = lossModel->CalcRxPowerSpectralDensity(txPsd, a, b);
+
+    Values::iterator vit = txPsd->ValuesBegin();
+    Bands::const_iterator fit = txPsd->ConstBandsBegin();
+
+    while (vit != txPsd->ValuesEnd())
     {
-      NS_ASSERT (fit != txPsd->ConstBandsEnd ());
-      dataset.Add (fit->fc / 1e12, *vit);
+        NS_ASSERT(fit != txPsd->ConstBandsEnd());
+        dataset.Add(fit->fc / 1e12, *vit);
 
-      ++vit;
-      ++fit;
+        ++vit;
+        ++fit;
     }
 
-  plot.AddDataset (dataset);
+    plot.AddDataset(dataset);
 
-  std::ofstream plotFile (plotFileName.c_str ());
+    std::ofstream plotFile(plotFileName.c_str());
 
-  plot.GenerateOutput (plotFile);
-  plotFile.close ();
+    plot.GenerateOutput(plotFile);
+    plotFile.close();
 }
 
 class THzPsdNanoTestSuite : public TestSuite
 {
-public:
-  THzPsdNanoTestSuite ();
+  public:
+    THzPsdNanoTestSuite();
 };
 
-THzPsdNanoTestSuite::THzPsdNanoTestSuite ()
-  : TestSuite ("thz-psd-nano", UNIT)
+THzPsdNanoTestSuite::THzPsdNanoTestSuite()
+    : TestSuite("thz-psd-nano", UNIT)
 {
-  AddTestCase (new THzPsdNanoTestCase, TestCase::QUICK);
+    AddTestCase(new THzPsdNanoTestCase, TestCase::QUICK);
 }
-//create an instance of the test suite
+
+// Create an instance of the test suite
 static THzPsdNanoTestSuite g_thzPsdNanoTestSuite;

@@ -25,18 +25,20 @@
 
 #include "ns3/application.h"
 #include "ns3/event-id.h"
-#include "ns3/ptr.h"
 #include "ns3/ipv4-address.h"
-#include "ns3/traced-callback.h"
 #include "ns3/node-container.h"
-#include "ns3/nstime.h"
 #include "ns3/node.h"
+#include "ns3/nstime.h"
+#include "ns3/ptr.h"
+#include "ns3/traced-callback.h"
 
-namespace ns3 {
+namespace ns3
+{
 
 class Socket;
 class Packet;
 class THzEnergyModel;
+
 /**
  * \ingroup thz
  * \brief A random traffic generator
@@ -49,48 +51,48 @@ class THzEnergyModel;
 
 class TrafficGenerator : public Application
 {
-public:
-  /**
-   * \brief Get the type ID.
-   * \return the object TypeId
-   */
-  static TypeId GetTypeId (void);
-  TrafficGenerator ();
-  virtual ~TrafficGenerator ();
+  public:
+    /**
+     * \brief Get the type ID.
+     * \return the object TypeId
+     */
+    static TypeId GetTypeId(void);
+    TrafficGenerator();
+    virtual ~TrafficGenerator();
 
-  void AddNodeContainer (NodeContainer c);
+    void AddNodeContainer(NodeContainer c);
 
-protected:
-  virtual void DoDispose (void);
-private:
-  virtual void StartApplication (void);
-  virtual void StopApplication (void);
-  /**
-   * \brief Schedules the generation of a packet
-   */
-  void DoGenerate (void);
-  /**
-   * \brief Generates a packet and sends to
-   * a random destination node
-   */
-  void Generate (void);
-  /**
-   * \brief Handle a packet reception.
-   *
-   * This function is called by lower layers.
-   *
-   * \param socket the socket the packet was received to.
-   */
-  void HandleRead (Ptr<Socket> socket);
+  protected:
+    virtual void DoDispose(void);
 
-  Time m_delay; //!< Packet inter-send time
-  double m_mean; //!< Mean inter-send time
-  uint32_t m_size; //!< Size of the sent packet
-  NodeContainer m_nodes; //!< All nodes
-  Ptr<Socket> m_socket; //!< Socket
-  EventId m_sendEvent; //!< Event to send the next packet
+  private:
+    virtual void StartApplication(void);
+    virtual void StopApplication(void);
+    /**
+     * \brief Schedules the generation of a packet
+     */
+    void DoGenerate(void);
+    /**
+     * \brief Generates a packet and sends to
+     * a random destination node
+     */
+    void Generate(void);
+    /**
+     * \brief Handle a packet reception.
+     *
+     * This function is called by lower layers.
+     *
+     * \param socket the socket the packet was received to.
+     */
+    void HandleRead(Ptr<Socket> socket);
 
+    Time m_delay;          //!< Packet inter-send time
+    double m_mean;         //!< Mean inter-send time
+    uint32_t m_size;       //!< Size of the sent packet
+    NodeContainer m_nodes; //!< All nodes
+    Ptr<Socket> m_socket;  //!< Socket
+    EventId m_sendEvent;   //!< Event to send the next packet
 };
 
-} //namespace ns3
+} // namespace ns3
 #endif

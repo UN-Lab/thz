@@ -20,18 +20,18 @@
  *         Josep Miquel Jornet <j.jornet@northeastern.edu>
  */
 
-
 #ifndef THZ_UDP_SERVER_H
 #define THZ_UDP_SERVER_H
 
+#include "ns3/address.h"
 #include "ns3/application.h"
 #include "ns3/event-id.h"
-#include "ns3/ptr.h"
-#include "ns3/address.h"
 #include "ns3/packet-loss-counter.h"
+#include "ns3/ptr.h"
 #include "ns3/thz-dir-antenna.h"
 
-namespace ns3 {
+namespace ns3
+{
 /**
  * \ingroup applications
  * \defgroup thzudpclientserver THzUdpClientServer
@@ -47,63 +47,64 @@ namespace ns3 {
  */
 class THzUdpServer : public Application
 {
-public:
-  /**
-   * \brief Get the type ID.
-   * \return the object TypeId
-   */
-  static TypeId GetTypeId (void);
-  THzUdpServer ();
-  virtual ~THzUdpServer ();
-  /**
-   * \brief Returns the number of lost packets
-   * \return the number of lost packets
-   */
-  uint32_t GetLost (void) const;
+  public:
+    /**
+     * \brief Get the type ID.
+     * \return the object TypeId
+     */
+    static TypeId GetTypeId(void);
+    THzUdpServer();
+    virtual ~THzUdpServer();
+    /**
+     * \brief Returns the number of lost packets
+     * \return the number of lost packets
+     */
+    uint32_t GetLost(void) const;
 
-  /**
-   * \brief Returns the number of received packets
-   * \return the number of received packets
-   */
-  uint32_t GetReceived (void) const;
+    /**
+     * \brief Returns the number of received packets
+     * \return the number of received packets
+     */
+    uint32_t GetReceived(void) const;
 
-  /**
-   * \brief Returns the size of the window used for checking loss.
-   * \return the size of the window used for checking loss.
-   */
-  uint16_t GetPacketWindowSize () const;
+    /**
+     * \brief Returns the size of the window used for checking loss.
+     * \return the size of the window used for checking loss.
+     */
+    uint16_t GetPacketWindowSize() const;
 
-  /**
-   * \brief Set the size of the window used for checking loss. This value should
-   *  be a multiple of 8
-   * \param size the size of the window used for checking loss. This value should
-   *  be a multiple of 8
-   */
-  void SetPacketWindowSize (uint16_t size);
-protected:
-  virtual void DoDispose (void);
+    /**
+     * \brief Set the size of the window used for checking loss. This value should
+     *  be a multiple of 8
+     * \param size the size of the window used for checking loss. This value should
+     *  be a multiple of 8
+     */
+    void SetPacketWindowSize(uint16_t size);
 
-private:
-  virtual void StartApplication (void);
-  virtual void StopApplication (void);
+  protected:
+    virtual void DoDispose(void);
 
-  /**
-   * \brief Handle a packet reception.
-   *
-   * This function is called by lower layers.
-   *
-   * \param socket the socket the packet was received to.
-   */
-  void HandleRead (Ptr<Socket> socket);
+  private:
+    virtual void StartApplication(void);
+    virtual void StopApplication(void);
 
-  uint16_t m_port; //!< Port on which we listen for incoming packets.
-  Ptr<Socket> m_socket; //!< IPv4 Socket
-  Ptr<Socket> m_socket6; //!< IPv6 Socket
-  uint32_t m_received; //!< Number of received packets
-  PacketLossCounter m_lossCounter; //!< Lost packet counter
+    /**
+     * \brief Handle a packet reception.
+     *
+     * This function is called by lower layers.
+     *
+     * \param socket the socket the packet was received to.
+     */
+    void HandleRead(Ptr<Socket> socket);
 
-  Ptr<THzDirectionalAntenna> m_antenna;
-  Ptr<THzNetDevice> m_thznetdev;
+    uint16_t m_port;                 //!< Port on which we listen for incoming packets.
+    Ptr<Socket> m_socket;            //!< IPv4 Socket
+    Ptr<Socket> m_socket6;           //!< IPv6 Socket
+    uint32_t m_received;             //!< Number of received packets
+    PacketLossCounter m_lossCounter; //!< Lost packet counter
+
+    Ptr<THzDirectionalAntenna> m_antenna;
+    Ptr<THzNetDevice> m_thznetdev;
 };
 
 } // namespace ns3

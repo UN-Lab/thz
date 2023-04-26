@@ -20,51 +20,53 @@
  *         Josep Miquel Jornet <j.jornet@northeastern.edu>
  */
 
+#include "thz-energy-model-helper.h"
 
-#include "ns3/mobility-model.h"
-#include "ns3/log.h"
-#include "ns3/config.h"
-#include "ns3/simulator.h"
-#include "ns3/mac48-address.h"
 #include "thz-helper.h"
+
+#include "ns3/config.h"
+#include "ns3/log.h"
+#include "ns3/mac48-address.h"
+#include "ns3/mobility-model.h"
+#include "ns3/simulator.h"
+#include "ns3/thz-channel.h"
 #include "ns3/thz-mac.h"
 #include "ns3/thz-phy.h"
-#include "ns3/thz-channel.h"
-#include "thz-energy-model-helper.h"
 
 #include <sstream>
 #include <string>
 
-NS_LOG_COMPONENT_DEFINE ("THzEnergyModelHelper");
+NS_LOG_COMPONENT_DEFINE("THzEnergyModelHelper");
 
-namespace ns3 {
-
-THzEnergyModelHelper::THzEnergyModelHelper ()
+namespace ns3
 {
-  m_energyModel.SetTypeId ("ns3::THzEnergyModel");
+
+THzEnergyModelHelper::THzEnergyModelHelper()
+{
+    m_energyModel.SetTypeId("ns3::THzEnergyModel");
 }
 
-THzEnergyModelHelper::~THzEnergyModelHelper ()
+THzEnergyModelHelper::~THzEnergyModelHelper()
 {
 }
 
 void
-THzEnergyModelHelper::Install (NodeContainer c) const
+THzEnergyModelHelper::Install(NodeContainer c) const
 {
-
-  for (NodeContainer::Iterator i = c.Begin (); i != c.End (); i++)
+    for (NodeContainer::Iterator i = c.Begin(); i != c.End(); i++)
     {
-      Ptr<Node> node = *i;
-      Ptr<THzEnergyModel> energyModel = m_energyModel.Create<THzEnergyModel> ();
-      node->AggregateObject (energyModel);
-      NS_LOG_DEBUG ("node=" << node);
+        Ptr<Node> node = *i;
+        Ptr<THzEnergyModel> energyModel = m_energyModel.Create<THzEnergyModel>();
+        node->AggregateObject(energyModel);
+        NS_LOG_DEBUG("node=" << node);
     }
-  return;
-}
-void
-THzEnergyModelHelper::SetEnergyModelAttribute (std::string n1, const AttributeValue &v1)
-{
-  m_energyModel.Set (n1, v1);
+    return;
 }
 
-} //end namespace ns3
+void
+THzEnergyModelHelper::SetEnergyModelAttribute(std::string n1, const AttributeValue& v1)
+{
+    m_energyModel.Set(n1, v1);
+}
+
+} // end namespace ns3

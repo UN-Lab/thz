@@ -20,121 +20,114 @@
  *         Josep Miquel Jornet <j.jornet@northeastern.edu>
  */
 
+#include "ns3/constant-position-mobility-model.h"
+#include "ns3/double.h"
+#include "ns3/gnuplot.h"
 #include "ns3/log.h"
 #include "ns3/test.h"
-#include "ns3/double.h"
 #include "ns3/thz-spectrum-propagation-loss.h"
 #include "ns3/thz-spectrum-signal-parameters.h"
-#include "ns3/constant-position-mobility-model.h"
 #include "ns3/thz-spectrum-waveform.h"
 #include <ns3/spectrum-value.h>
-#include "ns3/gnuplot.h"
-
-
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("THzPathLossTestSuite");
+NS_LOG_COMPONENT_DEFINE("THzPathLossTestSuite");
 
 class THzPathLossTestCase : public TestCase
 {
-public:
-  THzPathLossTestCase ();
-  ~THzPathLossTestCase ();
-  void DoRun (void);
-  double DbmToW (double dbm);
+  public:
+    THzPathLossTestCase();
+    ~THzPathLossTestCase();
+    void DoRun(void);
+    double DbmToW(double dbm);
 };
 
-THzPathLossTestCase::THzPathLossTestCase ()
-  : TestCase ("Terahertz Path Loss test case")
-{
-}
-THzPathLossTestCase::~THzPathLossTestCase ()
+THzPathLossTestCase::THzPathLossTestCase()
+    : TestCase("Terahertz Path Loss test case")
 {
 }
 
+THzPathLossTestCase::~THzPathLossTestCase()
+{
+}
 
 double
-THzPathLossTestCase::DbmToW (double dbm)
+THzPathLossTestCase::DbmToW(double dbm)
 {
-  double mw = pow (10.0,dbm / 10.0);
-  return mw / 1000.0;
+    double mw = pow(10.0, dbm / 10.0);
+    return mw / 1000.0;
 }
 
 void
-THzPathLossTestCase::DoRun ()
+THzPathLossTestCase::DoRun()
 {
+    LogComponentEnable("THzSpectrumPropagationLoss", LOG_LEVEL_ALL);
+    std::string fileNameWithNoExtension = "thz-path-loss-for-nanoscale-pulse-based-waveform";
+    std::string graphicsFileName = fileNameWithNoExtension + ".png";
+    std::string plotFileName = fileNameWithNoExtension + ".plt";
 
-  LogComponentEnable ("THzSpectrumPropagationLoss", LOG_LEVEL_ALL);
-  std::string fileNameWithNoExtension = "thz-path-loss-for-nanoscale-pulse-based-waveform";
-  std::string graphicsFileName        = fileNameWithNoExtension + ".png";
-  std::string plotFileName            = fileNameWithNoExtension + ".plt";
-  //std::string plotTitle               = "THz propagation loss vs distance for nanoscale communication";
+    Gnuplot plot(graphicsFileName);
+    plot.SetLegend("Distance (m)", "Recieved Power (dBm)");
+    plot.AppendExtra("set grid xtics ytics");
 
-  Gnuplot plot (graphicsFileName);
-  //plot.SetTitle (plotTitle);
-  plot.SetLegend ("Distance (m)", "Recieved Power (dBm)");
-  plot.AppendExtra ("set grid xtics ytics");
+    Ptr<THzSpectrumPropagationLoss> lossModel = CreateObject<THzSpectrumPropagationLoss>();
 
-  Ptr<THzSpectrumPropagationLoss> lossModel = CreateObject<THzSpectrumPropagationLoss> ();
+    Gnuplot2dDataset dataset;
+    dataset.SetTitle("THz propagation loss for nanoscale pulse based waveform");
+    dataset.SetStyle(Gnuplot2dDataset::LINES_POINTS);
 
-  Gnuplot2dDataset dataset;
-  dataset.SetTitle ("THz propagation loss for nanoscale pulse based waveform");
-  dataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
+    double txPowerDbm = -20;        // [dBm] Transmit power
+    double totalGainDb = 0;         // [dB] Total gain
+    double pulseDuration = 100e-15; // [s] Pulse duration
 
-  double txPowerDbm = -20;  //dBm
-  double totalGainDb = 0;  //dB
-  double pulseDuration = 100e-15;  //100 femtoseconds
-  Ptr<SpectrumValue> m_txPsd;  //transmitted signal power spectral density
+    double txPowerW = DbmToW(txPowerDbm);
 
-  double txPowerW = DbmToW (txPowerDbm);
-  Ptr<THzSpectrumValueFactory> sf = CreateObject<THzSpectrumValueFactory> ();
-  Ptr<SpectrumModel> InitTHzPulseSpectrumWaveform;
+    Ptr<SpectrumValue> m_txPsd;
+    Ptr<THzSpectrumValueFactory> sf = CreateObject<THzSpectrumValueFactory>();
+    Ptr<SpectrumModel> InitTHzPulseSpectrumWaveform;
+    InitTHzPulseSpectrumWaveform = sf->THzPulseSpectrumWaveformInitializer();
+    m_txPsd = sf->CreatePulsePowerSpectralDensity(1, pulseDuration, txPowerW);
 
-  InitTHzPulseSpectrumWaveform = sf->THzPulseSpectrumWaveformInitializer ();
-  m_txPsd = sf->CreatePulsePowerSpectralDensity (1, pulseDuration, txPowerW);
+    Ptr<THzSpectrumSignalParameters> txParams = Create<THzSpectrumSignalParameters>();
+    txParams->txDuration = Seconds(0);
+    txParams->txPower = txPowerW;
+    txParams->numberOfSamples = sf->m_numsample;
+    txParams->numberOfSubBands = sf->m_numsb;
+    txParams->subBandBandwidth = sf->m_sbw;
+    txParams->txPsd = m_txPsd;
 
-  Ptr<THzSpectrumSignalParameters> txParams = Create<THzSpectrumSignalParameters> ();
-  txParams->txDuration = Seconds (0);
-  txParams->txPower = txPowerW;
-  txParams->numberOfSamples = sf->m_numsample;
-  txParams->numberOfSubBands = sf->m_numsb;
-  txParams->subBandBandwidth = sf->m_sbw;
-  //txParams->txPhy = 0;//GetObject<THzPhy> ();
-  txParams->txPsd = m_txPsd;
-  //txParams->packet = 0;
-
-  Ptr<MobilityModel> a = CreateObject<ConstantPositionMobilityModel> ();
-  a->SetPosition (Vector (0,0,0));
-  Ptr<MobilityModel> b = CreateObject<ConstantPositionMobilityModel> ();
-  for (double distance = 0.0001; distance <= 1.0; distance *= 10.0)
+    Ptr<MobilityModel> a = CreateObject<ConstantPositionMobilityModel>();
+    a->SetPosition(Vector(0, 0, 0));
+    Ptr<MobilityModel> b = CreateObject<ConstantPositionMobilityModel>();
+    for (double distance = 0.0001; distance <= 1.0; distance *= 10.0)
     {
-      b->SetPosition (Vector (distance, 0, 0));
-      double rxPowerDbm = lossModel->CalcRxPowerDA (txParams, a, b, totalGainDb);
+        b->SetPosition(Vector(distance, 0, 0));
+        double rxPowerDbm = lossModel->CalcRxPowerDA(txParams, a, b, totalGainDb);
 
-      std::printf ("Rx power for distance %fm is %f\n",distance, rxPowerDbm);
-      dataset.Add (10 * std::log10 (distance), rxPowerDbm);
+        std::printf("Rx power for distance %fm is %f\n", distance, rxPowerDbm);
+        dataset.Add(10 * std::log10(distance), rxPowerDbm);
     }
 
-  plot.AddDataset (dataset);
+    plot.AddDataset(dataset);
 
-  std::ofstream plotFile (plotFileName.c_str ());
+    std::ofstream plotFile(plotFileName.c_str());
 
-  plot.GenerateOutput (plotFile);
-  plotFile.close ();
-
+    plot.GenerateOutput(plotFile);
+    plotFile.close();
 }
 
 class THzPathLossTestSuite : public TestSuite
 {
-public:
-  THzPathLossTestSuite ();
+  public:
+    THzPathLossTestSuite();
 };
 
-THzPathLossTestSuite::THzPathLossTestSuite ()
-  : TestSuite ("thz-path-loss", UNIT)
+THzPathLossTestSuite::THzPathLossTestSuite()
+    : TestSuite("thz-path-loss", UNIT)
 {
-  AddTestCase (new THzPathLossTestCase, TestCase::QUICK);
+    AddTestCase(new THzPathLossTestCase, TestCase::QUICK);
 }
-// create an instance of the test suite
+
+// Create an instance of the test suite
 THzPathLossTestSuite g_thzPathLossTestSuite;

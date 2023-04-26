@@ -20,106 +20,100 @@
  *         Josep Miquel Jornet <j.jornet@northeastern.edu>
  */
 
-#include "ns3/log.h"
-#include "ns3/test.h"
+#include "ns3/constant-position-mobility-model.h"
 #include "ns3/double.h"
 #include "ns3/gnuplot.h"
-#include <cmath>
-#include "ns3/constant-position-mobility-model.h"
+#include "ns3/log.h"
+#include "ns3/test.h"
 #include "ns3/thz-dir-antenna.h"
+
+#include <cmath>
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("THzDirectionalAntennaTestSuite");
+NS_LOG_COMPONENT_DEFINE("THzDirectionalAntennaTestSuite");
 
 class THzDirectionalAntennaTestCase : public TestCase
 {
-public:
-  THzDirectionalAntennaTestCase ();
-  ~THzDirectionalAntennaTestCase ();
+  public:
+    THzDirectionalAntennaTestCase();
+    ~THzDirectionalAntennaTestCase();
 
-  void DoRun (void);
+    void DoRun(void);
 };
 
-THzDirectionalAntennaTestCase::THzDirectionalAntennaTestCase ()
-  : TestCase ("Terahertz Directional Antenna test case")
-{
-}
-THzDirectionalAntennaTestCase::~THzDirectionalAntennaTestCase ()
+THzDirectionalAntennaTestCase::THzDirectionalAntennaTestCase()
+    : TestCase("Terahertz Directional Antenna test case")
 {
 }
 
+THzDirectionalAntennaTestCase::~THzDirectionalAntennaTestCase()
+{
+}
 
 void
-THzDirectionalAntennaTestCase::DoRun ()
+THzDirectionalAntennaTestCase::DoRun()
 {
-  //--- setting up ---//
-  Ptr<MobilityModel> rx_node = CreateObject<ConstantPositionMobilityModel> ();
-  rx_node->SetPosition (Vector (0,0,0));
-  Ptr<MobilityModel> tx_node = CreateObject<ConstantPositionMobilityModel> ();
-  tx_node->SetPosition (Vector (1,0,0));
+    // SETTING UP
+    Ptr<MobilityModel> rx_node = CreateObject<ConstantPositionMobilityModel>();
+    rx_node->SetPosition(Vector(0, 0, 0));
+    Ptr<MobilityModel> tx_node = CreateObject<ConstantPositionMobilityModel>();
+    tx_node->SetPosition(Vector(1, 0, 0));
 
+    Ptr<THzDirectionalAntenna> THzDAModel = CreateObject<THzDirectionalAntenna>();
+    double n_sector = 13;             // Number of sectors in one circle
+    double bw_theta = 360 / n_sector; // [deg] Beamwidth
+    double gain_max = 17.27;          // [dBi] Maximum antenna gain
+    THzDAModel->SetBeamwidth(bw_theta);
+    THzDAModel->SetMaxGain(gain_max);
 
-  Ptr<THzDirectionalAntenna> THzDAModel = CreateObject<THzDirectionalAntenna> ();
-  double n_sector = 13;            // number of sectors in one circle
-  double bw_theta = 360 / n_sector; // beamwidth in degree
-  double gain_max = 17.27;         // maximum antenna gain
-  THzDAModel->SetBeamwidth (bw_theta);
-  THzDAModel->SetMaxGain (gain_max);
+    Gnuplot2dDataset dataset;
+    dataset.SetTitle("THz Directional Antenna Gain");
+    dataset.SetStyle(Gnuplot2dDataset::LINES_POINTS);
 
-  Gnuplot2dDataset dataset;
-  dataset.SetTitle ("THz Directional Antenna Gain");
-  dataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
-
-
-  int i = 0;
-  while (i <= n_sector)
+    int i = 0;
+    while (i <= n_sector)
     {
-      double angle_rxda_deg = i * bw_theta;
-      double angle_rxda_rad = angle_rxda_deg * M_PI / 180.0;
-      double gain_total = THzDAModel->GetAntennaGain (rx_node, tx_node, 1, 0, angle_rxda_rad);
-      std::printf ("Total Gain: %f <--> Orientaion of RXDA: %f \n", gain_total, angle_rxda_deg);
-      dataset.Add (angle_rxda_deg, gain_total);
-      i++;
+        double angle_rxda_deg = i * bw_theta;
+        double angle_rxda_rad = angle_rxda_deg * M_PI / 180.0;
+        double gain_total = THzDAModel->GetAntennaGain(rx_node, tx_node, 1, 0, angle_rxda_rad);
+        std::printf("Total Gain: %f <--> Orientaion of RXDA: %f \n", gain_total, angle_rxda_deg);
+        dataset.Add(angle_rxda_deg, gain_total);
+        i++;
     }
 
+    // PLOT
+    std::string fileNameWithNoExtension = "thz-directional-antenna";
+    std::string graphicsFileName = fileNameWithNoExtension + ".png";
+    std::string plotFileName = fileNameWithNoExtension + ".plt";
 
-  //--- plot---//
-  std::string fileNameWithNoExtension = "thz-directional-antenna";
-  std::string graphicsFileName        = fileNameWithNoExtension + ".png";
-  std::string plotFileName            = fileNameWithNoExtension + ".plt";
-  //std::string plotTitle               = "THz Directional Antenna Gain Test";
+    // Instantiate the plot and set its title
+    Gnuplot plot(graphicsFileName);
 
-  // Instantiate the plot and set its title.
-  Gnuplot plot (graphicsFileName);
-  //plot.SetTitle (plotTitle);
+    // Make the graphics file, which the plot file will create when it is used with Gnuplot, be a PNG file
+    plot.SetTerminal("png");
+    plot.AppendExtra("set grid xtics ytics");
 
-  // Make the graphics file, which the plot file will create when it
-  // is used with Gnuplot, be a PNG file.
-  plot.SetTerminal ("png");
-  plot.AppendExtra ("set grid xtics ytics");
+    // Set the labels for each axis
+    plot.SetLegend("Orientation of RXDA [Degree]", "Total Gain [dB]");
 
-  // Set the labels for each axis.
-  plot.SetLegend ("Orientation of RXDA [Degree]", "Total Gain [dB]");
-
-  plot.AddDataset (dataset);
-  std::ofstream plotFile (plotFileName.c_str ());
-  plot.GenerateOutput (plotFile);
-  plotFile.close ();
-
+    plot.AddDataset(dataset);
+    std::ofstream plotFile(plotFileName.c_str());
+    plot.GenerateOutput(plotFile);
+    plotFile.close();
 }
 
 class THzDirectionalAntennaTestSuite : public TestSuite
 {
-public:
-  THzDirectionalAntennaTestSuite ();
+  public:
+    THzDirectionalAntennaTestSuite();
 };
 
-THzDirectionalAntennaTestSuite::THzDirectionalAntennaTestSuite ()
-  : TestSuite ("thz-directional-antenna", UNIT)
+THzDirectionalAntennaTestSuite::THzDirectionalAntennaTestSuite()
+    : TestSuite("thz-directional-antenna", UNIT)
 {
-  AddTestCase (new THzDirectionalAntennaTestCase, TestCase::QUICK);
+    AddTestCase(new THzDirectionalAntennaTestCase, TestCase::QUICK);
 }
 
-// create an instance of the test suite
+// Create an instance of the test suite
 static THzDirectionalAntennaTestSuite g_thzDirectionalAntennaTestSuite;

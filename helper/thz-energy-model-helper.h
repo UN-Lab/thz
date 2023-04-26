@@ -20,18 +20,18 @@
  *         Josep Miquel Jornet <j.jornet@northeastern.edu>
  */
 
-
 #ifndef THZ_ENERGY_MODEL_HELPER_H
 #define THZ_ENERGY_MODEL_HELPER_H
 
-#include <string>
 #include "ns3/attribute.h"
-#include "ns3/object-factory.h"
 #include "ns3/node-container.h"
+#include "ns3/object-factory.h"
 #include "ns3/thz-energy-model.h"
 
+#include <string>
 
-namespace ns3 {
+namespace ns3
+{
 
 /**
  * \ingroup thz
@@ -41,40 +41,39 @@ namespace ns3 {
  */
 class THzEnergyModelHelper
 {
-public:
-  /**
-   * Create a THzEnergyModelHelper
-   */
-  THzEnergyModelHelper ();
-  /**
-   * \internal
-   * Destroy a THzEnergyModelHelper
-   */
-  virtual ~THzEnergyModelHelper ();
-  /**
-   * For each Ptr<node> in the provided container:
-   * it creates an ns3::THzEnergyModel (with the attributes
-   * configured by THzEnergyModelHelper::SetEnergyModelAttribute);
-   * adds the energy model to the node;
-   *
-   * \param c The NodeContainer holding the nodes to be changed.
-   */
-  void Install (NodeContainer c) const;
-  /**
-   * \param n1 the name of the attribute to set
-   * \param v1 the value of the attribute to set
-   *
-   * Set these attributes on each ns3::THzEnergyModel created
-   * by THzEnergyModelHelper::Install
-   */
-  void SetEnergyModelAttribute (std::string n1 = "", const AttributeValue &v1 = EmptyAttributeValue ());
+  public:
+    /**
+     * Create a THzEnergyModelHelper
+     */
+    THzEnergyModelHelper();
+    /**
+     * \internal
+     * Destroy a THzEnergyModelHelper
+     */
+    virtual ~THzEnergyModelHelper();
+    /**
+     * For each Ptr<node> in the provided container:
+     * it creates an ns3::THzEnergyModel (with the attributes
+     * configured by THzEnergyModelHelper::SetEnergyModelAttribute);
+     * adds the energy model to the node;
+     *
+     * \param c The NodeContainer holding the nodes to be changed.
+     */
+    void Install(NodeContainer c) const;
+    /**
+     * \param n1 the name of the attribute to set
+     * \param v1 the value of the attribute to set
+     *
+     * Set these attributes on each ns3::THzEnergyModel created
+     * by THzEnergyModelHelper::Install
+     */
+    void SetEnergyModelAttribute(std::string n1 = "", const AttributeValue& v1 = EmptyAttributeValue());
 
-private:
-  /** Energy model factory. */
-  ObjectFactory m_energyModel;
+  private:
+    /** Energy model factory. */
+    ObjectFactory m_energyModel;
 };
 
-
-} //end namespace ns3
+} // end namespace ns3
 
 #endif /* THZ_ENERGY_MODEL_HELPER_H */

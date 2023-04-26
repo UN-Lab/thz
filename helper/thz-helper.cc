@@ -20,68 +20,74 @@
  *         Josep Miquel Jornet <j.jornet@northeastern.edu>
  */
 
-#include "ns3/mobility-model.h"
-#include "ns3/log.h"
-#include "ns3/config.h"
-#include "ns3/simulator.h"
-#include "ns3/mac48-address.h"
 #include "thz-helper.h"
-#include "ns3/thz-mac.h"
-#include "ns3/thz-phy.h"
+
+#include "ns3/config.h"
+#include "ns3/log.h"
+#include "ns3/mac48-address.h"
+#include "ns3/mobility-model.h"
+#include "ns3/simulator.h"
 #include "ns3/thz-channel.h"
 #include "ns3/thz-dir-antenna.h"
+#include "ns3/thz-mac.h"
+#include "ns3/thz-phy.h"
 
 #include <sstream>
 #include <string>
 
-NS_LOG_COMPONENT_DEFINE ("THzHelper");
+NS_LOG_COMPONENT_DEFINE("THzHelper");
 
-namespace ns3 {
+namespace ns3
+{
 
-THzMacHelper::~THzMacHelper ()
+THzMacHelper::~THzMacHelper()
 {
 }
 
-THzPhyHelper::~THzPhyHelper ()
+THzPhyHelper::~THzPhyHelper()
 {
 }
 
-THzDirAntennaHelper::~THzDirAntennaHelper ()
+THzDirAntennaHelper::~THzDirAntennaHelper()
 {
 }
 
-THzHelper::THzHelper ()
+THzHelper::THzHelper()
 {
 }
 
-THzHelper::~THzHelper ()
+THzHelper::~THzHelper()
 {
 }
 
 NetDeviceContainer
-THzHelper::Install (NodeContainer c, Ptr<THzChannel> channel, const THzPhyHelper &phyHelper, const THzMacHelper &macHelper, const THzDirAntennaHelper &dirantennaHelper) const
+THzHelper::Install(NodeContainer c,
+                   Ptr<THzChannel> channel,
+                   const THzPhyHelper& phyHelper,
+                   const THzMacHelper& macHelper,
+                   const THzDirAntennaHelper& dirantennaHelper) const
 {
-  NetDeviceContainer devices;
-  for (NodeContainer::Iterator i = c.Begin (); i != c.End (); i++)
+    NetDeviceContainer devices;
+    for (NodeContainer::Iterator i = c.Begin(); i != c.End(); i++)
     {
-      Ptr<Node> node = *i;
-      Ptr<THzNetDevice> device = CreateObject<THzNetDevice> ();
+        Ptr<Node> node = *i;
+        Ptr<THzNetDevice> device = CreateObject<THzNetDevice>();
 
-      Ptr<THzMac> mac = macHelper.Create ();
-      Ptr<THzPhy> phy = phyHelper.Create ();
-      Ptr<THzDirectionalAntenna> dirantenna = dirantennaHelper.Create ();
-      mac->SetAddress (Mac48Address::Allocate ());
-      device->SetMac (mac);
-      device->SetPhy (phy);
-      device->SetChannel (channel);
-      device->SetDirAntenna (dirantenna);
+        Ptr<THzMac> mac = macHelper.Create();
+        Ptr<THzPhy> phy = phyHelper.Create();
+        Ptr<THzDirectionalAntenna> dirantenna = dirantennaHelper.Create();
+        mac->SetAddress(Mac48Address::Allocate());
+        device->SetMac(mac);
+        device->SetPhy(phy);
+        device->SetChannel(channel);
+        device->SetDirAntenna(dirantenna);
 
-      node->AddDevice (device);
-      devices.Add (device);
+        node->AddDevice(device);
+        devices.Add(device);
 
-      NS_LOG_DEBUG ("node=" << node << ", mob=" << node->GetObject<MobilityModel> ());
+        NS_LOG_DEBUG("node=" << node << ", mob=" << node->GetObject<MobilityModel>());
     }
-  return devices;
+    return devices;
 }
 
-} //end namespace ns3
+} // end namespace ns3

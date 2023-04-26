@@ -20,48 +20,49 @@
  *         Josep Miquel Jornet <j.jornet@northeastern.edu>
  */
 
-
 #include "thz-spectrum-signal-parameters.h"
+
 #include "thz-phy.h"
-#include <ns3/spectrum-value.h>
-#include <ns3/log.h>
+
 #include "ns3/packet.h"
+#include <ns3/log.h>
+#include <ns3/spectrum-value.h>
 
+NS_LOG_COMPONENT_DEFINE("THzSpectrumSignalParameters");
 
-NS_LOG_COMPONENT_DEFINE ("THzSpectrumSignalParameters");
-
-namespace ns3 {
-
-THzSpectrumSignalParameters::THzSpectrumSignalParameters ()
+namespace ns3
 {
-  NS_LOG_FUNCTION (this);
+
+THzSpectrumSignalParameters::THzSpectrumSignalParameters()
+{
+    NS_LOG_FUNCTION(this);
 }
 
-THzSpectrumSignalParameters::~THzSpectrumSignalParameters ()
+THzSpectrumSignalParameters::~THzSpectrumSignalParameters()
 {
-  NS_LOG_FUNCTION (this);
+    NS_LOG_FUNCTION(this);
 }
 
-THzSpectrumSignalParameters::THzSpectrumSignalParameters (const THzSpectrumSignalParameters& p)
+THzSpectrumSignalParameters::THzSpectrumSignalParameters(const THzSpectrumSignalParameters& p)
 {
-  NS_LOG_FUNCTION (this << &p);
-  txPsd = p.txPsd->Copy ();
-  txPower = p.txPower;
-  txDuration = p.txDuration;
-  txPhy = p.txPhy;
-  packet = p.packet->Copy ();
-  numberOfSamples = p.numberOfSamples;
-  numberOfSubBands = p.numberOfSubBands;
-  subBandBandwidth = p.subBandBandwidth;
+    NS_LOG_FUNCTION(this << &p);
+    txPsd = p.txPsd->Copy();
+    txPower = p.txPower;
+    txDuration = p.txDuration;
+    txPhy = p.txPhy;
+    packet = p.packet->Copy();
+    numberOfSamples = p.numberOfSamples;
+    numberOfSubBands = p.numberOfSubBands;
+    subBandBandwidth = p.subBandBandwidth;
 }
 
 Ptr<SpectrumSignalParameters>
-THzSpectrumSignalParameters::Copy () const
+THzSpectrumSignalParameters::Copy() const
 {
-  NS_LOG_FUNCTION (this);
+    NS_LOG_FUNCTION(this);
 
-  Ptr<THzSpectrumSignalParameters> tssp (new THzSpectrumSignalParameters (*this), false);
-  return tssp;
+    Ptr<THzSpectrumSignalParameters> tssp(new THzSpectrumSignalParameters(*this), false);
+    return tssp;
 }
 
 } // namespace ns3

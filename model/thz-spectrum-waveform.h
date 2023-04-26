@@ -22,111 +22,111 @@
 #ifndef THZ_SPECTRUM_WAVEFORM_H
 #define THZ_SPECTRUM_WAVEFORM_H
 
-#include <ns3/spectrum-value.h>
 #include <ns3/object.h>
+#include <ns3/spectrum-value.h>
 
-namespace ns3 {
+namespace ns3
+{
 class THzSpectrumValueFactory : public Object
 {
-public:
-  THzSpectrumValueFactory ();
-  virtual ~THzSpectrumValueFactory ();
+  public:
+    THzSpectrumValueFactory();
+    virtual ~THzSpectrumValueFactory();
 
-  /**
-   * \brief Get the type ID.
-   * \return the object TypeID
-   */
-  static TypeId GetTypeId (void);
+    /**
+     * \brief Get the type ID.
+     * \return the object TypeID
+     */
+    static TypeId GetTypeId(void);
 
+    virtual Ptr<SpectrumModel> THzSpectrumWaveformInitializer();
+    virtual Ptr<SpectrumModel> AllTHzSpectrumWaveformInitializer();
+    virtual Ptr<SpectrumModel> THzPulseSpectrumWaveformInitializer();
 
-  virtual Ptr<SpectrumModel> THzSpectrumWaveformInitializer ();
-  virtual Ptr<SpectrumModel> AllTHzSpectrumWaveformInitializer ();
-  virtual Ptr<SpectrumModel> THzPulseSpectrumWaveformInitializer ();
+    /**
+     * \return the number of subbands
+     */
+    virtual int BandNum();
 
-  /**
-   * \return the number of subbands
-   */
-  virtual int BandNum ();
+    /**
+     * \return the sequence number of the first frequency band
+     */
+    virtual int FreqSeqStart();
 
-  /**
-   * \return the sequence number of the first frequency band
-   */
-  virtual int FreqSeqStart ();
+    /**
+     * \return the frequency value of the first frequency band.
+     */
+    virtual double FreqStartValue();
 
-  /**
-   * \return the frequency value of the first frequency band.
-   */
-  virtual double FreqStartValue ();
+    /**
+     * \return the frequency information of the operation frequecy band.
+     */
+    virtual Ptr<SpectrumValue> FreqBands();
 
-  /**
-   * \return the frequency information of the operation frequecy band.
-   */
-  virtual Ptr<SpectrumValue> FreqBands ();
+    /**
+     * \return the sequence number of the last frequency band.
+     */
+    virtual int FreqSeqEnd();
 
-  /**
-   * \return the sequence number of the last frequency band.
-   */
-  virtual int FreqSeqEnd ();
+    /**
+     * \param psd the constant power spectral density value.
+     *
+     * \return terahertz spectrum waveform with the constant power spectral density.
+     */
+    virtual Ptr<SpectrumValue> CreateConstant(double psd);
 
-  /**
-   * \param psd the constant power spectral density value.
-   *
-   * \return terahertz spectrum waveform with the constant power spectral density.
-   */
-  virtual Ptr<SpectrumValue> CreateConstant (double psd);
+    /**
+     * \param txPower transmission power
+     *
+     * \return power spectral density with given transmission power and frequency band information
+     */
+    virtual Ptr<SpectrumValue> CreateTxPowerSpectralDensity(double txPower);
 
-  /**
-   * \param txPower transmission power
-   *
-   * \return power spectral density with given transmission power and frequency band information
-   */
-  virtual Ptr<SpectrumValue> CreateTxPowerSpectralDensity (double txPower);
+    /**
+     * \param txPower transmission power
+     *
+     * \return masked power spectral density with given transmission power and total bandwidth
+     */
+    virtual Ptr<SpectrumValue> CreateTxPowerSpectralDensityMask(double txPower);
+    /**
+     * \param n order of derivative of the Gaussian pulse
+     * \param r standard deviation of the Gaussian pulse
+     * \param txPowerWatts transmission power
+     *
+     * \return power spectral density with given transmission power and full Thz spectrum
+     */
+    virtual Ptr<SpectrumValue> CreateAllPowerSpectralDensity(double n, double r, double a0) const;
+    /**
+     * \param n order of derivative of the Gaussian pulse
+     * \param r standard deviation of the Gaussian pulse
+     * \param txPowerWatts transmission power
+     *
+     * \return power spectral density of the Gaussian pulse with given transmission power
+     */
+    virtual Ptr<SpectrumValue> CreatePulsePowerSpectralDensity(double n,
+                                                               double r,
+                                                               double txPowerWatts) const;
+    /**
+     * \param n order of derivative of the Gaussian pulse
+     * \param r standard deviation of the Gaussian pulse
+     * \param txPowerWatts transmission power
+     *
+     * \return value of the normalizing constant for the Gaussian pulse
+     */
+    virtual double CalculateEnergyConstant(double n, double r, double txPowerWatts) const;
+    // private:
+    int m_numsb;     // NumSubBand
+    double m_sbw;    // SubBandWidth
+    double m_tbw;    // TotalBandWidth
+    double m_fc;     // CentralFrequency
+    int m_numsample; // NumSample
 
-  /**
-   * \param txPower transmission power
-   *
-   * \return masked power spectral density with given transmission power and total bandwidth
-   */
-  virtual Ptr<SpectrumValue> CreateTxPowerSpectralDensityMask (double txPower);
-  /**
-   * \param n order of derivative of the Gaussian pulse
-   * \param r standard deviation of the Gaussian pulse
-   * \param txPowerWatts transmission power
-   *
-   * \return power spectral density with given transmission power and full Thz spectrum
-   */
-  virtual Ptr<SpectrumValue> CreateAllPowerSpectralDensity (double n, double r, double a0) const;
-  /**
-   * \param n order of derivative of the Gaussian pulse
-   * \param r standard deviation of the Gaussian pulse
-   * \param txPowerWatts transmission power
-   *
-   * \return power spectral density of the Gaussian pulse with given transmission power
-   */
-  virtual Ptr<SpectrumValue> CreatePulsePowerSpectralDensity (double n, double r, double txPowerWatts) const;
-  /**
-   * \param n order of derivative of the Gaussian pulse
-   * \param r standard deviation of the Gaussian pulse
-   * \param txPowerWatts transmission power
-   *
-   * \return value of the normalizing constant for the Gaussian pulse
-   */
-  virtual double CalculateEnergyConstant (double n, double r, double txPowerWatts) const;
-  //private:
-  int m_numsb; //NumSubBand
-  double m_sbw;   //SubBandWidth
-  double m_tbw;   //TotalBandWidth
-  double m_fc;    //CentralFrequency
-  int m_numsample; //NumSample
-
-  double m_fstart; //StartingFrequency
-  Ptr<SpectrumModel> m_THzSpectrumWaveform;
-  Ptr<SpectrumModel> m_AllTHzSpectrumWaveform;
-  Ptr<SpectrumModel> m_THzPulseSpectrumWaveform;
+    double m_fstart; // StartingFrequency
+    Ptr<SpectrumModel> m_THzSpectrumWaveform;
+    Ptr<SpectrumModel> m_AllTHzSpectrumWaveform;
+    Ptr<SpectrumModel> m_THzPulseSpectrumWaveform;
 };
 
 } // namespace ns3
-
-
 
 #endif /*  THZ_SPECTRUM_WAVEFORM */

@@ -23,83 +23,78 @@
 #ifndef THZ_SPECTRUM_SIGNAL_PARAMETERS_H
 #define THZ_SPECTRUM_SIGNAL_PARAMETERS_H
 
-
-#include <ns3/ptr.h>
-#include <ns3/nstime.h>
 #include "ns3/spectrum-signal-parameters.h"
+#include <ns3/nstime.h>
+#include <ns3/ptr.h>
 
-namespace ns3 {
+namespace ns3
+{
 
 class THzPhy;
 class SpectrumValue;
 class Packet;
 
-
 struct THzSpectrumSignalParameters : public SpectrumSignalParameters
 {
-  /**
-   * default constructor
-   */
-  THzSpectrumSignalParameters ();
+    /**
+     * default constructor
+     */
+    THzSpectrumSignalParameters();
 
-  /**
-   * destructor
-   */
-  virtual ~THzSpectrumSignalParameters ();
+    /**
+     * destructor
+     */
+    virtual ~THzSpectrumSignalParameters();
 
-  // inherited from SpectrumSignalParameters
-  virtual Ptr<SpectrumSignalParameters> Copy () const;
+    // inherited from SpectrumSignalParameters
+    virtual Ptr<SpectrumSignalParameters> Copy() const;
 
-  THzSpectrumSignalParameters (const THzSpectrumSignalParameters& p);
-  /**
-   * The power spectral density of the transmitted signal.
-   */
-  Ptr <SpectrumValue> txPsd;
+    THzSpectrumSignalParameters(const THzSpectrumSignalParameters& p);
+    /**
+     * The power spectral density of the transmitted signal.
+     */
+    Ptr<SpectrumValue> txPsd;
 
-  /**
-   * The duration of the packet transmission.
-   */
-  Time txDuration;
+    /**
+     * The duration of the packet transmission.
+     */
+    Time txDuration;
 
-  /**
-   * The Phy instance that is making the transmission
-   */
-  Ptr<THzPhy> txPhy;
+    /**
+     * The Phy instance that is making the transmission
+     */
+    Ptr<THzPhy> txPhy;
 
-  /**
-   * The data packet being transmitted with this signal
-   */
-  Ptr<Packet> packet;
-  /**
-   * The transmission power.
-   */
-  double txPower;
-  /**
-   * The number of frequency samples from the database.
-   */
-  double numberOfSamples;
-  /**
-   * The number of sub-bands from the database.
-   */
-  double numberOfSubBands;
-  /**
-   * The bandwidth of individual sub-band.
-   */
-  double subBandBandwidth;
-  /**
-   * The center frequency of the overall signal band.
-   */
-  double centerFrequency;
-  /**
-   * The total bandwidth of the signal.
-   */
-  double totalBandwidth;
+    /**
+     * The data packet being transmitted with this signal
+     */
+    Ptr<Packet> packet;
+    /**
+     * The transmission power.
+     */
+    double txPower;
+    /**
+     * The number of frequency samples from the database.
+     */
+    double numberOfSamples;
+    /**
+     * The number of sub-bands from the database.
+     */
+    double numberOfSubBands;
+    /**
+     * The bandwidth of individual sub-band.
+     */
+    double subBandBandwidth;
+    /**
+     * The center frequency of the overall signal band.
+     */
+    double centerFrequency;
+    /**
+     * The total bandwidth of the signal.
+     */
+    double totalBandwidth;
 };
 
-
-}
-
-
-
+} // namespace ns3
 
 #endif /* THZ_SPECTRUM_SIGNAL_PARAMETERS_H */

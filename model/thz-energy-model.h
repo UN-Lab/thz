@@ -23,13 +23,14 @@
 #ifndef THZ_ENERGY_MODEL_H
 #define THZ_ENERGY_MODEL_H
 
-#include "ns3/traced-value.h"
-#include "ns3/nstime.h"
 #include "ns3/event-id.h"
 #include "ns3/node.h"
+#include "ns3/nstime.h"
 #include "ns3/object.h"
+#include "ns3/traced-value.h"
 
-namespace ns3 {
+namespace ns3
+{
 
 class Node;
 
@@ -45,94 +46,92 @@ class Node;
  */
 class THzEnergyModel : public Object
 {
-public:
-  static TypeId GetTypeId (void);
-  THzEnergyModel ();
-  virtual ~THzEnergyModel ();
+  public:
+    static TypeId GetTypeId(void);
+    THzEnergyModel();
+    virtual ~THzEnergyModel();
 
-  /**
-   * Sets the node the energy model belongs to
-   */
-  virtual void SetNode (Ptr<Node> node);
-  /**
-   *
-   * Setting up the callback to inform MAC layer to send Data
-   */
-  virtual void SetEnergyCallback (Callback<void> energyCbData);
-  /**
-   * \return Initial energy stored in energy source, in Joules.
-   *
-   * Implements GetInitialEnergy.
-   */
-  virtual double GetInitialEnergy (void) const;
+    /**
+     * Sets the node the energy model belongs to
+     */
+    virtual void SetNode(Ptr<Node> node);
+    /**
+     *
+     * Setting up the callback to inform MAC layer to send Data
+     */
+    virtual void SetEnergyCallback(Callback<void> energyCbData);
+    /**
+     * \return Initial energy stored in energy source, in Joules.
+     *
+     * Implements GetInitialEnergy.
+     */
+    virtual double GetInitialEnergy(void) const;
 
-  /**
-   * \return Remaining energy in energy source, in Joules
-   *
-   * Implements GetRemainingEnergy.
-   */
-  virtual double GetRemainingEnergy (void);
+    /**
+     * \return Remaining energy in energy source, in Joules
+     *
+     * Implements GetRemainingEnergy.
+     */
+    virtual double GetRemainingEnergy(void);
 
-  /**
-   * This function perodically adds harvested energy to remaining energy.
-   */
-  virtual void HarvestEnergy (void);
-  /**
-   * \brief Books energy for complete transmission process
-   *
-   * \param packetLengthTx The length of the packet being transmitted in bytes.
-   *
-   * \param packetLengthRx The length of the packet being received in bytes.
-   *
-   * \return true if the amount of requested energy is available.
-   */
-  bool BookEnergy (double packetLengthTx, double packetLengthRx);
-  /**
-   * \brief Returns unused energy of the booked energy
-   *
-   * \param packetLengthTx The length of the packet energy was booked for in bytes.
-   *
-   * \param packetLengthRx The length of the packet energy was booked for in bytes.
-   *
-   */
-  void ReturnEnergy (double packetLengthTx, double packetLengthRx);
+    /**
+     * This function perodically adds harvested energy to remaining energy.
+     */
+    virtual void HarvestEnergy(void);
+    /**
+     * \brief Books energy for complete transmission process
+     *
+     * \param packetLengthTx The length of the packet being transmitted in bytes.
+     *
+     * \param packetLengthRx The length of the packet being received in bytes.
+     *
+     * \return true if the amount of requested energy is available.
+     */
+    bool BookEnergy(double packetLengthTx, double packetLengthRx);
+    /**
+     * \brief Returns unused energy of the booked energy
+     *
+     * \param packetLengthTx The length of the packet energy was booked for in bytes.
+     *
+     * \param packetLengthRx The length of the packet energy was booked for in bytes.
+     *
+     */
+    void ReturnEnergy(double packetLengthTx, double packetLengthRx);
 
-  /**
-   * \param interval Energy update interval.
-   *
-   * This function sets the interval between each energy update.
-   */
-  void SetEnergyUpdateInterval (Time interval);
+    /**
+     * \param interval Energy update interval.
+     *
+     * This function sets the interval between each energy update.
+     */
+    void SetEnergyUpdateInterval(Time interval);
 
-  /**
-   * \returns The interval between each energy update.
-   */
-  Time GetEnergyUpdateInterval (void) const;
+    /**
+     * \returns The interval between each energy update.
+     */
+    Time GetEnergyUpdateInterval(void) const;
 
+  private:
+    /// Defined in ns3::Object
+    void DoInitialize(void);
 
-private:
-  /// Defined in ns3::Object
-  void DoInitialize (void);
+    /// Defined in ns3::Object
+    void DoDispose(void);
 
-  /// Defined in ns3::Object
-  void DoDispose (void);
+  private:
+    Ptr<Node> m_node;       //!< Node attached to this energy model.
+    double m_initialEnergy; //!< initial energy, in frames
 
+    double m_energyHarvestingAmount;   //!< amount of energy harvested each time
+    double m_energyConsumptionPulseTx; //!< amount of energy consumed for transmission of a pulse in frames
+    double m_energyConsumptionPulseRx; //!< amount of energy consumed for reception of a pulse in frames
+    double m_codingWeight;             //!< Percentage of transmitting a pulse instead of being silent
 
-private:
-  Ptr<Node> m_node;                       //!< Node attached to this energy model.
-  double m_initialEnergy;                 //!< initial energy, in frames
+    double m_dataCallbacklEnergy;          //!< remaining energy, in frames
+    TracedValue<double> m_remainingEnergy; //!< remaining energy, in frames
+    EventId m_energyUpdateEvent;           //!< energy update event
+    Time m_energyUpdateInterval;           //!< energy update interval
 
-  double m_energyHarvestingAmount;        //!< amount of energy harvested each time
-  double m_energyConsumptionPulseTx;      //!< amount of energy consumed for transmission of a pulse in frames
-  double m_energyConsumptionPulseRx;      //!< amount of energy consumed for reception of a pulse in frames
-  double m_codingWeight;                  //!< Percentage of transmitting a pulse instead of being silent
-
-  double m_dataCallbacklEnergy;           //!< remaining energy, in frames
-  TracedValue<double> m_remainingEnergy;  //!< remaining energy, in frames
-  EventId m_energyUpdateEvent;            //!< energy update event
-  Time m_energyUpdateInterval;            //!< energy update interval
-
-  Callback<void>      m_energyCbData;     //!<informs MAC when energy level reaches certain threshold
+    Callback<void> m_energyCbData; //!< informs MAC when energy level reaches certain threshold
 };
 
 } // namespace ns3
